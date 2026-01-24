@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import './HeroSlider.css';
+import styles from './HeroSlider.module.css';
 
 interface SliderItem {
   id: number;
@@ -64,53 +64,56 @@ export default function HeroSlider() {
   }, [startTimer]);
 
   return (
-    <section className="hero-slider">
-      <div className="slider-main">
+    <section className={styles.heroSlider}>
+      <div className={styles.sliderMain}>
         {items.map((item, index) => (
           <div
             key={item.id}
-            className={`slide ${isMounted && index === activeIndex ? 'active' : ''}`}
+            className={`${styles.slide} ${isMounted && index === activeIndex ? styles.active : ''}`}
           >
-            <div className="overlay"></div>
-            <img src={item.image} alt={item.title} className="slide-img" />
+            <div className={styles.overlay}></div>
+            <img src={item.image} alt={item.title} className={styles.slideImg} />
             
-            <div className="slide-content">
-              <span className="slide-subtitle">SZUMLEŚ KRÓLEWSKI</span>
-              <h1 className="slide-title">{item.title}</h1>
-              <h2 className="slide-topic">{item.topic}</h2>
-              <p className="slide-desc">{item.description}</p>
-              <div className="slide-actions">
-                <button className="btn-primary">ZAREZERWUJ</button>
-                <button className="btn-outline">GALERIA</button>
+            <div className={styles.slideContent}>
+              <span className={styles.slideSubtitle}>SZUMLEŚ KRÓLEWSKI</span>
+              <h1 className={styles.slideTitle}>{item.title}</h1>
+              <h2 className={styles.slideTopic}>{item.topic}</h2>
+              <p className={styles.slideDesc}>{item.description}</p>
+              <div className={styles.slideActions}>
+                <button className={styles.btnPrimary}>ZAREZERWUJ</button>
+                <button className={styles.btnOutline}>GALERIA</button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="slider-controls">
-        <div className="thumbnails-container">
+      <div className={styles.sliderControls}>
+        <div className={styles.thumbnailsContainer}>
           {items.map((item, index) => (
             <div
               key={`thumb-${item.id}`}
-              className={`thumb-item ${index === activeIndex ? 'active-thumb' : ''}`}
+              className={`${styles.thumbItem} ${index === activeIndex ? styles.activeThumb : ''}`}
               onClick={() => changeSlide(index)}
             >
               <img src={item.image} alt="" />
-              {index === activeIndex && <div className="thumb-progress" />}
+              {index === activeIndex && <div className={styles.thumbProgress} />}
             </div>
           ))}
         </div>
 
-        <div className="bottom-nav">
-          <div className="pagination-dots">
+        <div className={styles.bottomNav}>
+          <div className={styles.paginationDots}>
             {items.map((_, index) => (
-              <span key={index} className={`dot ${index === activeIndex ? 'active-dot' : ''}`} />
+              <span 
+                key={index} 
+                className={`${styles.dot} ${index === activeIndex ? styles.activeDot : ''}`} 
+              />
             ))}
           </div>
-          <div className="arrows">
-            <button onClick={handlePrev} className="arrow">←</button>
-            <button onClick={handleNext} className="arrow">→</button>
+          <div className={styles.arrows}>
+            <button onClick={handlePrev} className={styles.arrow}>←</button>
+            <button onClick={handleNext} className={styles.arrow}>→</button>
           </div>
         </div>
       </div>
