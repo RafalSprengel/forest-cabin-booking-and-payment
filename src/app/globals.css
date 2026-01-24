@@ -21,6 +21,10 @@ html {
     --section-padding: 60px 20px;
     --border-radius: 8px;
     --transition: 0.3s ease-in-out;
+
+    /* Sekcje */
+    --section-bg-light: #ffffff;
+    --section-bg-dark: #e6e6e0;
 }
 
 /* Podstawowy reset dla Mobile First */

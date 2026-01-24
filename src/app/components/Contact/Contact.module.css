@@ -1,7 +1,8 @@
-.contactSection {
+.section {
   padding: var(--section-padding);
-  background-color: var(--primary-color);
   color: var(--text-light);
+  background-color: var(--section-bg-dark);
+
 }
 
 .mainContainer {
@@ -16,7 +17,7 @@
 
 .flexWrapper {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   gap: 40px;
   width: 100%;
 }
@@ -38,7 +39,7 @@
 
 @media (min-width: 768px) {
   .flexWrapper {
-    flex-direction: row; 
+    flex-direction: row;
     align-items: flex-start;
   }
 }

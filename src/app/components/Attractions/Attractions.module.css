@@ -1,6 +1,6 @@
 .section {
     padding: 60px 20px;
-    background-color: #f9fbf9;
+    background-color: var(--section-bg-light);
 }
 
 .container {

@@ -18,7 +18,7 @@ export default function Services() {
     ];
 
     return (
-        <section id="services" className={styles.container}>
+        <section id="services" className={styles.section}>
             <header className={styles.header}>
                 <h2>Nasza Oferta</h2>
                 <p>Dwa przytulne domki o powierzchni 35 m² każdy</p>

@@ -1,6 +1,6 @@
 .section {
     padding: 60px 20px;
-    background-color: #ffffff;
+    background-color: var(--section-bg-light);
     line-height: 1.6;
     color: #333;
 }

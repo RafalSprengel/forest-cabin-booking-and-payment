@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import TopBar from '@components/Navbar/TopBar';
-import Navbar from '@components/Navbar/Navbar';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -21,10 +21,10 @@ export default function RootLayout({
 		<html lang="pl">
 			<body>
 				<header>
-					<TopBar />
-					<Navbar />
+					<Header />
 				</header>
 				{children}
+				<Footer />
 			</body>
 		</html>
 	);
