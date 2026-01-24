@@ -3,8 +3,8 @@ html {
 }
 :root {
     /* Kolory główne - inspirowane naturą i Twoimi notatkami */
-    --primary-color: #0a3324;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
-    --accent-color: #c3a846;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
+    --primary-color: #262a10;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
+    --accent-color: #d4af26;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
     --secondary-color: #f4f1ea;  /* Jasny beż/piaskowy (tło sekcji, kolor drewna) */
     
     /* Tekst i tło */
@@ -13,7 +13,7 @@ html {
     --bg-white: #ffffff;
     
     /* Statusy i akcje */
-    --action-color: #d4a373;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
+    --action-color: #c3a846;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
     --error-color: #c0392b;
 
     /* Typografia i odstępy */
