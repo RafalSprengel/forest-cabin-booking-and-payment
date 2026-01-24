@@ -39,8 +39,8 @@ export default function Navbar() {
     }, [isMenuOpen]);
 
     return (
-        <nav className={styles.navbar}>
-            <div className={styles.container}>
+        <nav className={styles.container}>
+            <div className={styles.inner}>
                 <Link className={styles.logoWrapper} href="/">
                     <Image
                         src="/assets/logo.webp" alt="logo"

@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src
+- Only files matching these patterns are included: src/app
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -305,26 +305,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
-</file>
-
-<file path="src/app/components/Header/Header.module.css">
-
-</file>
-
-<file path="src/app/components/Header/Header.tsx">
-import TopBar from '@components/Navbar/TopBar';
-import Navbar from '@components/Navbar/Navbar';
-
-export default function Header() {
-    return (
-        <header>
-            <TopBar />
-            <Navbar />
-        </header>
-
-    )
-
 }
 </file>
 
@@ -721,45 +701,15 @@ export default function Hero() {
 }
 </file>
 
-<file path="src/app/components/Navbar/HamburgerButton.tsx">
-import React from 'react';
-import styles from './HamburgerButton.module.css';
-
-interface HamburgerButtonProps {
-  isOpen: boolean;
-  onClick: () => void;
-  className?: string;
-}
-
-const HamburgerButton: React.FC<HamburgerButtonProps> = ({ isOpen, onClick, className }) => {
-  const handleOnclick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    onClick();
-  }
-  return (
-    <button
-      className={`${styles.hamburger} ${isOpen ? styles.isOpen : ''} ${className}`}
-      onClick={handleOnclick}
-      aria-label="Toggle menu"
-    >
-      <div className={styles.bar}></div>
-      <div className={styles.bar}></div>
-      <div className={styles.bar}></div>
-    </button>
-  );
-};
-
-export default HamburgerButton;
-</file>
-
 <file path="src/app/components/Navbar/TopBar.module.css">
-.topBar {
+.container {
+    flex:1;
     background-color: var(--primary-color);
     padding: 8px 0;
     width: 100%;
 }
 
-.container {
+.inner {
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -810,8 +760,8 @@ import styles from './TopBar.module.css';
 
 export default function TopBar() {
     return (
-        <div className={styles.topBar}>
-            <div className={styles.container}>
+        <div className={styles.container}>
+            <div className={styles.inner}>
                 <div className={styles.contactInfo}>
                     <a href="tel:+48668388570">+48 668 388 570</a>
                     <a href="mailto:kontakt@wilczechatki.pl">kontakt@wilczechatki.pl</a>
@@ -1085,6 +1035,52 @@ export default function Contact() {
 }
 </file>
 
+<file path="src/app/components/Header/Header.module.css">
+.container {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    z-index: 999;
+    width: 100%
+}
+
+.scrolled {}
+</file>
+
+<file path="src/app/components/Header/Header.tsx">
+'use client'
+import { useState, useEffect, use } from 'react';
+import TopBar from '@components/Navbar/TopBar';
+import Navbar from '@components/Navbar/Navbar';
+import styles from './Header.module.css';
+
+export default function Header() {
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const scrollY = () => {
+            if (window.scrollY > 0) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        }
+        window.addEventListener('scroll', scrollY);
+        return ()=> window.removeEventListener('scroll', scrollY);
+    }, [])
+
+    return (
+        <header className={styles.container + (isScrolled ? ' ' + styles.scrolled : '')}>
+            <TopBar />
+            <Navbar />
+        </header>
+
+    )
+
+}
+</file>
+
 <file path="src/app/components/Navbar/HamburgerButton.module.css">
 .hamburger {
   background: none;
@@ -1125,6 +1121,43 @@ export default function Contact() {
 .isOpen .bar:nth-child(3) {
   transform: rotate(-45deg);
 }
+</file>
+
+<file path="src/app/components/Navbar/HamburgerButton.tsx">
+import React, { forwardRef } from 'react';
+import styles from './HamburgerButton.module.css';
+
+interface HamburgerButtonProps {
+  isOpen: boolean;
+  onClick: () => void;
+  className?: string;
+}
+
+const HamburgerButton = forwardRef<HTMLButtonElement, HamburgerButtonProps>(
+  ({ isOpen, onClick, className }, ref) => {
+    const handleOnclick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onClick();
+    };
+
+    return (
+      <button
+        className={`${styles.hamburger} ${isOpen ? styles.isOpen : ''} ${className}`}
+        onClick={handleOnclick}
+        aria-label="Toggle menu"
+        ref={ref}
+      >
+        <div className={styles.bar}></div>
+        <div className={styles.bar}></div>
+        <div className={styles.bar}></div>
+      </button>
+    );
+  }
+);
+
+HamburgerButton.displayName = 'HamburgerButton';
+
+export default HamburgerButton;
 </file>
 
 <file path="src/app/components/Services/Services.tsx">
@@ -1215,9 +1248,7 @@ export default function RootLayout({
 	return (
 		<html lang="pl">
 			<body>
-				<header>
-					<Header />
-				</header>
+				<Header />
 				{children}
 				<Footer />
 			</body>
@@ -1316,54 +1347,6 @@ export default function Attractions() {
 }
 </file>
 
-<file path="src/app/components/Contact/Contact.module.css">
-.section {
-  padding: var(--section-padding);
-  color: var(--text-main);
-  background-color: var(--section-bg-dark);
-
-}
-
-.mainContainer {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.title {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.flexWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  width: 100%;
-}
-
-.infoColumn {
-  flex: 1;
-  text-align: left;
-}
-
-.formColumn {
-  flex: 1;
-  width: 100%;
-}
-
-.payment h3 {
-  color: var(--accent-color);
-  margin: 20px 0 10px;
-}
-
-@media (min-width: 768px) {
-  .flexWrapper {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-}
-</file>
-
 <file path="src/app/components/Services/Services.module.css">
 .section {
     padding: var(--section-padding);
@@ -1422,6 +1405,54 @@ export default function Attractions() {
     .grid {
         grid-template-columns: 1fr 1fr;
     }
+}
+</file>
+
+<file path="src/app/components/Contact/Contact.module.css">
+.section {
+  padding: var(--section-padding);
+  color: var(--text-main);
+  background-color: var(--section-bg-dark);
+
+}
+
+.mainContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.flexWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.infoColumn {
+  flex: 1;
+  text-align: left;
+}
+
+.formColumn {
+  flex: 1;
+  width: 100%;
+}
+
+.payment h3 {
+  color: var(--accent-color);
+  margin: 20px 0 10px;
+}
+
+@media (min-width: 768px) {
+  .flexWrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
 </file>
 
@@ -1725,18 +1756,64 @@ export default function HeroSlider() {
 }
 </file>
 
-<file path="src/app/components/Navbar/Navbar.module.css">
-.navbar {
+<file path="src/app/globals.css">
+html {
+  scroll-behavior: smooth;
+}
+:root {
+    /* Kolory główne - inspirowane naturą i Twoimi notatkami */
+    --primary-color: #262a10;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
+    --accent-color: #d4af26;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
+    --secondary-color: #f4f1ea;  /* Jasny beż/piaskowy (tło sekcji, kolor drewna) */
+    
+    /* Tekst i tło */
+    --text-main: #142a1d;
+    --text-light: #ffffff;
+    --bg-white: #ffffff;
+    
+    /* Statusy i akcje */
+    --action-color: #c3a846;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
+    --error-color: #c0392b;
+
+    /* Typografia i odstępy */
+    --font-main: 'Inter', sans-serif;
+    --section-padding: 60px 20px;
+    --border-radius: 8px;
+    --transition: 0.3s ease-in-out;
+
+    /* Sekcje */
+    --section-bg-light: #ffffff;
+    --section-bg-dark: #e6e6e0;
+}
+
+/* Podstawowy reset dla Mobile First */
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-main);
     background-color: var(--bg-white);
-    height: 80px;
+    line-height: 1.6;
+}
+</file>
+
+<file path="src/app/components/Navbar/Navbar.module.css">
+.container {
+    position: relative;
+    flex: 1;
     display: flex;
     align-items: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     width: 100%;
-    position: relative;
+
+    background-color: var(--bg-white);
 }
 
-.container {
+.inner {
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -1919,13 +1996,19 @@ import HamburgerButton from './HamburgerButton';
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const hamburgerRef = useRef<HTMLButtonElement>(null);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-        if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        if (
+            mobileMenuRef.current &&
+            !mobileMenuRef.current.contains(event.target as Node) &&
+            hamburgerRef.current &&
+            !hamburgerRef.current.contains(event.target as Node)
+        ) {
             setIsMenuOpen(false);
         }
     };
@@ -1943,8 +2026,8 @@ export default function Navbar() {
     }, [isMenuOpen]);
 
     return (
-        <nav className={styles.navbar}>
-            <div className={styles.container}>
+        <nav className={styles.container}>
+            <div className={styles.inner}>
                 <Link className={styles.logoWrapper} href="/">
                     <Image
                         src="/assets/logo.webp" alt="logo"
@@ -1955,6 +2038,7 @@ export default function Navbar() {
                 </Link>
                 <div className={styles.hamburgerContainer}>
                     <HamburgerButton
+                        ref={hamburgerRef}
                         isOpen={isMenuOpen}
                         onClick={toggleMenu}
                         className={styles.hamburger} />
@@ -1973,51 +2057,6 @@ export default function Navbar() {
             </div>
         </nav>
     );
-}
-</file>
-
-<file path="src/app/globals.css">
-html {
-  scroll-behavior: smooth;
-}
-:root {
-    /* Kolory główne - inspirowane naturą i Twoimi notatkami */
-    --primary-color: #262a10;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
-    --accent-color: #d4af26;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
-    --secondary-color: #f4f1ea;  /* Jasny beż/piaskowy (tło sekcji, kolor drewna) */
-    
-    /* Tekst i tło */
-    --text-main: #142a1d;
-    --text-light: #ffffff;
-    --bg-white: #ffffff;
-    
-    /* Statusy i akcje */
-    --action-color: #c3a846;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
-    --error-color: #c0392b;
-
-    /* Typografia i odstępy */
-    --font-main: 'Inter', sans-serif;
-    --section-padding: 60px 20px;
-    --border-radius: 8px;
-    --transition: 0.3s ease-in-out;
-
-    /* Sekcje */
-    --section-bg-light: #ffffff;
-    --section-bg-dark: #e6e6e0;
-}
-
-/* Podstawowy reset dla Mobile First */
-* {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-}
-
-body {
-    font-family: var(--font-main);
-    color: var(--text-main);
-    background-color: var(--bg-white);
-    line-height: 1.6;
 }
 </file>
 
