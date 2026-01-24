@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/app
+- Only files matching these patterns are included: src
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -49,6 +49,8 @@ src/app/components/Contact/Contact.module.css
 src/app/components/Contact/Contact.tsx
 src/app/components/Contact/ContactForm.module.css
 src/app/components/Contact/ContactForm.tsx
+src/app/components/Footer/Footer.module.css
+src/app/components/Footer/Footer.tsx
 src/app/components/Header/Header.module.css
 src/app/components/Header/Header.tsx
 src/app/components/Hero/Hero.module.css
@@ -77,61 +79,6 @@ src/app/page.tsx
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/app/components/Header/Header.module.css">
-
-</file>
-
-<file path="src/app/components/Header/Header.tsx">
-import TopBar from '@components/Navbar/TopBar';
-import Navbar from '@components/Navbar/Navbar';
-
-export default function Header() {
-    return (
-        <header>
-            <TopBar />
-            <Navbar />
-        </header>
-
-    )
-
-}
-</file>
-
-<file path="src/app/components/Contact/Contact.tsx">
-import styles from './Contact.module.css';
-import ContactForm from './ContactForm';
-
-export default function Contact() {
-  return (
-    <section id="contact" className={styles.contactSection}>
-      <div className={styles.mainContainer}>
-        <h2 className={styles.title}>Kontakt</h2>
-        
-        <div className={styles.flexWrapper}>
-          <div className={styles.infoColumn}>
-            <div className={styles.details}>
-              <p><strong>Wilcze Chatki</strong></p>
-              <p>Szumleś Królewski, Kaszuby</p>
-              <p>Tel: +48 668 388 570</p>
-              <p>Email: kontakt@wilczechatki.pl</p>
-            </div>
-            <div className={styles.payment}>
-              <h3>Dane do przelewu:</h3>
-              <p>Numer konta (PKO BP):</p>
-              <p>20 1020 5226 0000 6702 0486 0336</p>
-            </div>
-          </div>
-
-          <div className={styles.formColumn}>
-            <ContactForm />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-</file>
 
 <file path="src/app/components/Contact/ContactForm.module.css">
 .formContainer {
@@ -237,6 +184,147 @@ export default function ContactForm() {
       </form>
     </div>
   );
+}
+</file>
+
+<file path="src/app/components/Footer/Footer.module.css">
+.footer {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 40px 0 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.info h3 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: var(--accent-color);
+}
+
+.info p {
+  margin: 4px 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.contact {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.social .facebook {
+  display: inline-block;
+  font-size: 1.8rem;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.social .facebook:hover {
+  color: #1877f2;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 767px) {
+  .social {
+    text-align: center;
+  }
+}
+</file>
+
+<file path="src/app/components/Footer/Footer.tsx">
+import styles from './Footer.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPhone, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faFacebook } from '@fortawesome/free-brands-svg-icons';   
+
+export default function Footer() {
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.container}>
+        <div className={styles.info}>
+          <h3>Wilcze Chatki</h3>
+          <p>Szumleś Królewski, Kaszuby</p>
+          <div className={styles.contact}>
+            <p>
+              <FontAwesomeIcon icon={faPhone} /> +48 668 388 570
+            </p>
+            <p>
+              <FontAwesomeIcon icon={faEnvelope} /> kontakt@wilczechatki.pl
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.social}>
+          <a
+            href="https://facebook.com/profile.php?id=61584455637648"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            className={styles.facebook}
+          >
+            <FontAwesomeIcon icon={faFacebook} />
+          </a>
+        </div>
+      </div>
+
+      <div className={styles.copyright}>
+        &copy; {new Date().getFullYear()} Wilcze Chatki. Wszelkie prawa zastrzeżone.
+      </div>
+    </footer>
+  );
+}
+</file>
+
+<file path="src/app/components/Header/Header.module.css">
+
+</file>
+
+<file path="src/app/components/Header/Header.tsx">
+import TopBar from '@components/Navbar/TopBar';
+import Navbar from '@components/Navbar/Navbar';
+
+export default function Header() {
+    return (
+        <header>
+            <TopBar />
+            <Navbar />
+        </header>
+
+    )
+
 }
 </file>
 
@@ -644,10 +732,14 @@ interface HamburgerButtonProps {
 }
 
 const HamburgerButton: React.FC<HamburgerButtonProps> = ({ isOpen, onClick, className }) => {
+  const handleOnclick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onClick();
+  }
   return (
     <button
       className={`${styles.hamburger} ${isOpen ? styles.isOpen : ''} ${className}`}
-      onClick={onClick}
+      onClick={handleOnclick}
       aria-label="Toggle menu"
     >
       <div className={styles.bar}></div>
@@ -743,71 +835,6 @@ export default function TopBar() {
 }
 </file>
 
-<file path="src/app/components/Services/Services.tsx">
-import styles from './Services.module.css';
-
-interface PriceItem {
-    description: string;
-    amount: string;
-}
-
-export default function Services() {
-    const weekdayRates: PriceItem[] = [
-        { description: '2-3 osoby', amount: '300 zł' },
-        { description: '4-6 osób', amount: '400 zł' }
-    ];
-
-    const weekendRates: PriceItem[] = [
-        { description: '2-3 osoby', amount: '400 zł' },
-        { description: '4-5 osób', amount: '500 zł' },
-        { description: 'Dostawka', amount: '+100 zł' }
-    ];
-
-    return (
-        <section id="services" className={styles.container}>
-            <header className={styles.header}>
-                <h2>Nasza Oferta</h2>
-                <p>Dwa przytulne domki o powierzchni 35 m² każdy</p>
-            </header>
-
-            <div className={styles.grid}>
-                <div className={styles.card}>
-                    <h3>Cennik za dobę</h3>
-                    <div className={styles.priceGroup}>
-                        <h4>W tygodniu:</h4>
-                        {weekdayRates.map((rate, index) => (
-                            <div key={index} className={styles.priceRow}>
-                                <span>{rate.description}</span>
-                                <strong>{rate.amount}</strong>
-                            </div>
-                        ))}
-                    </div>
-                    <div className={styles.priceGroup}>
-                        <h4>Weekendy:</h4>
-                        {weekendRates.map((rate, index) => (
-                            <div key={index} className={styles.priceRow}>
-                                <span>{rate.description}</span>
-                                <strong>{rate.amount}</strong>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className={styles.card}>
-                    <h3>Udogodnienia</h3>
-                    <ul className={styles.features}>
-                        <li>Sauna 4-osobowa Infrared</li>
-                        <li>Jakuzzi ogrzewane drewnem (w cenie)</li>
-                        <li>Plac zabaw dla dzieci</li>
-                        <li>Pełne wyposażenie i klimatyzacja</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-    );
-}
-</file>
-
 <file path="src/app/gallery/page.module.css">
 .galleryContainer {
     display: flex;
@@ -828,38 +855,6 @@ export default function Gallery() {
         </div>
     );
 
-}
-</file>
-
-<file path="src/app/layout.tsx">
-import type { Metadata } from 'next';
-import './globals.css';
-import Header from './components/Header/Header';
-
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
-
-export const metadata: Metadata = {
-	title: 'Wilcze Chatki - Domki na Kaszubach',
-	description: 'Komfortowe domki z sauną i jakuzzi w Szumlesiu Królewskim',
-};
-
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode;
-}>) {
-	return (
-		<html lang="pl">
-			<body>
-				<header>
-					<Header />
-				</header>
-				{children}
-			</body>
-		</html>
-	);
 }
 </file>
 
@@ -1055,50 +1050,38 @@ export default function About() {
 }
 </file>
 
-<file path="src/app/components/Contact/Contact.module.css">
-.contactSection {
-  padding: var(--section-padding);
-  background-color: var(--primary-color);
-  color: var(--text-light);
-}
+<file path="src/app/components/Contact/Contact.tsx">
+import styles from './Contact.module.css';
+import ContactForm from './ContactForm';
 
-.mainContainer {
-  max-width: 1200px;
-  margin: 0 auto;
-}
+export default function Contact() {
+  return (
+    <section id="contact" className={styles.section}>
+      <div className={styles.mainContainer}>
+        <h2 className={styles.title}>Kontakt</h2>
+        
+        <div className={styles.flexWrapper}>
+          <div className={styles.infoColumn}>
+            <div className={styles.details}>
+              <p><strong>Wilcze Chatki</strong></p>
+              <p>Szumleś Królewski, Kaszuby</p>
+              <p>Tel: +48 668 388 570</p>
+              <p>Email: kontakt@wilczechatki.pl</p>
+            </div>
+            <div className={styles.payment}>
+              <h3>Dane do przelewu:</h3>
+              <p>Numer konta (PKO BP):</p>
+              <p>20 1020 5226 0000 6702 0486 0336</p>
+            </div>
+          </div>
 
-.title {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.flexWrapper {
-  display: flex;
-  flex-direction: column; 
-  gap: 40px;
-  width: 100%;
-}
-
-.infoColumn {
-  flex: 1;
-  text-align: left;
-}
-
-.formColumn {
-  flex: 1;
-  width: 100%;
-}
-
-.payment h3 {
-  color: var(--accent-color);
-  margin: 20px 0 10px;
-}
-
-@media (min-width: 768px) {
-  .flexWrapper {
-    flex-direction: row; 
-    align-items: flex-start;
-  }
+          <div className={styles.formColumn}>
+            <ContactForm />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 </file>
 
@@ -1144,63 +1127,102 @@ export default function About() {
 }
 </file>
 
-<file path="src/app/components/Services/Services.module.css">
-.container {
-    padding: var(--section-padding);
-    max-width: 1200px;
-    margin: 0 auto;
+<file path="src/app/components/Services/Services.tsx">
+import styles from './Services.module.css';
+
+interface PriceItem {
+    description: string;
+    amount: string;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 40px;
-}
+export default function Services() {
+    const weekdayRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '300 zł' },
+        { description: '4-6 osób', amount: '400 zł' }
+    ];
 
-.grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
-}
+    const weekendRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '400 zł' },
+        { description: '4-5 osób', amount: '500 zł' },
+        { description: 'Dostawka', amount: '+100 zł' }
+    ];
 
-.card {
-    background-color: var(--secondary-color);
-    padding: 30px;
-    border-radius: var(--border-radius);
-}
+    return (
+        <section id="services" className={styles.section}>
+            <header className={styles.header}>
+                <h2>Nasza Oferta</h2>
+                <p>Dwa przytulne domki o powierzchni 35 m² każdy</p>
+            </header>
 
-.priceGroup {
-    margin-top: 20px;
-}
+            <div className={styles.grid}>
+                <div className={styles.card}>
+                    <h3>Cennik za dobę</h3>
+                    <div className={styles.priceGroup}>
+                        <h4>W tygodniu:</h4>
+                        {weekdayRates.map((rate, index) => (
+                            <div key={index} className={styles.priceRow}>
+                                <span>{rate.description}</span>
+                                <strong>{rate.amount}</strong>
+                            </div>
+                        ))}
+                    </div>
+                    <div className={styles.priceGroup}>
+                        <h4>Weekendy:</h4>
+                        {weekendRates.map((rate, index) => (
+                            <div key={index} className={styles.priceRow}>
+                                <span>{rate.description}</span>
+                                <strong>{rate.amount}</strong>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-.priceRow {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+                <div className={styles.card}>
+                    <h3>Udogodnienia</h3>
+                    <ul className={styles.features}>
+                        <li>Sauna 4-osobowa Infrared</li>
+                        <li>Jakuzzi ogrzewane drewnem (w cenie)</li>
+                        <li>Plac zabaw dla dzieci</li>
+                        <li>Pełne wyposażenie i klimatyzacja</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    );
 }
+</file>
 
-.features {
-    margin-top: 20px;
-}
+<file path="src/app/layout.tsx">
+import type { Metadata } from 'next';
+import './globals.css';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
-.features li {
-    margin-bottom: 10px;
-    padding-left: 20px;
-    position: relative;
-    list-style: none;
-}
+import { config } from '@fortawesome/fontawesome-svg-core';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+config.autoAddCss = false;
 
-.features li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--accent-color);
-}
+export const metadata: Metadata = {
+	title: 'Wilcze Chatki - Domki na Kaszubach',
+	description: 'Komfortowe domki z sauną i jakuzzi w Szumlesiu Królewskim',
+};
 
-@media (min-width: 768px) {
-    .grid {
-        grid-template-columns: 1fr 1fr;
-    }
+export default function RootLayout({
+	children,
+}: Readonly<{
+	children: React.ReactNode;
+}>) {
+	return (
+		<html lang="pl">
+			<body>
+				<header>
+					<Header />
+				</header>
+				{children}
+				<Footer />
+			</body>
+		</html>
+	);
 }
 </file>
 
@@ -1294,10 +1316,119 @@ export default function Attractions() {
 }
 </file>
 
+<file path="src/app/components/Contact/Contact.module.css">
+.section {
+  padding: var(--section-padding);
+  color: var(--text-main);
+  background-color: var(--section-bg-dark);
+
+}
+
+.mainContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.flexWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.infoColumn {
+  flex: 1;
+  text-align: left;
+}
+
+.formColumn {
+  flex: 1;
+  width: 100%;
+}
+
+.payment h3 {
+  color: var(--accent-color);
+  margin: 20px 0 10px;
+}
+
+@media (min-width: 768px) {
+  .flexWrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+</file>
+
+<file path="src/app/components/Services/Services.module.css">
+.section {
+    padding: var(--section-padding);
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--section-bg-dark);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+.card {
+    background-color: var(--secondary-color);
+    padding: 30px;
+    border-radius: var(--border-radius);
+}
+
+.priceGroup {
+    margin-top: 20px;
+}
+
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.features {
+    margin-top: 20px;
+}
+
+.features li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+    list-style: none;
+}
+
+.features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+}
+
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</file>
+
 <file path="src/app/components/About/About.module.css">
 .section {
     padding: 60px 20px;
-    background-color: #ffffff;
+    background-color: var(--section-bg-light);
     line-height: 1.6;
     color: #333;
 }
@@ -1357,7 +1488,7 @@ export default function Attractions() {
 <file path="src/app/components/Attractions/Attractions.module.css">
 .section {
     padding: 60px 20px;
-    background-color: #f9fbf9;
+    background-color: var(--section-bg-light);
 }
 
 .container {
@@ -1594,47 +1725,6 @@ export default function HeroSlider() {
 }
 </file>
 
-<file path="src/app/globals.css">
-html {
-  scroll-behavior: smooth;
-}
-:root {
-    /* Kolory główne - inspirowane naturą i Twoimi notatkami */
-    --primary-color: #262a10;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
-    --accent-color: #d4af26;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
-    --secondary-color: #f4f1ea;  /* Jasny beż/piaskowy (tło sekcji, kolor drewna) */
-    
-    /* Tekst i tło */
-    --text-main: #142a1d;
-    --text-light: #ffffff;
-    --bg-white: #ffffff;
-    
-    /* Statusy i akcje */
-    --action-color: #c3a846;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
-    --error-color: #c0392b;
-
-    /* Typografia i odstępy */
-    --font-main: 'Inter', sans-serif;
-    --section-padding: 60px 20px;
-    --border-radius: 8px;
-    --transition: 0.3s ease-in-out;
-}
-
-/* Podstawowy reset dla Mobile First */
-* {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-}
-
-body {
-    font-family: var(--font-main);
-    color: var(--text-main);
-    background-color: var(--bg-white);
-    line-height: 1.6;
-}
-</file>
-
 <file path="src/app/components/Navbar/Navbar.module.css">
 .navbar {
     background-color: var(--bg-white);
@@ -1842,6 +1932,7 @@ export default function Navbar() {
     const closeMobileMenu = () => setIsMenuOpen(false)
 
     useEffect(() => {
+        console.log('isMenuOpen:', isMenuOpen);
         if (isMenuOpen) {
             window.addEventListener('mousedown', handleClickOutside);
         }
@@ -1870,20 +1961,63 @@ export default function Navbar() {
                 </div>
                 <div className={styles.mobileMenuOuter + ' ' + (isMenuOpen ? styles.showMobileMenu : '')}>
                     <div className={styles.mobileMenuInner} ref={mobileMenuRef}>
-                        <ul className={`${styles.navLinks} ${isMenuOpen ? styles.showMenu : ''}`}>
-                            <ul className={`${styles.navLinks} ${isMenuOpen ? styles.showMenu : ''}`}>
-                                <li onClick={closeMobileMenu}><Link href="/">STRONA GŁÓWNA</Link></li>
-                                <li onClick={closeMobileMenu}><Link href="/#services">OFERTA</Link></li>
-                                <li onClick={closeMobileMenu}><Link href="/gallery">GALERIA</Link></li>
-                                <li onClick={closeMobileMenu}><Link href="/#attractions">KASZUBY</Link></li>
-                                <li onClick={closeMobileMenu}><Link href="/#contact">KONTAKT</Link></li>
-                            </ul>
+                        <ul className={styles.navLinks}>
+                            <li onClick={closeMobileMenu}><Link href="/">STRONA GŁÓWNA</Link></li>
+                            <li onClick={closeMobileMenu}><Link href="/#services">OFERTA</Link></li>
+                            <li onClick={closeMobileMenu}><Link href="/gallery">GALERIA</Link></li>
+                            <li onClick={closeMobileMenu}><Link href="/#attractions">KASZUBY</Link></li>
+                            <li onClick={closeMobileMenu}><Link href="/#contact">KONTAKT</Link></li>
                         </ul>
                     </div>
                 </div>
             </div>
         </nav>
     );
+}
+</file>
+
+<file path="src/app/globals.css">
+html {
+  scroll-behavior: smooth;
+}
+:root {
+    /* Kolory główne - inspirowane naturą i Twoimi notatkami */
+    --primary-color: #262a10;    /* Ciemny granat/antracyt (na TopBar i nagłówki) */
+    --accent-color: #d4af26;     /* Oliwkowa zieleń (nawiązanie do lasu/Kaszub) */
+    --secondary-color: #f4f1ea;  /* Jasny beż/piaskowy (tło sekcji, kolor drewna) */
+    
+    /* Tekst i tło */
+    --text-main: #142a1d;
+    --text-light: #ffffff;
+    --bg-white: #ffffff;
+    
+    /* Statusy i akcje */
+    --action-color: #c3a846;     /* Ciepły odcień drewna / złoty (przyciski rezerwacji) */
+    --error-color: #c0392b;
+
+    /* Typografia i odstępy */
+    --font-main: 'Inter', sans-serif;
+    --section-padding: 60px 20px;
+    --border-radius: 8px;
+    --transition: 0.3s ease-in-out;
+
+    /* Sekcje */
+    --section-bg-light: #ffffff;
+    --section-bg-dark: #e6e6e0;
+}
+
+/* Podstawowy reset dla Mobile First */
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    color: var(--text-main);
+    background-color: var(--bg-white);
+    line-height: 1.6;
 }
 </file>
 
