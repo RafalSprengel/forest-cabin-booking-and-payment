@@ -1,25 +1,95 @@
 .section {
-    padding: var(--section-padding);
-    max-width: 1200px;
+    padding: 80px 0;
+    background-color: #f9f9f9;
+}
+
+.container {
+  max-width: 1100px;
     margin: 0 auto;
-    background-color: var(--section-bg-dark);
+    padding: 0 20px;
 }
 
 .header {
     text-align: center;
+    margin-bottom: 50px;
+}
+
+.header h2 {
+   font-family: var(--font-heading);
+    font-size: 2.8rem;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+}
+
+.introText {
+    max-width: 800px;
+    margin: 0 auto 40px;
+    line-height: 1.8;
+    color: #555;
+}
+
+.introText p {
+    font-family: var(--font-main);
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.8;
+}
+
+.equipment {
+    text-align: left;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     margin-bottom: 40px;
+}
+
+.equipment h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.equipmentList {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.equipmentList li {
+    position: relative;
+    padding-left: 25px;
+    color: #666;
+}
+
+.equipmentList li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4a7c59;
+    font-weight: bold;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
 }
 
 .card {
-    background-color: var(--secondary-color);
-    padding: 30px;
-    border-radius: var(--border-radius);
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 2px solid #e0e7e1;
+    padding-bottom: 10px;
 }
 
 .priceGroup {
@@ -29,30 +99,23 @@
 .priceRow {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .features {
-    margin-top: 20px;
+    list-style: none;
+    padding: 0;
 }
 
 .features li {
-    margin-bottom: 10px;
-    padding-left: 20px;
-    position: relative;
-    list-style: none;
-}
-
-.features li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--accent-color);
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    color: #555;
 }
 
 @media (min-width: 768px) {
-    .grid {
+    .equipmentList {
         grid-template-columns: 1fr 1fr;
     }
 }

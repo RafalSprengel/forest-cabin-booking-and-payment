@@ -12,10 +12,41 @@ interface SliderItem {
 }
 
 const items: SliderItem[] = [
-  { id: 1, title: 'WILCZE CHATKI', topic: 'KASZUBY', description: 'Odkryj magię Szumlesia Królewskiego w luksusowych domkach z sauną.', image: '/images/img1.jpeg' },
-  { id: 2, title: 'REJSY I RELAKS', topic: 'NATURA', description: 'Ciesz się kojącym szumem drzew i prywatnym jakuzzi pod gwiazdami.', image: '/images/img2.jpeg' },
-  { id: 3, title: 'PRZYGODA', topic: 'AKTYWNIE', description: 'Najlepsze szlaki rowerowe i jeziora Kaszub na wyciągnięcie ręki.', image: '/images/img3.jpeg' },
-  { id: 4, title: 'CIEPŁO DOMU', topic: 'KOMINEK', description: 'Poczuj wyjątkowy klimat wieczorów przy trzaskającym ogniu.', image: '/images/img4.jpeg' },
+  { 
+    id: 1, 
+    title: 'WILCZE CHATKI', 
+    topic: 'KASZUBSKA CISZA', 
+    description: 'Dwa przytulne domki w Szumlesiu Królewskim, idealne na odpoczynek od miejskiego zgiełku.', 
+    image: '/images/img1.jpeg' 
+  },
+  { 
+    id: 2, 
+    title: 'STREFA RELAKSU', 
+    topic: 'SAUNA I JACUZZI', 
+    description: 'Całoroczna strefa relaksu w zamkniętej altanie z sauną infrared i jacuzzi ogrzewanym drewnem.', 
+    image: '/images/img2.jpeg' 
+  },
+  { 
+    id: 3, 
+    title: 'NATURA NA WYCIĄGNIĘCIE RĘKI', 
+    topic: 'SERCE KASZUB', 
+    description: 'Bliskość Kaszubskiego Parku Krajobrazowego, Wieżycy i malowniczych jezior.', 
+    image: '/images/img3.jpeg' 
+  },
+  { 
+    id: 4, 
+    title: 'RODZINNY WYPOCZYNEK', 
+    topic: 'PLAC ZABAW I GRILL', 
+    description: 'Prywatny taras z grillem oraz plac zabaw z trampoliną i huśtawkami dla najmłodszych.', 
+    image: '/images/img4.jpeg' 
+  },
+  { 
+    id: 5, 
+    title: 'KOMFORTOWE DOMKI', 
+    topic: 'PEŁNE WYPOSAŻENIE', 
+    description: 'Klimatyzowane wnętrza, aneks kuchenny i przytulne sypialnie na poddaszu dla 6-8 osób.', 
+    image: '/images/img5.jpeg' 
+  },
 ];
 
 export default function HeroSlider() {
@@ -47,11 +78,11 @@ export default function HeroSlider() {
 
   const changeSlide = useCallback((newIndex: number) => {
     if (isAnimating || newIndex === activeIndex) return;
-    
+
     setIsAnimating(true);
     setActiveIndex(newIndex);
     startTimer();
-    
+
     setTimeout(() => setIsAnimating(false), 500);
   }, [isAnimating, activeIndex, startTimer]);
 
@@ -73,7 +104,7 @@ export default function HeroSlider() {
           >
             <div className={styles.overlay}></div>
             <img src={item.image} alt={item.title} className={styles.slideImg} />
-            
+
             <div className={styles.slideContent}>
               <span className={styles.slideSubtitle}>SZUMLEŚ KRÓLEWSKI</span>
               <h1 className={styles.slideTitle}>{item.title}</h1>
@@ -105,9 +136,9 @@ export default function HeroSlider() {
         <div className={styles.bottomNav}>
           <div className={styles.paginationDots}>
             {items.map((_, index) => (
-              <span 
-                key={index} 
-                className={`${styles.dot} ${index === activeIndex ? styles.activeDot : ''}`} 
+              <span
+                key={index}
+                className={`${styles.dot} ${index === activeIndex ? styles.activeDot : ''}`}
               />
             ))}
           </div>
