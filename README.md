@@ -1,4 +1,5 @@
-# Wilcze Chatki – Accommodation Website
+#![Uploading Zrzut ekranu 2026-01-31 231622.png…]()
+ Wilcze Chatki – Accommodation Website
 
 A web application for **Wilcze Chatki**, a rental facility located in Szumleś Królewski, Kaszuby.
 
