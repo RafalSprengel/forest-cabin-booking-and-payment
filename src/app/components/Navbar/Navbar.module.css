@@ -27,7 +27,7 @@
 .logoWrapper {
     display: inline-block;
     position: relative;
-    height: 90%;
+    height: 80%;
     width: 75px;
     overflow: hidden;
     transition: height 0.3s ease, width 0.3s ease;

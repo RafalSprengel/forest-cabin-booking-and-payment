@@ -7,7 +7,19 @@
     --bg-white: #ffffff;
     --action-color: #c3a846;
     --error-color: #c0392b;
+    --section-bg-light: #f9f9f9;
+    --section-bg-dark: #eeeeee;
     --transition: 0.3s ease-in-out;
+}
+
+section:nth-child(odd) {
+    background-color: var(--section-bg-dark);
+}
+section:nth-child(even) {
+    background-color: var(--section-bg-light);
+}
+section {
+    padding: 60px 20px;
 }
 
 body,
