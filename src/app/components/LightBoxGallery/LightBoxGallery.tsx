@@ -18,10 +18,13 @@ export default function LightBoxGallery({ images }: LightBoxGalleryProps) {
   const lightboxRef = useRef<any>(null);
 
   useEffect(() => {
+    let lightboxInstance: any = null;
+
     const initLightbox = async () => {
       const GLightboxModule = (await import('glightbox')).default;
-      
-      lightboxRef.current = GLightboxModule({
+
+      // Inicjalizujemy lightbox
+      lightboxInstance = GLightboxModule({
         touchNavigation: true,
         loop: true,
         selector: '.glightbox',
@@ -29,62 +32,39 @@ export default function LightBoxGallery({ images }: LightBoxGalleryProps) {
         closeEffect: 'fade',
       });
 
-      lightboxRef.current.on('open', () => {
-        const container = document.querySelector('.gcontainer');
-        
-        if (container) {
-          container.addEventListener('click', (e: Event) => {
-            const target = e.target as HTMLElement;
-            
-            if (
-              target.classList.contains('gslide-media') || 
-              target.classList.contains('gslide-inner-content') ||
-              target.classList.contains('gcontainer') ||
-              target.closest('.gslide-description')
-            ) {
-              return;
-            }
-
-            const isImage = target.tagName.toLowerCase() === 'img';
-            
-            if (!isImage) {
-              lightboxRef.current.close();
-            }
-          });
-        }
-      });
+      lightboxRef.current = lightboxInstance;
     };
 
     initLightbox();
 
     return () => {
-      if (lightboxRef.current) {
-        lightboxRef.current.destroy();
+      if (lightboxInstance) {
+        lightboxInstance.destroy();
       }
     };
   }, [images]);
 
   return (
-    <div className={styles.container}>
-      {images.map((img, index) => (
-        <a
-          href={img.full}
-          className={`glightbox ${styles.imageLink}`}
-          data-gallery="my-gallery"
-          data-aos="fade-up"
-          data-aos-delay={index * 100}
-          key={index}
-        >
-          <img
-            src={img.thumb}
-            alt={img.description || `Gallery item ${index + 1}`}
-            className={styles.image}
-          />
-          <div className={styles.caption}>
-            <span>{img.description}</span>
-          </div>
-        </a>
-      ))}
+    <div className={styles.galleryWrapper}>
+      <div className={styles.gallery}>
+        {images.map((img, index) => (
+          <a
+            href={img.full}
+            className={`glightbox ${styles.imageLink}`}
+            data-gallery="my-gallery"
+            key={`${img.full}-${index}`}
+          >
+            <img
+              src={img.thumb}
+              alt={img.description || `Gallery item ${index + 1}`}
+              className={styles.image}
+            />
+            <div className={styles.caption}>
+              <span>{img.description}</span>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }

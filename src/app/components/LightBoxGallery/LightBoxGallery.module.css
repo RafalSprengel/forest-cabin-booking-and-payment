@@ -1,31 +1,54 @@
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow: hidden;
+.galleryWrapper {
     width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 50px 0;
+    background-color: transparent;
+    padding-top: 50px;
+    margin-bottom: 50px
+}
+
+.gallery {
+    --size: 100px;
+    display: grid;
+    grid-template-columns: repeat(6, var(--size));
+    grid-auto-rows: var(--size);
+    gap: 10px;
+    place-items: start center;
+}
+
+.gallery:has(.imageLink:hover) .imageLink:not(:hover) {
+    filter: brightness(0.5) contrast(0.5);
 }
 
 .imageLink {
-    cursor: pointer;
-    margin: 0px;
-    width: 45%;
-    margin: 2px;
+    grid-column: auto / span 2;
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
     position: relative;
-    
+    z-index: 0;
+    transition: clip-path 0.25s, filter 0.45s, z-index 0.25s;
+}
+
+.imageLink:nth-child(5n - 1) {
+    grid-column: 2 / span 2;
 }
 
 .image {
-    transition: transform 0.3s ease-in;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 20% 80%;
-    aspect-ratio: 1 / 1;
+    display: block;
+    clip-path: path("M90,10 C100,0 100,0 110,10 190,90 190,90 190,90 200,100 200,100 190,110 190,110 110,190 110,190 100,200 100,200 90,190 90,190 10,110 10,110 0,100 0,100 10,90Z");
 }
 
-.image:hover {
-    transform: scale(1.05);
+.imageLink:hover {
+    z-index: 10;
+}
+
+.imageLink:hover .image {
+    clip-path: path("M0,0 C0,0 200,0 200,0 200,0 200,100 200,100 200,100 200,200 200,200 200,200 100,200 100,200 100,200 100,200 0,200 0,200 0,100 0,100 0,100 0,100 0,100Z");
+    transition: clip-path 0.25s, filter 0.25s;
 }
 
 .caption {
@@ -42,24 +65,46 @@
     width: 100%;
     height: 15%;
     color: white;
-    font-size: 16px;;
+    font-size: 16px;
+
+}
+
+@media (max-width: 762px) {
+    .galleryWrapper {
+        margin-bottom: 0;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: auto;
+        gap: 15px;
+        padding: 0 20px;
+        width: 100%;
+    }
+
+    .imageLink,
+    .imageLink:nth-child(5n - 1),
+    .imageLink:nth-child(3n - 1) {
+        grid-column: span 1 !important;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .image {
+        clip-path: none !important;
+        border-radius: 2px;
+    }
+
+    .imageLink:hover .image {
+        clip-path: none !important;
+        transform: scale(1.02);
+    }
+
 }
 
 @media (min-width: 762px) {
-    .imageLink {
-        width: calc(50% - 20px);
-        height: 300px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .imageLink {
-        width: calc(33.33% - 20px);
-    }
-}
-
-@media (min-width: 1400px) {
-    .imageLink {
-        width: calc(25% - 20px);
+    .caption {
+        display: none;
     }
 }

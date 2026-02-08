@@ -1,6 +1,7 @@
 import HeroSlider from "@components/Hero/HeroSlider";
 import About from "@components/About/About";
 import Services from "@components/Services/Services";
+import GallerySection from "@components/GallerySection/GalerrySection";
 import Attractions from "@components/Attractions/Attractions";
 import Contact from "@components/Contact/Contact";
 import styles from "./page.module.css";
@@ -11,6 +12,7 @@ export default function Home() {
             <HeroSlider />
             <About />
             <Services />
+            <GallerySection />
             <Attractions />
             <Contact />
         </main>

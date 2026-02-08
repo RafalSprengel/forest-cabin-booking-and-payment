@@ -49,38 +49,113 @@ src/app/components/LightBoxGallery/LightBoxGallery.tsx
 This section contains the contents of the repository's files.
 
 <file path="src/app/components/LightBoxGallery/LightBoxGallery.module.css">
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow: hidden;
+.galleryWrapper {
     width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 50px 0;
+    background-color: transparent;
+    padding-top: 50px;
+    margin-bottom: 50px
+}
+
+.gallery {
+    --size: 100px;
+    display: grid;
+    grid-template-columns: repeat(6, var(--size));
+    grid-auto-rows: var(--size);
+    gap: 10px;
+    place-items: start center;
+}
+
+.gallery:has(.imageLink:hover) .imageLink:not(:hover) {
+    filter: brightness(0.5) contrast(0.5);
 }
 
 .imageLink {
-    cursor: pointer;
-    width: 100%;
-    margin: 10px;;
+    grid-column: auto / span 2;
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    position: relative;
+    z-index: 0;
+    transition: clip-path 0.25s, filter 0.45s, z-index 0.25s;
+}
+
+.imageLink:nth-child(5n - 1) {
+    grid-column: 2 / span 2;
 }
 
 .image {
-    transition: transform 0.3s ease-in;
     width: 100%;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    clip-path: path("M90,10 C100,0 100,0 110,10 190,90 190,90 190,90 200,100 200,100 190,110 190,110 110,190 110,190 100,200 100,200 90,190 90,190 10,110 10,110 0,100 0,100 10,90Z");
 }
 
-.image:hover {
-    transform: scale(1.05);
+.imageLink:hover {
+    z-index: 10;
 }
 
-@media (min-width: 762px) {
- .imageLink {
-    width: 48%;
+.imageLink:hover .image {
+    clip-path: path("M0,0 C0,0 200,0 200,0 200,0 200,100 200,100 200,100 200,200 200,200 200,200 100,200 100,200 100,200 100,200 0,200 0,200 0,100 0,100 0,100 0,100 0,100Z");
+    transition: clip-path 0.25s, filter 0.25s;
+}
+
+.caption {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    background: linear-gradient(to top, #00000087 0%, #0000 140%);
+    width: 100%;
+    height: 15%;
+    color: white;
+    font-size: 16px;
+    ;
+}
+
+@media (max-width: 762px) {
+    .galleryWrapper {
+        margin-bottom: 0;
     }
-}
 
-@media (max-width: 900px) {
-   
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: auto;
+        gap: 15px;
+        padding: 0 20px;
+        width: 100%;
+    }
+
+    .imageLink,
+    .imageLink:nth-child(5n - 1),
+    .imageLink:nth-child(3n - 1) {
+        grid-column: span 1 !important;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .image {
+        clip-path: none !important;
+        border-radius: 2px;
+    }
+
+    .imageLink:hover .image {
+        clip-path: none !important;
+        transform: scale(1.02);
+    }
+
+    .caption {
+        display: none !important;
+    }
+
 }
 </file>
 
@@ -101,55 +176,57 @@ interface LightBoxGalleryProps {
   images: ImageProps[];
 }
 
-interface GLightboxInstance {
-  destroy: () => void;
-  open: () => void;
-  close: () => void;
-}
-
 export default function LightBoxGallery({ images }: LightBoxGalleryProps) {
-  const lightboxRef = useRef<GLightboxInstance | null>(null);
+  const lightboxRef = useRef<any>(null);
 
   useEffect(() => {
+    let lightboxInstance: any = null;
+
     const initLightbox = async () => {
       const GLightboxModule = (await import('glightbox')).default;
-      
-      lightboxRef.current = GLightboxModule({
+
+      // Inicjalizujemy lightbox
+      lightboxInstance = GLightboxModule({
         touchNavigation: true,
         loop: true,
-        autoplayVideos: true,
-        selector: '.glightbox'
-      }) as GLightboxInstance;
+        selector: '.glightbox',
+        openEffect: 'zoom',
+        closeEffect: 'fade',
+      });
+
+      lightboxRef.current = lightboxInstance;
     };
 
     initLightbox();
 
     return () => {
-      if (lightboxRef.current) {
-        lightboxRef.current.destroy();
-        lightboxRef.current = null;
+      if (lightboxInstance) {
+        lightboxInstance.destroy();
       }
     };
   }, [images]);
 
   return (
-    <div className={styles.container}>
-      {images.map((img, index) => (
-        <a
-          href={img.full}
-          className={`glightbox ${styles.imageLink}`}
-          data-gallery="my-gallery"
-          data-aos="fade-up"
-          data-aos-delay={index * 100}
-          key={index}
-        >
-          <img
-            src={img.thumb}
-            alt={img.description || `Gallery item ${index + 1}`}
-            className={styles.image}
-          />
-        </a>
-      ))}
+    <div className={styles.galleryWrapper}>
+      <div className={styles.gallery}>
+        {images.map((img, index) => (
+          <a
+            href={img.full}
+            className={`glightbox ${styles.imageLink}`}
+            data-gallery="my-gallery"
+            key={`${img.full}-${index}`}
+          >
+            <img
+              src={img.thumb}
+              alt={img.description || `Gallery item ${index + 1}`}
+              className={styles.image}
+            />
+            <div className={styles.caption}>
+              <span>{img.description}</span>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
