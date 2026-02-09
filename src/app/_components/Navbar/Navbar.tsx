@@ -53,6 +53,7 @@ export default function Navbar({isSmaller}: {isSmaller: boolean}) {
                     <HamburgerButton
                         ref={hamburgerRef}
                         isOpen={isMenuOpen}
+                        isSmaller={isSmaller}
                         onClick={toggleMenu}
                         className={styles.hamburger} />
                 </div>

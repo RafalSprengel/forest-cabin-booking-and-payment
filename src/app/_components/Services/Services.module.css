@@ -38,7 +38,9 @@
 }
 
 .equipment h3 {
-    margin-bottom: 30px;
+    margin-bottom: 1.2rem;
+    border-bottom: 2px solid #e0e7e1;
+    padding-bottom: 10px;
 }
 
 .equipmentList {

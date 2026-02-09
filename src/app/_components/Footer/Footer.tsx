@@ -10,16 +10,25 @@ export default function Footer() {
     <footer className={styles.container}>
       <div className={styles.inner}>
         <div className={styles.info}>
-          <Image src="/assets/logo-round.png" alt="Logo Wilcze Chatki" width={100} height={100} />
+          <Image 
+            src="/assets/logo-round.png" 
+            alt="Logo Wilcze Chatki" 
+            width={100} 
+            height={100} 
+          />
           <h3>Wilcze Chatki</h3>
-          <p>Szumleś Królewski, Kaszuby</p>
+          <p>83-424 Szumleś Królewski 9A</p>
+          <p>Kaszuby, woj. pomorskie</p>
+          
           <div className={styles.contact}>
             <p>
-              <FontAwesomeIcon icon={faPhone} /> +48 668 388 570
+              <FontAwesomeIcon icon={faPhone} color={'#c9b363'}/> 
+              <a href="tel:+48503420551" className={styles.footerContactLink}>+48 503 420 551</a>
             </p>
-            <p>
+            {/* <p>
               <FontAwesomeIcon icon={faEnvelope} /> kontakt@wilczechatki.pl
-            </p>
+            </p> 
+            */}
           </div>
         </div>
 

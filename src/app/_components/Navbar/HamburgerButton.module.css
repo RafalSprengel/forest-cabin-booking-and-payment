@@ -1,4 +1,5 @@
 .hamburger {
+  position: relative;
   background: none;
   border: none;
   cursor: pointer;
@@ -23,6 +24,10 @@
   transition: all 0.3s linear;
   position: relative;
   transform-origin: 1px;
+}
+
+.smaller {
+  height: 0.16rem;
 }
 
 .isOpen .bar:nth-child(1) {

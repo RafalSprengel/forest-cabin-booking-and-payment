@@ -33,7 +33,7 @@
 .logoWrapper {
     display: inline-block;
     position: relative;
-    height: 80%;
+    height: 90%;
     width: 75px;
     overflow: hidden;
     transition: height 0.3s ease, width 0.3s ease;
@@ -66,7 +66,7 @@
     overflow: hidden;
     transition: width var(--transition), height var(--transition), opacity var(--transition);
     opacity: 0;
-    padding: 12px;
+    padding: 6px 12px;
 }
 
 .mobileMenuInner {

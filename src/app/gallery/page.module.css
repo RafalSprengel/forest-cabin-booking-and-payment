@@ -50,24 +50,25 @@
 .backButton {
     display: flex; 
     align-items: center; 
+    align-items: center;
     gap: 8px;              
     color: var(--accent-color);
     text-decoration: none;
     font-weight: 600;
-    text-transform: uppercase;
-    font-size: 14px;
-    letter-spacing: 1px;
     transition: color var(--transition);
 }
 
 .backButton:hover {
-    color: #7a8d38; 
+    color: #1e8449; 
+    text-decoration: underline;
 }
 
 .icon {
     display: inline-block;  /* Dodane: niezbędne, aby transform (translateX) zadziałał na spanie */
     transition: transform var(--transition);
-    line-height: 1;         /* Poprawia pozycjonowanie optyczne encji HTML */
+    line-height: 1; 
+    font-size: 18px; 
+    text-decoration: none;       /* Poprawia pozycjonowanie optyczne encji HTML */
 }
 
 .backButton:hover .icon {

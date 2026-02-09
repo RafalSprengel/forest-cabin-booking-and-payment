@@ -37,13 +37,13 @@ export default function Contact() {
 
               <p className={styles.contactItem}>
                 <FontAwesomeIcon icon={faPhone} className={styles.detailIcon} />
-                <span>tel: <a href="tel:+48668388570" className={styles.contactLink}>+48 668 388 570</a></span>
+                <span>tel: <a href="tel:+48503420551" className={styles.contactLink}>+48 503 420 551</a></span>
               </p>
               
-              <p className={styles.contactItem}>
+              {/* <p className={styles.contactItem}>
                 <FontAwesomeIcon icon={faEnvelope} className={styles.detailIcon} />
                 <span>e-mail: <a href="mailto:kontakt@wilczechatki.pl" className={styles.contactLink}>kontakt@wilczechatki.pl</a></span>
-              </p>
+              </p> */}
             </div>
 
             <div className={styles.payment}>

@@ -14,7 +14,7 @@ interface SliderItem {
 const items: SliderItem[] = [
   { 
     id: 1, 
-    title: 'Wilcze chatki', 
+    title: 'Wilcze Chatki', 
     topic: 'Kaszubska cisza', 
     description: 'Dwa przytulne domki w Szumlesiu Królewskim, idealne na odpoczynek od miejskiego zgiełku.', 
     image: '/images/img1.jpeg' 

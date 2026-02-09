@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/app/_components/Navbar
+- Only files matching these patterns are included: src/app/_components
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -41,16 +41,1774 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+src/app/_components/About/About.module.css
+src/app/_components/About/About.tsx
+src/app/_components/Attractions/Attractions.module.css
+src/app/_components/Attractions/Attractions.tsx
+src/app/_components/Contact/Contact.module.css
+src/app/_components/Contact/Contact.tsx
+src/app/_components/Contact/ContactForm.module.css
+src/app/_components/Contact/ContactForm.tsx
+src/app/_components/Footer/Footer.module.css
+src/app/_components/Footer/Footer.tsx
+src/app/_components/GallerySection/GalerrySection.tsx
+src/app/_components/GallerySection/GallerySection.module.css
+src/app/_components/Header/Header.module.css
+src/app/_components/Header/Header.tsx
+src/app/_components/Hero/Hero.module.css
+src/app/_components/Hero/Hero.tsx
+src/app/_components/Hero/HeroSlider.module.css
+src/app/_components/Hero/HeroSlider.tsx
+src/app/_components/LightBoxGallery/LightBoxGallery.module.css
+src/app/_components/LightBoxGallery/LightBoxGallery.tsx
 src/app/_components/Navbar/HamburgerButton.module.css
 src/app/_components/Navbar/HamburgerButton.tsx
 src/app/_components/Navbar/Navbar.module.css
 src/app/_components/Navbar/Navbar.tsx
 src/app/_components/Navbar/TopBar.module.css
 src/app/_components/Navbar/TopBar.tsx
+src/app/_components/Services/Services.module.css
+src/app/_components/Services/Services.tsx
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/app/_components/About/About.module.css">
+.wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.title {
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--text-main);
+}
+.title:after{
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    margin: 15px auto 0;
+}
+
+.content p {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.content strong {
+    color: var(--accent-color);
+}
+
+.links {
+    margin-top: 40px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.link {
+    display: block;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.link:hover {
+    color: #1e8449;
+    text-decoration: underline;
+}
+
+@media (min-width: 769px) {
+    .title {
+        margin-bottom: 50px;
+    }
+
+    .content p {
+        text-align: justify;
+    }
+}
+</file>
+
+<file path="src/app/_components/About/About.tsx">
+import Link from 'next/link';
+import styles from './About.module.css';
+
+export default function About() {
+    return (
+        <section id="about-us" className={styles.section}>
+            <div className={styles.wrapper}>
+                <h2 className={styles.title}>Serdecznie witamy w Wilczych Chatkach!</h2>
+                
+                <div className={styles.content}>
+                    <p>
+                        Szukasz miejsca, gdzie odpoczniesz od miejskiego zgiełku, nacieszysz się ciszą i spokojem,
+                        a jednocześnie będziesz blisko największych atrakcji Pomorza?
+                        Nasze dwa przytulne domki w <strong>Szumlesiu Królewskim</strong>,
+                        malowniczej wsi położonej między <strong>Gdańskiem a Kościerzyną</strong>,
+                        to idealne miejsce na rodzinny wypoczynek, urlop w gronie przyjaciół czy romantyczny weekend we dwoje.
+                    </p>
+                    
+                    <p>
+                        Nasz obiekt położony jest w spokojnej, zielonej okolicy, która gwarantuje wytchnienie 
+                        od codziennego pośpiechu i bliski kontakt z naturą. Jest to fantastyczne miejsce dla rodzin 
+                        z dziećmi, miłośników wycieczek rowerowych, spacerowiczów oraz każdego, kto pragnie 
+                        naładować baterie w otoczeniu kaszubskich lasów i jezior.
+                    </p>
+
+                    <p>
+                        Obiekt zlokalizowany jest w miejscowości Szumleś Królewski. 
+                        Dzięki tej lokalizacji nasi Goście mogą cieszyć się absolutną ciszą i prywatnością, 
+                        mając jednocześnie szybki dostęp do regionalnych perełek, 
+                        takich jak Kaszubski Park Krajobrazowy, szczyt Wieżyca czy słynny dom do góry nogami w Szymbarku.
+                    </p>
+
+                    <p>
+                        Po dniu pełnym wrażeń, do Państwa dyspozycji oddajemy strefę relaksu z 
+                        <strong> sauną infrared</strong> oraz klimatycznym <strong>jacuzzi ogrzewanym drewnem</strong>. 
+                        W przypadku pytań prosimy o kontakt mailowy, telefoniczny lub poprzez formularz.
+                    </p>
+                </div>
+
+                <div className={styles.links}>
+                    <Link href="/#attractions" className={styles.link}>Przeczytaj więcej o atrakcjach w regionie &raquo;</Link>
+                </div>
+            </div>
+        </section>
+    );
+}
+</file>
+
+<file path="src/app/_components/Attractions/Attractions.module.css">
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 15px;
+}
+.title:after{
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    margin: 15px auto 0;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #edf2ed;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cardTitle {
+    font-size: 1rem;
+    color: var(--text-main);
+    margin: 0;
+    font-weight: bold;
+}
+
+.description {
+    color: #555;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+.distanceInfo {
+    font-size: 0.9rem;
+    color: #555; /* Twoja oliwkowa zieleń */
+    font-weight: 600;
+    margin: 10px 0;
+    display: block;
+}
+
+.link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-block;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    color: #1e8449;
+    text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .card {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-8px);
+    }
+}
+</file>
+
+<file path="src/app/_components/Attractions/Attractions.tsx">
+import styles from './Attractions.module.css';
+
+export default function Attractions() {
+    const attractions = [
+        {
+            title: 'Trasy Rowerowe Nowa Karczma',
+            description: 'Lokalne szlaki prowadzące przez najpiękniejsze zakątki gminy.',
+            distance: 'ok. 4 km',
+            url: 'https://www.nowakarczma.pl/asp/walory-turystyczne,42,,1'
+        },
+        {
+            title: 'Muzeum Hymnu w Będominie',
+            description: 'Jedyne na świecie muzeum poświęcone "Mazurkowi Dąbrowskiego".',
+            distance: 'ok. 5 km',
+            url: 'https://muzeumhymnu.pl/'
+        },
+        {
+            title: 'Stok narciarski Trzepowo',
+            description: 'Wyciągi narciarskie, trasy dla początkujących oraz snowtubing.',
+            distance: 'ok. 5 km',
+            url: 'https://nartykaszuby.pl/'
+        },
+        {
+            title: 'Farma Strusi w Garczynie',
+            description: 'Najstarsza w Polsce hodowla strusi afrykańskich. Możliwość zwiedzania.',
+            distance: 'ok. 19 km',
+            url: 'http://www.strusie-garczyn.pl/'
+        },
+        {
+            title: 'Dom do góry nogami w Szymbarku',
+            description: 'Centrum Edukacji i Promocji Regionu (CEPR) ze słynnym Domem do góry nogami, Najdłuższą Deską Świata i Domem Sybiraka.',
+            distance: 'ok. 20 km',
+            url: 'https://cepr.pl/'
+        },
+        {
+            title: 'Basen Aqua Centrum',
+            description: 'Nowoczesny park wodny w Kościerzynie z basenami i strefą saun.',
+            distance: 'ok. 20 km',
+            url: 'https://basenac.pl/'
+        },
+        {
+            title: 'Wieżyca – Wieża Widokowa',
+            description: 'Najwyższy szczyt Niżu Polskiego (329 m n.p.m.) z niesamowitym widokiem.',
+            distance: 'ok. 24 km',
+            url: 'https://szwajcariakaszubska.com/atrakcje/wieza-widokowa-na-wiezycy'
+        },
+        {
+            title: 'Stok narciarski Wieżyca',
+            description: 'Największy ośrodek narciarski na Kaszubach (Koszałkowo).',
+            distance: 'ok. 25 km',
+            url: 'https://www.wiezyca.pl/'
+        },
+        {
+            title: 'Skansen we Wdzydzach',
+            description: 'Najstarsze w Polsce muzeum na wolnym powietrzu nad "Kaszubskim Morzem".',
+            distance: 'ok. 30 km',
+            url: 'http://www.muzeum-wdzydze.gda.pl/'
+        },
+        {
+            title: 'Kaszubski Park Krajobrazowy',
+            description: 'Niezliczone jeziora i morenowe wzgórza zwane "Szwajcarią Kaszubską".',
+            distance: 'ok. 33 km',
+            url: 'https://kpk.pomorskie.eu/'
+        }
+    ];
+    return (
+        <section id="attractions" className={styles.section}>
+            <div className={styles.container}>
+                <h2 className={styles.title}>Atrakcje w okolicy</h2>
+                <p className={styles.subtitle}>
+                    Odkryj uroki Szumlesia Królewskiego i serca Kaszub.
+                </p>
+
+                <div className={styles.grid}>
+                    {attractions.map((item, idx) => (
+                        <div key={idx} className={styles.card}>
+                            <div className={styles.header}>
+                                <span className={styles.dot}></span>
+                                <p className={styles.cardTitle}>{item.title}</p>
+                            </div>
+                            <p className={styles.description}>{item.description}</p>
+                            <p className={styles.distanceInfo}>Odległość: {item.distance}</p>
+                            <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.link}
+                            >
+                                Dowiedz się więcej &raquo;
+                            </a>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+</file>
+
+<file path="src/app/_components/Contact/Contact.module.css">
+.mainContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.title:after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background-color: var(--accent-color);
+  margin: 15px auto 0;
+}
+
+.flexWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.infoColumn {
+  flex: 1;
+  text-align: center;
+  margin: 0 30px;
+}
+
+.formColumn {
+  flex: 1;
+  width: 100%;
+}
+
+.payment h3 {
+  color: var(--accent-color);
+  margin: 20px 0 10px;
+}
+
+.addressLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  margin-bottom: 20px;
+  transition: color 0.3s ease;
+}
+
+.addressLink:hover {
+  color: var(--accent-color);
+}
+
+.mapHintWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  justify-content: center;
+}
+
+.mapIcon {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+}
+
+.mapHint {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.detailIcon {
+  color: var(--accent-color);
+  width: 14px;
+  height: 14px;
+}
+
+.contactLink {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.contactLink:hover {
+  color: var(--accent-color);
+}
+
+@media (min-width: 768px) {
+  .flexWrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .mapHintWrapper,
+  .contactItem {
+    justify-content: flex-start;
+  }
+
+  .infoColumn p,
+  .infoColumn h3 {
+    text-align: left;
+  }
+}
+</file>
+
+<file path="src/app/_components/Contact/Contact.tsx">
+'use client'
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt, faPhone, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import styles from './Contact.module.css';
+import ContactForm from './ContactForm';
+
+export default function Contact() {
+  const lat = 54.157354;
+  const lng = 18.241247;
+
+
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+  return (
+    <section id="contact" className={styles.section}>
+      <div className={styles.mainContainer}>
+        <h2 className={styles.title}>Kontakt</h2>
+        <div className={styles.flexWrapper}>
+          <div className={styles.infoColumn}>
+            <div className={styles.details}>
+              <p style={{ fontWeight: 700, marginBottom: '10px' }}>Wilcze Chatki</p>
+              
+              <a 
+                href={mapsUrl}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.addressLink}
+              >
+                <p>83-424 Szumleś Królewski 9A</p>
+                <p>Kaszuby, woj. pomorskie</p>
+                <div className={styles.mapHintWrapper}>
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className={styles.mapIcon} />
+                  <small className={styles.mapHint}>Kliknij, aby otworzyć mapę</small>
+                </div>
+              </a>
+
+              <p className={styles.contactItem}>
+                <FontAwesomeIcon icon={faPhone} className={styles.detailIcon} />
+                <span>tel: <a href="tel:+48668388570" className={styles.contactLink}>+48 668 388 570</a></span>
+              </p>
+              
+              <p className={styles.contactItem}>
+                <FontAwesomeIcon icon={faEnvelope} className={styles.detailIcon} />
+                <span>e-mail: <a href="mailto:kontakt@wilczechatki.pl" className={styles.contactLink}>kontakt@wilczechatki.pl</a></span>
+              </p>
+            </div>
+
+            <div className={styles.payment}>
+              <h3>Dane do przelewu:</h3>
+              <p>Numer konta (PKO BP):</p>
+              <p style={{ fontWeight: 600 }}>20 1020 5226 0000 6702 0486 0336</p>
+            </div>
+          </div>
+
+          <div className={styles.formColumn}>
+            <ContactForm />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+</file>
+
+<file path="src/app/_components/Contact/ContactForm.module.css">
+.formContainer {
+  background-color: var(--bg-white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: var(--text-main);
+  margin: 30px;
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.input, .textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color var(--transition);
+}
+
+.input:focus, .textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: var(--accent-color);
+  color: var(--text-light);
+  padding: 14px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.submitBtn:hover {
+  background-color: #7a8d38;
+}
+
+.errorMessage {
+  color: #dc3545;
+  background-color: #f8d7da;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.successContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 200px;
+  color: (--var-text-main);
+}
+</file>
+
+<file path="src/app/_components/Contact/ContactForm.tsx">
+'use client';
+import { useEffect, useState } from 'react';
+import { useForm } from '@formspree/react';
+import styles from './ContactForm.module.css';
+
+export default function ContactForm() {
+  const [state, handleSubmit] = useForm("mgokvlpj");
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleCustomSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = String(formData.get('name') || '');
+    const message = String(formData.get('message') || '');
+    const email = String(formData.get('email') || '');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const newErrors = {
+      name: name.length < 3 ? "Proszę podać imię i nazwisko." : '',
+      email: !emailRegex.test(email) || email.length === 0 ? "Proszę podać poprawny adres e-mail (np. nazwa@domena.pl)." : '',
+      message: message.length < 10 ? "Proszę napisać wiadomość." : ''
+    };
+    setErrors(newErrors);
+
+    if (newErrors.name || newErrors.email || newErrors.message) {
+      return;
+    }
+    handleSubmit(e);
+  };
+
+  if (state.succeeded) {
+    return (
+      <div className={styles.successContainer}>
+        <p className={styles.successMessage}>Wiadomość została wysłana!</p>
+        <button
+          onClick={() => window.location.reload()}
+          className={styles.submitBtn}
+        >
+          Wyślij kolejną wiadomość
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.formContainer}>
+      <form onSubmit={handleCustomSubmit}>
+        <div className={styles.group}>
+          <label htmlFor="name">Imię i Nazwisko</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            className={styles.input}
+          />
+          {errors?.name && <div className={styles.errorMessage}>{errors?.name}</div>}
+        </div>
+
+        <div className={styles.group}>
+          <label htmlFor="email">Adres E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            className={styles.input}
+          />
+          {errors?.email && <div className={styles.errorMessage}>{errors?.email}</div>}
+        </div>
+
+        <div className={styles.group}>
+          <label htmlFor="message">Wiadomość</label>
+          <textarea
+            id="message"
+            name="message"
+            className={styles.textarea}
+          ></textarea>
+          {errors?.message && <div className={styles.errorMessage}>{errors?.message}</div>}
+        </div>
+
+        {state.errors && (
+          <div className={styles.serverErrorMessage}>
+            Przepraszamy, wystąpił problem z wysłaniem formularza. Spróbuj ponownie później.
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className={styles.submitBtn}
+          disabled={state.submitting}
+        >
+          {state.submitting ? "Wysyłanie..." : "Wyślij wiadomość"}
+        </button>
+      </form>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/_components/Footer/Footer.module.css">
+.container {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 40px 0 20px;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+}
+
+.info {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.info h3 {
+  font-size: 1.4rem;
+  margin-top: 15px;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.info p {
+  color: #fff;
+  margin: 4px 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.contact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.contact p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  margin: 6px 0;
+}
+
+.social {
+    text-align: center;
+}
+
+.social .facebook {
+  display: inline-block;
+  font-size: 1.8rem;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.social .facebook:hover {
+  color: #1877f2;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.creator {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    opacity: 0.9;
+}
+
+.creatorLink {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.3s ease;
+}
+
+.creatorLink:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+@media (max-width: 767px) {
+  .social {
+    text-align: center;
+  }
+}
+</file>
+
+<file path="src/app/_components/Footer/Footer.tsx">
+import styles from './Footer.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPhone, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faFacebook } from '@fortawesome/free-brands-svg-icons';   
+import Image from 'next/image';
+import Link from 'next/link';
+
+export default function Footer() {
+  return (
+    <footer className={styles.container}>
+      <div className={styles.inner}>
+        <div className={styles.info}>
+          <Image src="/assets/logo-round.png" alt="Logo Wilcze Chatki" width={100} height={100} />
+          <h3>Wilcze Chatki</h3>
+          <p>Szumleś Królewski, Kaszuby</p>
+          <div className={styles.contact}>
+            <p>
+              <FontAwesomeIcon icon={faPhone} /> +48 668 388 570
+            </p>
+            <p>
+              <FontAwesomeIcon icon={faEnvelope} /> kontakt@wilczechatki.pl
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.social}>
+          <a
+            href="https://facebook.com/profile.php?id=61584455637648"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            className={styles.facebook}
+          >
+            <FontAwesomeIcon icon={faFacebook} />
+          </a>
+        </div>
+      </div>
+
+      <div className={styles.copyright}>
+        <p>&copy; {new Date().getFullYear()} Wilcze Chatki. Wszelkie prawa zastrzeżone.</p>
+        <div className={styles.creator}>
+          Realizacja strony: 
+          <a 
+            href="https://rafalsprengel.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={styles.creatorLink}
+          >
+            Rafał Sprengel
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+</file>
+
+<file path="src/app/_components/GallerySection/GalerrySection.tsx">
+import styles from './GallerySection.module.css';
+import LightBoxGallery from '@components/LightBoxGallery/LightBoxGallery';
+
+
+export default function GallerySection() {
+
+    const images = [
+        { full: '/gallery/wnetrze1.webp', thumb: '/gallery/wnetrze1-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze2.webp', thumb: '/gallery/wnetrze2-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze3.webp', thumb: '/gallery/wnetrze3-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze4.webp', thumb: '/gallery/wnetrze4-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze5.webp', thumb: '/gallery/wnetrze5-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze6.webp', thumb: '/gallery/wnetrze6-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/wnetrze7.webp', thumb: '/gallery/wnetrze7-thumb.webp', description: 'Wnętrze' },
+        { full: '/gallery/sypialnia1.webp', thumb: '/gallery/sypialnia1-thumb.webp', description: 'Sypialnia' },
+    ];
+
+    return (
+        <section id='gallery-section'>
+            <div className={styles.title}>
+                <h2>Galeria zdjęć</h2>
+            </div>
+            <div className={styles.galleryWrap}>
+                <LightBoxGallery images={images} />
+            </div>
+            <a href="/gallery" className={styles.link}>Zobacz więcej &raquo;</a>
+        </section>
+    );
+}
+</file>
+
+<file path="src/app/_components/GallerySection/GallerySection.module.css">
+.title h2 {
+    text-align: center;
+}
+.title:after{
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    margin: 15px auto 0;
+}
+.galleryWrap {
+    display: flex;
+    justify-content: center;
+}
+
+.link {
+    display: block;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.link:hover {
+    color: #1e8449;
+    text-decoration: underline;
+}
+</file>
+
+<file path="src/app/_components/Header/Header.module.css">
+.container {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+    height: 100px;
+    flex-direction: column;
+     transition: height 0.3s ease, top 0.3s ease, background-color 0.3s ease;
+}
+
+.scrolled {
+    height: 70px;
+    top: -31px;
+}
+</file>
+
+<file path="src/app/_components/Header/Header.tsx">
+'use client'
+import { useState, useEffect, use } from 'react';
+import TopBar from '@components/Navbar/TopBar';
+import Navbar from '@components/Navbar/Navbar';
+import styles from './Header.module.css';
+
+export default function Header() {
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const scrollY = () => {
+            if (window.scrollY > 100) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        }
+        window.addEventListener('scroll', scrollY);
+        return ()=> window.removeEventListener('scroll', scrollY);
+    }, [])
+
+    return (
+        <header className={styles.container + (isScrolled ? ' ' + styles.scrolled : '')}>
+            <TopBar />
+            <Navbar isSmaller={isScrolled} />
+        </header>
+
+    )
+
+}
+</file>
+
+<file path="src/app/_components/Hero/Hero.module.css">
+.hero {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content {
+    text-align: center;
+    color: var(--text-light);
+    padding: 0 20px;
+}
+
+.content h1 {
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cta {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: var(--text-light);
+    padding: 15px 40px;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-radius: 4px;
+    margin-top: 20px;
+    transition: background var(--transition);
+}
+</file>
+
+<file path="src/app/_components/Hero/Hero.tsx">
+import Link from 'next/link';
+import styles from './Hero.module.css';
+
+export default function Hero() {
+    return (
+        <section className={styles.hero}>
+            <div className={styles.overlay}>
+                <div className={styles.content}>
+                    <h1>Wilcze Chatki</h1>
+                    <p>Odkryj spokój w sercu Kaszub – Szumleś Królewski</p>
+                    <Link href="#services" className={styles.cta}>
+                        Sprawdź ofertę
+                    </Link>
+                </div>
+            </div>
+        </section>
+    );
+}
+</file>
+
+<file path="src/app/_components/Hero/HeroSlider.module.css">
+.heroSlider {
+  position: relative;
+  width: 100dvw;
+  height: 80vh;
+  background: #000;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeInSlider 1s ease-out forwards;
+}
+
+.sliderMain,
+.slide {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.2s ease-in-out;
+  z-index: 1;
+}
+
+.slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #74747454, #000000e6);
+  z-index: 2;
+}
+
+.slideImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: kenBurns 20s linear infinite alternate;
+  filter: blur(1px);
+}
+
+.slideContent {
+  position: absolute;
+  top: 30dvh;
+  left: 20px;
+  right: 20px;
+  color: #fff;
+  z-index: 10;
+}
+
+.slideSubtitle,
+.slideTitle,
+.slideTopic,
+.slideDesc,
+.slideActions {
+  opacity: 0;
+  transform: translateY(30px);
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide.active .slideSubtitle,
+.slide.active .slideTitle,
+.slide.active .slideTopic,
+.slide.active .slideDesc,
+.slide.active .slideActions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide.active .slideSubtitle {
+  transition-delay: 0.4s;
+}
+
+.slide.active .slideTitle {
+  transition-delay: 0.6s;
+}
+
+.slide.active .slideTopic {
+  transition-delay: 0.8s;
+}
+
+.slide.active .slideDesc {
+  transition-delay: 1.0s;
+}
+
+.slide.active .slideActions {
+  transition-delay: 1.2s;
+}
+
+.slideTitle {
+  font-size: 2.3rem;
+}
+
+.slideSubtitle {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+
+.slideTopic {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  margin: 5px 0 10px;
+}
+
+.slideDesc {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+   color: #fff;
+}
+
+.slideActions {
+  display: flex;
+  gap: 10px;
+}
+
+.btnPrimary,
+.btnOutline {
+  padding: 10px 18px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btnPrimary {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+}
+
+.btnPrimary:hover {
+  background: var(--bg-white);
+  color: var(--text-main);
+}
+
+.btnOutline:hover {
+  background: #fff;
+  color: #000;
+}
+
+.sliderControls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.thumbnailsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  scrollbar-width: none;
+}
+
+.thumbnailsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbItem {
+  width: 70px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0.5;
+  transition: 0.4s;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.activeThumb {
+  opacity: 1;
+  border-color: var(--accent-color);
+  transform: translateY(-5px);
+}
+
+.thumbItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--accent-color);
+  width: 0;
+  animation: progress 7.5s linear forwards;
+}
+
+.bottomNav {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  display: none;
+}
+
+.paginationDots {
+  display: flex;
+  gap: 5px;
+}
+
+.dot {
+  width: 15px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.activeDot {
+  background: #8da242;
+  width: 30px;
+}
+
+.arrows {
+  display: flex;
+  gap: 15px;
+}
+
+.arrow {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+}
+
+@keyframes fadeInSlider {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kenBurns {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes progress {
+  to {
+    width: 100%;
+  }
+}
+
+@media (min-width: 500px) {
+  .slideTitle {
+    font-size: 3rem;
+  }
+
+  .slideTopic {
+    font-size: 1.8rem;
+  }
+
+  .slideSubtitle {
+    font-size: 1.6rem;
+  }
+
+}
+
+@media (max-height: 1000px) {
+  .slideContent {
+    top: 25%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .overlay {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
+  }
+
+  .slideContent {
+    bottom: unset;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 8%;
+    max-width: 600px;
+  }
+
+  .slideTitle {
+    margin: 1rem 0;
+    letter-spacing: 1.1px;
+  }
+
+  .slideTopic {
+    font-size: 2.5rem;
+  }
+
+  .slideDesc {
+    font-size: 1.2rem;
+    -webkit-line-clamp: unset;
+  }
+
+  .sliderControls {
+    bottom: 50px;
+    padding: 0 8%;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .thumbnailsContainer {
+    margin-bottom: 0;
+    gap: 20px;
+  }
+
+  .thumbItem {
+    width: 100px;
+    height: 150px;
+  }
+
+  .bottomNav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    display: flex;
+  }
+
+  .paginationDots {
+    display: none;
+  }
+}
+
+@media (max-height: 700px) {
+  .slideContent {
+    top: 10%;
+  }
+}
+</file>
+
+<file path="src/app/_components/Hero/HeroSlider.tsx">
+'use client';
+import Link from 'next/link';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import styles from './HeroSlider.module.css';
+
+interface SliderItem {
+  id: number;
+  title: string;
+  topic: string;
+  description: string;
+  image: string;
+}
+
+const items: SliderItem[] = [
+  { 
+    id: 1, 
+    title: 'Wilcze chatki', 
+    topic: 'Kaszubska cisza', 
+    description: 'Dwa przytulne domki w Szumlesiu Królewskim, idealne na odpoczynek od miejskiego zgiełku.', 
+    image: '/images/img1.jpeg' 
+  },
+  { 
+    id: 2, 
+    title: 'Strefa relaksu', 
+    topic: 'Sauna i jacuzzi', 
+    description: 'Całoroczna strefa relaksu w zamkniętej altanie z sauną infrared i jacuzzi ogrzewanym drewnem.', 
+    image: '/images/img2.jpeg' 
+  },
+  { 
+    id: 3, 
+    title: 'Natura na wyciągnięcie ręki', 
+    topic: 'Serce Kaszub', 
+    description: 'Bliskość Kaszubskiego Parku Krajobrazowego, Wieżycy i malowniczych jezior.', 
+    image: '/images/img3.jpeg' 
+  },
+  { 
+    id: 4, 
+    title: 'Rodzinny wypoczynek', 
+    topic: 'Plac zabaw i grill', 
+    description: 'Prywatny taras z grillem oraz plac zabaw z trampoliną i huśtawkami dla najmłodszych.', 
+    image: '/images/img4.jpeg' 
+  },
+  { 
+    id: 5, 
+    title: 'Komfortowe domki', 
+    topic: 'Pełne wyposażenie', 
+    description: 'Klimatyzowane wnętrza, aneks kuchenny i przytulne sypialnie na poddaszu dla 6-8 osób.', 
+    image: '/images/img5.jpeg' 
+  },
+];
+
+
+
+export default function HeroSlider() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleNext = useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setActiveIndex((prev) => (prev + 1) % items.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating]);
+
+  const handlePrev = useCallback(() => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating]);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      handleNext();
+    }, 7000);
+  }, [handleNext]);
+
+  const changeSlide = useCallback((newIndex: number) => {
+    if (isAnimating || newIndex === activeIndex) return;
+
+    setIsAnimating(true);
+    setActiveIndex(newIndex);
+    startTimer();
+
+    setTimeout(() => setIsAnimating(false), 500);
+  }, [isAnimating, activeIndex, startTimer]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    startTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [startTimer]);
+
+  return (
+    <section className={styles.heroSlider}>
+      <div className={styles.sliderMain}>
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className={`${styles.slide} ${isMounted && index === activeIndex ? styles.active : ''}`}
+          >
+            <div className={styles.overlay}></div>
+            <img src={item.image} alt={item.title} className={styles.slideImg} />
+
+            <div className={styles.slideContent}>
+              <span className={styles.slideSubtitle}>SZUMLEŚ KRÓLEWSKI</span>
+              <h1 className={styles.slideTitle}>{item.title}</h1>
+              <h2 className={styles.slideTopic}>{item.topic}</h2>
+              <p className={styles.slideDesc}>{item.description}</p>
+              <div className={styles.slideActions}>
+                <Link href="/booking" className={styles.btnPrimary}>ZAREZERWUJ</Link>
+                <Link href="/gallery" className={styles.btnOutline}>GALERIA</Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.sliderControls}>
+        <div className={styles.thumbnailsContainer}>
+          {items.map((item, index) => (
+            <div
+              key={`thumb-${item.id}`}
+              className={`${styles.thumbItem} ${index === activeIndex ? styles.activeThumb : ''}`}
+              onClick={() => changeSlide(index)}
+            >
+              <img src={item.image} alt="" />
+              {index === activeIndex && <div className={styles.thumbProgress} />}
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.bottomNav}>
+          <div className={styles.paginationDots}>
+            {items.map((_, index) => (
+              <span
+                key={index}
+                className={`${styles.dot} ${index === activeIndex ? styles.activeDot : ''}`}
+              />
+            ))}
+          </div>
+          <div className={styles.arrows}>
+            <button onClick={handlePrev} className={styles.arrow}>←</button>
+            <button onClick={handleNext} className={styles.arrow}>→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+</file>
+
+<file path="src/app/_components/LightBoxGallery/LightBoxGallery.module.css">
+.galleryWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 50px 0;
+    background-color: transparent;
+    padding-top: 50px;
+    margin-bottom: 120px
+}
+
+.gallery {
+    --size: 100px;
+    display: grid;
+    grid-template-columns: repeat(6, var(--size));
+    grid-auto-rows: var(--size);
+    gap: 10px;
+    place-items: start center;
+}
+
+.gallery:has(.imageLink:hover) .imageLink:not(:hover) {
+    filter: brightness(0.5) contrast(0.5);
+}
+
+.imageLink {
+    grid-column: auto / span 2;
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    position: relative;
+    z-index: 0;
+    transition: clip-path 0.25s, filter 0.45s, z-index 0.25s;
+}
+
+.imageLink:nth-child(5n - 1) {
+    grid-column: 2 / span 2;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    clip-path: path("M90,10 C100,0 100,0 110,10 190,90 190,90 190,90 200,100 200,100 190,110 190,110 110,190 110,190 100,200 100,200 90,190 90,190 10,110 10,110 0,100 0,100 10,90Z");
+}
+
+.imageLink:hover {
+    z-index: 10;
+}
+
+.imageLink:hover .image {
+    clip-path: path("M0,0 C0,0 200,0 200,0 200,0 200,100 200,100 200,100 200,200 200,200 200,200 100,200 100,200 100,200 100,200 0,200 0,200 0,100 0,100 0,100 0,100 0,100Z");
+    transition: clip-path 0.25s, filter 0.25s;
+}
+
+.caption {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+    color: var(--text-secondary);
+    padding-top: 10px;
+    background: linear-gradient(to top, #00000087 0%, #0000 100%);
+    width: 100%;
+    height: 30%;
+    color: white;
+    font-size: 16px;
+    font-style: italic;
+
+}
+
+@media (max-width: 762px) {
+    .galleryWrapper {
+        margin-bottom: 0px;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: auto;
+        gap: 15px;
+        padding: 0 20px;
+        width: 100%;
+    }
+
+    .imageLink,
+    .imageLink:nth-child(5n - 1),
+    .imageLink:nth-child(3n - 1) {
+        grid-column: span 1 !important;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .image {
+        clip-path: none !important;
+        border-radius: 2px;
+    }
+
+    .imageLink:hover .image {
+        clip-path: none !important;
+        transform: scale(1.02);
+    }
+
+}
+
+@media (min-width: 762px) {
+    .caption {
+        display: none;
+    }
+}
+</file>
+
+<file path="src/app/_components/LightBoxGallery/LightBoxGallery.tsx">
+'use client'
+
+import { useEffect, useRef } from 'react';
+import styles from './LightBoxGallery.module.css';
+import 'glightbox/dist/css/glightbox.min.css';
+
+interface ImageProps {
+  full: string;
+  thumb: string;
+  description?: string;
+}
+
+interface LightBoxGalleryProps {
+  images: ImageProps[];
+}
+
+export default function LightBoxGallery({ images }: LightBoxGalleryProps) {
+  const lightboxRef = useRef<any>(null);
+
+  useEffect(() => {
+    let lightboxInstance: any = null;
+
+    const initLightbox = async () => {
+      const GLightboxModule = (await import('glightbox')).default;
+
+      // Inicjalizujemy lightbox
+      lightboxInstance = GLightboxModule({
+        touchNavigation: true,
+        loop: true,
+        selector: '.glightbox',
+        openEffect: 'zoom',
+        closeEffect: 'fade',
+      });
+
+      lightboxRef.current = lightboxInstance;
+    };
+
+    initLightbox();
+
+    return () => {
+      if (lightboxInstance) {
+        lightboxInstance.destroy();
+      }
+    };
+  }, [images]);
+
+  return (
+    <div className={styles.galleryWrapper}>
+      <div className={styles.gallery}>
+        {images.map((img, index) => (
+          <a
+            href={img.full}
+            className={`glightbox ${styles.imageLink}`}
+            data-gallery="my-gallery"
+            key={`${img.full}-${index}`}
+          >
+            <img
+              src={img.thumb}
+              alt={img.description || `Gallery item ${index + 1}`}
+              className={styles.image}
+            />
+            <div className={styles.caption}>
+              <span>{img.description}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+</file>
 
 <file path="src/app/_components/Navbar/HamburgerButton.module.css">
 .hamburger {
@@ -158,7 +1916,10 @@ export default HamburgerButton;
 
 .smallerNavbar {
     height: 60px;
-    opacity: .8;
+    opacity: .97;
+    background-color: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 
 .logoWrapper {
@@ -168,7 +1929,7 @@ export default HamburgerButton;
     width: 75px;
     overflow: hidden;
     transition: height 0.3s ease, width 0.3s ease;
-    
+
 }
 
 .logoImage {
@@ -266,6 +2027,7 @@ export default HamburgerButton;
 .showMobileMenu .navLinks li:nth-child(6) {
     transition-delay: 0.7s;
 }
+
 .showMobileMenu .navLinks li:nth-child(7) {
     transition-delay: 0.8s;
 }
@@ -490,6 +2252,248 @@ export default function TopBar() {
                 </div>
             </div>
         </div>
+    );
+}
+</file>
+
+<file path="src/app/_components/Services/Services.module.css">
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.title {
+    color: var(--text-main);
+    margin-bottom: 30px;
+}
+.title:after{
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    margin: 15px auto 0;
+}
+
+.introText {
+    margin-bottom: 40px;
+    align-items: center;
+    text-align: center;
+}
+
+.equipment {
+    text-align: left;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+}
+
+.equipment h3 {
+    margin-bottom: 30px;
+}
+
+.equipmentList {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.equipmentList li {
+    position: relative;
+    padding-left: 25px;
+    color: #666;
+}
+
+.equipmentList li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4a7c59;
+    font-weight: bold;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    scroll-margin-top: 70px;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card h3 {
+    margin-bottom: 1.2rem;
+    border-bottom: 2px solid #e0e7e1;
+    padding-bottom: 10px;
+}
+
+.priceGroup {
+    margin-top: 20px;
+}
+
+.priceGroup h4 {
+    margin-bottom: 10px;
+}
+
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.note {
+    margin: 20px 0;
+    font-size: 13px;
+    color: #777;
+}
+
+.features {
+    list-style: none;
+    padding: 0;
+}
+
+.features li {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    color: #555;
+}
+
+@media (min-width: 768px) {
+    .title {
+        margin-bottom: 50px;
+    }
+
+    .introText p{
+        text-align: justify;
+    }
+
+
+    .equipmentList {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</file>
+
+<file path="src/app/_components/Services/Services.tsx">
+import styles from './Services.module.css';
+
+interface PriceItem {
+    description: string;
+    amount: string;
+}
+
+export default function Services() {
+    const weekdayRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '300 zł' },
+        { description: '4-5 osób', amount: '400 zł' },
+        { description: '6 osób', amount: '500 zł' },
+        { description: 'Dostawka', amount: '+50 zł' }
+    ];
+
+    const weekendRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '400 zł' },
+        { description: '4-5 osób', amount: '500 zł' },
+        { description: '6 osób', amount: '600 zł' },
+        { description: 'Dostawka', amount: '+50 zł' }
+    ];
+
+    return (
+        <section id="services" className={styles.section}>
+            <div className={styles.container}>
+                <header className={styles.header}>
+                    <h2 className={styles.title}>Nasza Oferta</h2>
+                    <div className={styles.introText}>
+                        <p>
+                            Oferujemy dwa przytulne domki o powierzchni 35 m² każdy. Każdy domek komfortowo mieści 6 osób
+                            (z możliwością 2 dodatkowych dostawek). Częścią wspólną dla obu obiektów jest zamknięta altana,
+                            wyposażona w 4-5 osobową saunę infrared oraz jacuzzi ogrzewane drewnem (drewno wliczone w cenę), wraz z dwoma dużymi biesiadnymi stołami.
+                        </p>
+                        <p>
+                            Na tarasie każdego domku znajduje się grill oraz stół. Do dyspozycji gości oddajemy również
+                            plac zabaw dla dzieci wyposażony w huśtawkę, trampolinę, zjeżdżalnię oraz hamaki.
+                            Wnętrze każdego domku obejmuje aneks kuchenny, łazienkę oraz dwa pokoje na poddaszu:
+                            jeden z łóżkiem małżeńskim, drugi z dwoma łóżkami pojedynczymi.
+                        </p>
+                    </div>
+
+                    <div className={styles.equipment}>
+                        <h3>Wyposażenie każdego domku:</h3>
+                        <ul className={styles.equipmentList}>
+                            <li>Kuchenka indukcyjna z piekarnikiem</li>
+                            <li>Lodówka</li>
+                            <li>Zmywarka</li>
+                            <li>Zastawa kuchenna, garnki, patelnie, toster</li>
+                            <li>Pralka</li>
+                            <li>TV i WiFi</li>
+                            <li>Stół dla 6 osób i rozkładana 2-osobowa kanapa</li>
+                            <li>Klimatyzacja</li>
+                            <li>Suszarka do włosów i ubrań</li>
+                            <li>Ręczniki</li>
+                            <li>Kosmetyki i środki higieniczne</li>
+                            <li>Odkurzacz</li>
+                            <li>Kawa i herbata</li>
+                        </ul>
+                    </div>
+                </header>
+
+                <div id="pricing" className={styles.grid}>
+                    <div className={styles.card}>
+                        <h3>Cennik za dobę</h3>
+                        <div className={styles.priceGroup}>
+                            <h4>W tygodniu:</h4>
+                            {weekdayRates.map((rate, index) => (
+                                <div key={index} className={styles.priceRow}>
+                                    <span>{rate.description}</span>
+                                    <strong>{rate.amount}</strong>
+                                </div>
+                            ))}
+                        </div>
+                        <div className={styles.priceGroup}>
+                            <h4>Weekendy:</h4>
+                            {weekendRates.map((rate, index) => (
+                                <div key={index} className={styles.priceRow}>
+                                    <span>{rate.description}</span>
+                                    <strong>{rate.amount}</strong>
+                                </div>
+                            ))}
+                        </div>
+                        <div className={styles.note}>* Dzieci do trzynastego roku życia bezpłatnie.</div>
+                    </div>
+
+                    <div className={styles.card}>
+                        <h3>Główne Atrakcje</h3>
+                        <ul className={styles.features}>
+                            <li>Chata biesiadna z sauną i jacuzzi oraz dwoma dużymi stołami</li>
+                            <li>Sauna 4-5 osobowa Infrared</li>
+                            <li>Jacuzzi ogrzewane drewnem (w cenie)</li>
+                            <li>Pełne wyposażenie i klimatyzacja</li>
+                            <li>Hamaki i strefa relaksu</li>
+                            <li>Grill do dyspozycji</li>
+                            <li>Plac zabaw dla dzieci</li>
+                            <li>Trampolina</li>
+                            <li>Miejsce na ognisko</li>
+                            <li> Teren ogrodzony</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }
 </file>

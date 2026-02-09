@@ -24,7 +24,7 @@ export default function Services() {
         <section id="services" className={styles.section}>
             <div className={styles.container}>
                 <header className={styles.header}>
-                    <h2 className={styles.title}>Nasza Oferta</h2>
+                    <h2 className={styles.title}>Nasza oferta</h2>
                     <div className={styles.introText}>
                         <p>
                             Oferujemy dwa przytulne domki o powierzchni 35 m² każdy. Każdy domek komfortowo mieści 6 osób
@@ -61,7 +61,7 @@ export default function Services() {
 
                 <div id="pricing" className={styles.grid}>
                     <div className={styles.card}>
-                        <h3>Cennik za dobę</h3>
+                        <h3>Cennik za dobę:</h3>
                         <div className={styles.priceGroup}>
                             <h4>W tygodniu:</h4>
                             {weekdayRates.map((rate, index) => (
@@ -81,10 +81,11 @@ export default function Services() {
                             ))}
                         </div>
                         <div className={styles.note}>* Dzieci do trzynastego roku życia bezpłatnie.</div>
+                        <div className={styles.note}>* Cennik obowiązuje poza sezonem wysokim.</div>
                     </div>
 
                     <div className={styles.card}>
-                        <h3>Główne Atrakcje</h3>
+                        <h3>Główne atrakcje:</h3>
                         <ul className={styles.features}>
                             <li>Chata biesiadna z sauną i jacuzzi oraz dwoma dużymi stołami</li>
                             <li>Sauna 4-5 osobowa Infrared</li>

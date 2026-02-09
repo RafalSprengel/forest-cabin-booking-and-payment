@@ -9,7 +9,7 @@ export default function Attractions() {
             url: 'https://www.nowakarczma.pl/asp/walory-turystyczne,42,,1'
         },
         {
-            title: 'Muzeum Hymnu w Będominie',
+            title: 'Muzeum Hymnu Narodowego w Będominie',
             description: 'Jedyne na świecie muzeum poświęcone "Mazurkowi Dąbrowskiego".',
             distance: 'ok. 5 km',
             url: 'https://muzeumhymnu.pl/'

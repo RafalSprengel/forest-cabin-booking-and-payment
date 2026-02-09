@@ -3,12 +3,13 @@ import styles from './HamburgerButton.module.css';
 
 interface HamburgerButtonProps {
   isOpen: boolean;
+  isSmaller: boolean;
   onClick: () => void;
   className?: string;
 }
 
 const HamburgerButton = forwardRef<HTMLButtonElement, HamburgerButtonProps>(
-  ({ isOpen, onClick, className }, ref) => {
+  ({ isOpen,isSmaller, onClick, className }, ref) => {
     const handleOnclick = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       onClick();
@@ -21,9 +22,9 @@ const HamburgerButton = forwardRef<HTMLButtonElement, HamburgerButtonProps>(
         aria-label="Toggle menu"
         ref={ref}
       >
-        <div className={styles.bar}></div>
-        <div className={styles.bar}></div>
-        <div className={styles.bar}></div>
+        <div className={`${styles.bar} ${isSmaller ? styles.smaller : ''}`}></div>
+        <div className={`${styles.bar} ${isSmaller ? styles.smaller : ''}`}></div>
+        <div className={`${styles.bar} ${isSmaller ? styles.smaller : ''}`}></div>
       </button>
     );
   }
