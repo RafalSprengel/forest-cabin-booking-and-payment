@@ -117,16 +117,16 @@ const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setS
             let isHovered = Boolean(selectedStart && !selectedEnd && hoveredDate &&
                 new Date(currentDateFormatted) > new Date(selectedStart) &&
                 new Date(currentDateFormatted) < new Date(hoveredDate) &&
-                !isReserved && !isWeekend);
+                !isReserved);
 
             if (selectedStart && selectedEnd) {
                 isSelectedBetween = new Date(currentDateFormatted) > new Date(selectedStart) &&
                     new Date(currentDateFormatted) < new Date(selectedEnd) &&
-                    !isReserved && !isWeekend;
+                    !isReserved;
             }
 
             const handleClickOnDay = (date: string) => {
-                if (isPast || isWeekend || isReserved) return;
+                if (isPast || isReserved) return;
                 if (!selectedStart || (selectedStart && selectedEnd)) {
                     setSelectedStart(date);
                     setSelectedEnd(null);
@@ -210,7 +210,7 @@ export default function CalendarPicker({ unavailableDates, onDateChange }: Calen
             const formatted = formatDate(tempDate);
             const isReserved = unavailableDates?.some(el => el.date === formatted);
 
-            if (!isWeekend && !isReserved) {
+            if (!isReserved) {
                 count++;
             }
             tempDate.setDate(tempDate.getDate() + 1);
@@ -263,12 +263,6 @@ export default function CalendarPicker({ unavailableDates, onDateChange }: Calen
                 setSelectedEnd={setSelectedEnd}
             />
 
-            <div className="buttons">
-                <button className="buttons__clear" onClick={() => { setSelectedStart(null); setSelectedEnd(null); }}>Clear</button>
-                <button className="buttons__add" disabled={totalSelected === 0}>
-                    {totalSelected > 0 ? `Book ${totalSelected} day${totalSelected > 1 ? 's' : ''}` : 'Book now'}
-                </button>
-            </div>
         </div>
     );
 }

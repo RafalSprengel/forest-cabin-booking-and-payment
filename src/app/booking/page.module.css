@@ -39,6 +39,7 @@
 .gests {
     padding-bottom: 10px;
     border-bottom: 1px solid silver;
+    cursor: pointer;
 }
 
 .setDate,
@@ -54,7 +55,7 @@
 }
 
 .expandedDate {
-    height: 500px;
+    height: 440px;
 }
 
 .expandedGests {

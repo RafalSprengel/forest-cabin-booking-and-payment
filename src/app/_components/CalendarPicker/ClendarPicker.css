@@ -13,15 +13,6 @@
     box-sizing: border-box;
 }
 
-.calendar__container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1.875em;
-    align-items: center;
-    min-height: 90vh;
-}
-
 .navigation {
     display: flex;
     justify-content: space-between;
@@ -30,30 +21,24 @@
     margin-bottom: 1em;
 }
 
-.navigation__arrow {
-    width: 2.75em;
+.navigation__arrow, 
+.navigation__current-month {
     padding: 0.3em;
     margin: auto;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.navigation__arrow:hover {
-    background-color: rgb(231, 231, 231);
+    transition: background-color 0.2s ease;
 }
 
 .navigation__current-month {
     margin: 0 0.3em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    height: 100%;
     font-size: 1.1em;
     font-weight: bold;
 }
 
+.navigation__arrow:hover, 
 .navigation__current-month:hover {
     background-color: rgb(231, 231, 231);
 }
@@ -66,8 +51,7 @@
     padding: 0.3em;
     flex: 0 0 14.28%;
     text-transform: uppercase;
-    text-decoration-line: underline;
-    text-decoration-style: dotted;
+    text-decoration: underline dotted;
     color: #565656;
     font-size: 0.8em;
 }
@@ -90,10 +74,12 @@
     box-shadow: 0.2em 0.2em 0.4em 0px #d2d2d280;
     z-index: 2;
     font-size: 1em;
+    transition: all 0.2s ease;
 }
 
-.day:hover {
-    background-color: #8d8c8c;
+.day:not(.day__reserved):not(.day__past):hover {
+    background-color: #8d8c8c !important;
+    color: white !important;
 }
 
 .day__blank {
@@ -104,6 +90,13 @@
 .day__today {
     outline: 0.125em dotted red;
     outline-offset: -0.2em;
+}
+
+.day__past,
+.day__past.day__sunday,
+.day__past.day__saturday {
+    color: #d3d3d3 !important;
+    cursor: default;
 }
 
 .day__reserved {
@@ -124,61 +117,37 @@
     background-color: red;
 }
 
-.day__reserved::before {
-    transform: rotate(45deg);
-}
+.day__reserved::before { transform: rotate(45deg); }
+.day__reserved::after { transform: rotate(-45deg); }
 
-.day__reserved::after {
-    transform: rotate(-45deg);
-}
-
-.day__sunday,
+.day__sunday, 
 .day__saturday {
     color: #d10000;
 }
 
+.day__weekend {
+    background-color: #fcfcfc;
+}
+
 .day__selected-as-start,
-.day__selected-as-end {
-    background-color: #ffe299;
-    color: white;
-}
-
-.day__selected-between {
-    background-color: #ffe299 !important;
-    color: white;
-}
-
+.day__selected-as-end,
+.day__selected-between,
 .day__hovered {
-    background-color: #FFE299;
-    color: white;
+    background-color: #ffe299 !important;
+    color: white !important;
 }
 
-.day__past {
-    color: #d3d3d3;
-}
-
-.buttons {
-    display: flex;
-    justify-content: center;
-    gap: 0.6em;
-    margin-top: 0.6em;
-}
-
-.buttons__add,
-.buttons__clear {
-    padding: 0.9em 1.25em;
-    cursor: pointer;
-    border: 0.125em solid silver;
-    border-radius: 0.3em;
-    font-weight: 500;
-    font-size: 0.9em;
+.day__selected-between:hover, 
+.day__selected-as-start:hover, 
+.day__selected-as-end:hover {
+    background-color: #f0c96e !important;
 }
 
 .material-symbols-outlined {
     font-family: 'Material Symbols Outlined';
     font-weight: normal;
     font-style: normal;
-    font-size: 1.5em; /* Skaluje ikonę względem font-size kalendarza */
+    font-size: 1.5em;
     line-height: 1;
     display: inline-block;
 }

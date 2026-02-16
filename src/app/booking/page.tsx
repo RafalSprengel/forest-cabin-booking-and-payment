@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import QuantityPicker from '../_components/QuantityPicker/QuantityPicker';
 import CalendarPicker from '../_components/CalendarPicker/CalendarPicker';
 import styles from "./page.module.css";
@@ -16,11 +16,20 @@ export default function Booking() {
     const [isGestBoxOpen, setIsGestBoxOpen] = useState(false);
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
+    const [bookingDates, setBookingDates] = useState<BookingDates>({
+        start: null,
+        end: null,
+        count: 0
+    });
+
 
     const handleDateChange = (dates: BookingDates) => {
-        console.log(dates);
+        setBookingDates(dates);
     };
 
+    useEffect(()=>{
+console.log(bookingDates)
+    })
     return (
         <div className={styles.container}>
             <div className={styles.head}>
@@ -29,7 +38,7 @@ export default function Booking() {
             <div className={styles.searchBox}>
                 <div className={styles.dateBox}>
                     <div className={styles.date} onClick={() => setIsDateBoxOpen(!isDateBoxOpen)}>
-                        12 lutego 2026 - 18 lutego 2026 (6 nocy)
+                        {(bookingDates.start && bookingDates.end) ? `od ${bookingDates.start} do ${bookingDates.end} (${bookingDates.count} dni)` : 'Wybierz datę'}
                     </div>
                     <div className={`${styles.setDate} ${isDateBoxOpen ? styles.expandedDate : ''}`}>
                         <CalendarPicker
@@ -52,7 +61,7 @@ export default function Booking() {
                                 onDecrement={() => setAdults(adults - 1)}
                                 value={adults}
                                 min={1}
-                                max={10}
+                                max={6}
                             />
                         </div>
                         <div className={styles.pickerWrap}>
