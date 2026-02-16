@@ -26,7 +26,8 @@
 }
 
 .dateBox,
-.gestsBox {
+.gestsBox,
+.cabinsBox {
     margin: auto 10px;
     width: 100%;
     padding: 10px;
@@ -36,14 +37,16 @@
 }
 
 .date,
-.gests {
+.gests,
+.cabins {
     padding-bottom: 10px;
     border-bottom: 1px solid silver;
     cursor: pointer;
 }
 
 .setDate,
-.setGests {
+.setGests,
+.setCabins {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -60,6 +63,10 @@
 
 .expandedGests {
     height: 230px;
+}
+
+.expandedCabins {
+    height: 200px;
 }
 
 .pickerWrap {

@@ -14,6 +14,7 @@ interface BookingDates {
 export default function Booking() {
     const [isDateBoxOpen, setIsDateBoxOpen] = useState(false);
     const [isGestBoxOpen, setIsGestBoxOpen] = useState(false);
+    const [isCabinsBoxOpen, setIsCabinsBoxOpen] = useState(false);
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
     const [bookingDates, setBookingDates] = useState<BookingDates>({
@@ -27,8 +28,8 @@ export default function Booking() {
         setBookingDates(dates);
     };
 
-    useEffect(()=>{
-console.log(bookingDates)
+    useEffect(() => {
+        console.log(bookingDates)
     })
     return (
         <div className={styles.container}>
@@ -75,6 +76,14 @@ console.log(bookingDates)
                             />
                         </div>
                         <button className={styles.buttOk} onClick={() => setIsGestBoxOpen(false)}>Gotowe</button>
+                    </div>
+                </div>
+                <div className={styles.cabinsBox}>
+                    <div className={styles.cabins} onClick={() => setIsCabinsBoxOpen(!isCabinsBoxOpen)}>
+                        Ilość domków
+                    </div>
+                    <div className={`${styles.setCabins} ${isCabinsBoxOpen ? styles.expandedCabins : ''}`}>
+                        tutaj opcje domków
                     </div>
                 </div>
                 <button className={styles.button}> Szukaj </button>
