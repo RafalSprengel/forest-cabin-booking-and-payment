@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+import { checkAvailability } from '@/actions/bookings';
 import QuantityPicker from '../_components/QuantityPicker/QuantityPicker';
 import CalendarPicker from '../_components/CalendarPicker/CalendarPicker';
 import styles from "./page.module.css";
@@ -25,9 +26,24 @@ export default function Booking() {
         end: null,
         count: 0
     });
+    const [availabilityStatus, setAvailabilityStatus] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle');
+    const [showForm, setShowForm] = useState(false);
 
     const maxGuestsPerCabin = 6;
     const maxGuest = maxGuestsPerCabin * cabinsCount;
+
+    const handleSearch = async () => {
+        if (!bookingDates.start || !bookingDates.end) return;
+
+        setAvailabilityStatus('checking');
+        const res = await checkAvailability(bookingDates.start, bookingDates.end, cabinsCount);
+
+        if (res.available) {
+            setAvailabilityStatus('available');
+        } else {
+            setAvailabilityStatus('unavailable');
+        }
+    };
 
     useEffect(() => {
         if (adults + children > maxGuest) {
@@ -44,10 +60,10 @@ export default function Booking() {
         if (adults === 0 && children === 0) {
             return 'Wybierz ilość osób';
         }
-        
+
         const adultsText = adults === 1 ? '1 dorosły' : `${adults} dorosłych`;
         const childrenText = children === 0 ? '' : (children === 1 ? ', 1 dziecko' : `, ${children} dzieci`);
-        
+
         return `${adultsText}${childrenText}`;
     };
 
@@ -109,11 +125,11 @@ export default function Booking() {
                     <div className={`${styles.setCabins} ${isCabinsBoxOpen ? styles.expandedCabins : ''}`}>
                         <div className={styles.cabinsSelection}>
                             <label className={styles.cabinOption}>
-                                <input 
-                                    type="radio" 
-                                    name="cabins" 
-                                    checked={cabinsCount === 1} 
-                                    onChange={() => setCabinsCount(1)} 
+                                <input
+                                    type="radio"
+                                    name="cabins"
+                                    checked={cabinsCount === 1}
+                                    onChange={() => setCabinsCount(1)}
                                 />
                                 <div className={styles.cabinVisual}>
                                     <div className={styles.iconStack}>
@@ -127,11 +143,11 @@ export default function Booking() {
                             </label>
 
                             <label className={styles.cabinOption}>
-                                <input 
-                                    type="radio" 
-                                    name="cabins" 
-                                    checked={cabinsCount === 2} 
-                                    onChange={() => setCabinsCount(2)} 
+                                <input
+                                    type="radio"
+                                    name="cabins"
+                                    checked={cabinsCount === 2}
+                                    onChange={() => setCabinsCount(2)}
                                 />
                                 <div className={styles.cabinVisual}>
                                     <div className={styles.iconStack}>
@@ -148,17 +164,63 @@ export default function Booking() {
                         <button className={styles.buttOk} onClick={() => setIsCabinsBoxOpen(false)}>Gotowe</button>
                     </div>
                 </div>
-                <button 
-                    className={styles.button} 
-                    disabled={isSearchDisabled}
-                    style={{ 
-                        opacity: isSearchDisabled ? 0.5 : 1, 
-                        cursor: isSearchDisabled ? 'not-allowed' : 'pointer' 
+                <button
+                    className={styles.button}
+                    disabled={isSearchDisabled || availabilityStatus === 'checking'}
+                    onClick={handleSearch}
+                    style={{
+                        opacity: (isSearchDisabled || availabilityStatus === 'checking') ? 0.5 : 1,
+                        cursor: (isSearchDisabled || availabilityStatus === 'checking') ? 'not-allowed' : 'pointer'
                     }}
-                > 
-                    Szukaj 
+                >
+                    {availabilityStatus === 'checking' ? 'Sprawdzam...' : 'Szukaj'}
                 </button>
             </div>
+
+            <div className={styles.resultArea}>
+                {availabilityStatus === 'available' && (
+                    <div className={styles.statusAvailable}>
+                        <div className={styles.statusIcon}>
+                            <FontAwesomeIcon icon={faCheck} />
+                        </div>
+                        <div className={styles.statusContent}>
+                            <h3>Termin jest dostępny!</h3>
+                            <p>Wybrany okres: {bookingDates.start} - {bookingDates.end} dla {cabinsCount} {cabinsCount === 1 ? 'domku' : 'domków'}.</p>
+                        </div>
+                        <button className={styles.btnReserve} onClick={() => setShowForm(true)}>
+                            Zarezerwuj teraz
+                        </button>
+                    </div>
+                )}
+
+                {availabilityStatus === 'unavailable' && (
+                    <div className={styles.statusUnavailable}>
+                        <h3>Termin niedostępny</h3>
+                        <p>Niestety w tych datach nie mamy wolnych miejsc dla wybranej liczby domków.</p>
+                    </div>
+                )}
+            </div>
+
+            {showForm && (
+                <div className={styles.formOverlay}>
+                    <div className={styles.bookingForm}>
+                        <h2>Dane rezerwacji</h2>
+                        <input type="text" placeholder="Imię i Nazwisko" className={styles.input} required />
+                        <input type="email" placeholder="Email" className={styles.input} required />
+                        <input type="tel" placeholder="Numer telefonu" className={styles.input} required />
+
+                        <label className={styles.checkboxLabel}>
+                            <input type="checkbox" required />
+                            <span>Zapoznałem się z treścią regulaminu</span>
+                        </label>
+
+                        <div className={styles.formButtons}>
+                            <button className={styles.btnCancel} onClick={() => setShowForm(false)}>Anuluj</button>
+                            <button className={styles.btnSubmit}>Potwierdzam rezerwację</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

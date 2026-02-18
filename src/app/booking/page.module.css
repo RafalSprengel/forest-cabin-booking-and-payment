@@ -1,16 +1,31 @@
+:root {
+    --primary-dark: #262a10;
+    --primary-hover: #2b2e18;
+    --accent-success: #262a10;
+    --accent-success-light: #f0fdf4;
+    --accent-error: #ef4444;
+    --accent-error-light: #fef2f2;
+    --text-main: #333;
+    --text-muted: #666;
+    --border-color: #ddd;
+    --white: #ffffff;
+    --transition-speed: 0.4s;
+}
+
 .container {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     min-height: 80dvh;
+    padding-bottom: 50px;
 }
 
 .head {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff;
-    background-color: #262a10;
+    color: var(--white);
+    background-color: var(--primary-dark);
     height: 150px;
     width: 100%;
 }
@@ -18,32 +33,41 @@
 .searchBox {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
     justify-content: center;
     align-items: center;
-    margin: 20px;
+    margin: 20px auto;
     margin-top: 40px;
+    max-width: 600px;
+    width: 90%;
 }
 
 .dateBox,
 .gestsBox,
 .cabinsBox {
-    margin: 0 10px;
     width: 100%;
-    padding: 10px;
-    padding-bottom: 0;
-    border: 1px solid var(--primary-color);
-    border-radius: 5px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     box-sizing: border-box;
+    background-color: var(--white);
+    transition: box-shadow 0.3s ease;
+}
+
+.dateBox:hover,
+.gestsBox:hover,
+.cabinsBox:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .date,
 .gests,
 .cabins {
-    padding-bottom: 10px;
-    border-bottom: 1px solid silver;
+    padding-bottom: 5px;
     cursor: pointer;
     text-align: left;
+    font-weight: 500;
+    color: var(--text-main);
 }
 
 .setDate,
@@ -56,33 +80,26 @@
     width: 100%;
     height: 0px;
     overflow: hidden;
-    transition: height var(--transition);
+    transition: height var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.expandedDate { height: 530px; }
+.expandedGests { height: 320px; }
+.expandedCabins { height: 230px; }
 
 .info {
-    margin-top: 10px;
-    margin-bottom: 10px;;
+    margin-top: 15px;
+    margin-bottom: 10px;
     font-size: 0.8rem;
     width: 100%;
-    ;
-}
-
-.expandedDate {
-    height: 530px;
-}
-
-.expandedGests {
-    height: 290px;
-}
-
-.expandedCabins {
-    height: 250px;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 .cabinsSelection {
     display: flex;
     gap: 40px;
-    padding: 10px 0;
+    padding: 20px 0;
     justify-content: center;
     width: 100%;
 }
@@ -103,7 +120,7 @@
     align-items: center;
     gap: 12px;
     opacity: 0.4;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .iconStack {
@@ -117,7 +134,7 @@
 
 .cabinIcon {
     font-size: 35px;
-    color: #262a10;
+    color: var(--primary-dark);
 }
 
 .offsetIcon {
@@ -134,56 +151,206 @@
     right: -5px;
     width: 22px;
     height: 22px;
-    background-color: white;
-    border: 2px solid #262a10;
+    background-color: var(--white);
+    border: 2px solid var(--primary-dark);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
+    color: var(--white);
     font-size: 12px;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .cabinOption input:checked+.cabinVisual {
     opacity: 1;
+    transform: scale(1.05);
 }
 
 .cabinOption input:checked+.cabinVisual .tickBox {
-    background-color: #262a10;
+    background-color: var(--primary-dark);
 }
 
 .pickerWrap {
     width: 100%;
     display: flex;
     justify-content: space-between;
-}
-
-.label {
-    display: flex;
-    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .button {
-    width: 200px;
-    padding: 15px 10px;
+    width: 100%;
+    max-width: 300px;
+    padding: 16px;
     margin-top: 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    background-color: var(--accent-color);
-    color: #fff;
+    background-color: var(--primary-dark);
+    color: var(--white);
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
 }
 
 .buttOk {
-    border: 1px solid #ddd;
+    border: 1px solid var(--primary-dark);
     border-radius: 5px;
     background-color: transparent;
-    margin: 30px 0;
-    padding: 10px;
-    width: 100px;
+    color: var(--primary-dark);
+    margin: 20px 0;
+    padding: 8px 25px;
     cursor: pointer;
+    font-weight: 600;
+}
+
+.resultArea {
+    width: 90%;
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.statusAvailable {
+    display: flex;
+    align-items: center;
+    background-color: var(--accent-success-light);
+    border: 2px solid var(--accent-success);
+    padding: 20px;
+    border-radius: 12px;
+    gap: 20px;
+    animation: slideUp 0.4s ease-out;
+}
+
+.statusIcon {
+    font-size: 24px;
+    color: var(--accent-success);
+    background: var(--white);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.statusContent h3 { margin: 0; color: #166534; }
+.statusContent p { margin: 5px 0 0; color: #15803d; font-size: 0.9rem; }
+
+.btnReserve {
+    background-color: var(--accent-success);
+    color: var(--white);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: auto;
+    transition: background 0.2s;
+}
+
+.btnReserve:hover { background-color: #16a34a; }
+
+.statusUnavailable {
+    background-color: var(--accent-error-light);
+    border: 2px solid var(--accent-error);
+    color: #991b1b;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    animation: slideUp 0.4s ease-out;
+}
+
+.formOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.bookingForm {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.bookingForm h2 { margin-bottom: 10px; color: var(--primary-dark); }
+
+.input {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input:focus { border-color: var(--primary-dark); }
+
+.checkboxLabel {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+.checkboxLabel input { margin-top: 3px; }
+
+.formButtons {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btnCancel {
+    flex: 1;
+    background: #f3f4f6;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btnSubmit {
+    flex: 2;
+    background: var(--primary-dark);
+    color: var(--white);
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+    .statusAvailable { flex-direction: column; text-align: center; }
+    .btnReserve { margin-left: 0; width: 100%; }
+    .formButtons { flex-direction: column-reverse; }
 }

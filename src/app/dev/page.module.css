@@ -1,0 +1,130 @@
+.wrapper {
+    background-color: #0f1115;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px; /* Mniejszy padding na małych ekranach */
+}
+
+.devContainer {
+    background-color: #1a1d23;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 85vh; /* Zmienione z height na min-height dla elastyczności */
+    border-radius: 12px;
+    border: 1px solid #2d333b;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    color: #adbac7;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin: 10px 0;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2d333b;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #539bf5;
+}
+
+.status {
+    background: #22272e;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    border: 1px solid #444c56;
+    white-space: nowrap;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Domyślnie dwie kolumny */
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.buttonGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btnPrimary {
+    background-color: #347d39;
+    color: white;
+    border: none;
+    padding: 14px; /* Większy obszar klikalny dla palca */
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+    font-size: 0.9rem;
+}
+
+.btnDanger {
+    background-color: #ae2c2c;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.9rem;
+}
+
+.console {
+    display: flex;
+    flex-direction: column;
+    min-height: 300px; /* Minimalna wysokość konsoli na mobile */
+}
+
+.logWindow {
+    background-color: #0d1117;
+    flex-grow: 1;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    overflow-y: auto;
+    border: 1px solid #2d333b;
+}
+
+
+@media (max-width: 768px) {
+    .wrapper {
+        padding: 0;
+        align-items: flex-start; 
+    }
+
+    .devContainer {
+        border-radius: 0; 
+        border: none;
+        min-height: 100vh;
+        margin: 0;
+        padding: 15px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr; 
+    }
+
+    .header h1 {
+        font-size: 1.1rem;
+    }
+
+    .logWindow {
+        max-height: 40vh; 
+    }
+}
