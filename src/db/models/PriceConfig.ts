@@ -1,30 +1,31 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface IRateTier {
+// Dodano eksport do wszystkich interfejsów
+export interface IRateTier {
   minGuests: number;
   maxGuests: number;
   price: number;
 }
 
-interface IBaseRates {
+export interface IBaseRates {
   weekday: IRateTier[];
   weekend: IRateTier[];
   extraBedPrice: number;
   childrenFreeAgeLimit: number;
 }
 
-interface ISeason {
+export interface ISeason {
   name: string;
   startDate: Date;
   endDate: Date;
   weekday: IRateTier[];
   weekend: IRateTier[];
-  extraBedPrice?: number; // Jeśli nie podano, używa ceny bazowej
+  extraBedPrice?: number;
   isActive: boolean;
 }
 
 export interface IPriceConfig extends Document {
-  _id: string; // Zawsze 'main'
+  _id: string;
   baseRates: IBaseRates;
   seasons: ISeason[];
   updatedAt: Date;
