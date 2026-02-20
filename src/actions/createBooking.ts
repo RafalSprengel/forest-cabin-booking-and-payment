@@ -1,4 +1,3 @@
-// src/actions/createBooking.ts
 'use server'
 
 import dbConnect from '@/db/connection';
@@ -37,11 +36,8 @@ export async function createBookingWithConditionalBlock({
     const end = new Date(endDate);
     const selectedPropId = new mongoose.Types.ObjectId(propertyId);
 
-    // 1. POBIERZ KONFIGURACJĘ Z BAZY
-    // Szukamy dokumentu o ID 'main'
     let config = await SystemConfig.findById('main').session(session);
     
-    // Fallback jeśli config nie istnieje (tworzymy domyślny)
     if (!config) {
       config = await SystemConfig.create([{ 
         _id: 'main', 
@@ -52,7 +48,6 @@ export async function createBookingWithConditionalBlock({
 
     const shouldAutoBlock = config.autoBlockOtherCabins;
 
-    // 2. Tworzenie głównej rezerwacji (REAL)
     const mainBooking = await Booking.create([{
       propertyId: selectedPropId,
       guestName,
@@ -67,12 +62,10 @@ export async function createBookingWithConditionalBlock({
 
     const mainBookingId = mainBooking[0]._id;
 
-    // 3. WARUNKOWE TWORZENIE BLOKAD (SHADOW)
     if (shouldAutoBlock) {
-      // Pobierz inne aktywne domki
       const otherProperties = await Property.find({ 
         isActive: true, 
-        _id: { $ne: selectedPropId } // Wszystkie oprócz wybranego
+        _id: { $ne: selectedPropId }
       }).session(session);
 
       if (otherProperties.length > 0) {

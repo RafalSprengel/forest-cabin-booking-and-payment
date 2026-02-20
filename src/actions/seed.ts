@@ -15,13 +15,10 @@ async function ensureConnected() {
     }
 }
 
-// --- FUNKCJE POMOCNICZE (ZMODYFIKOWANE) ---
-
 export async function seedProperties(session?: ClientSession) {
     try {
         await ensureConnected();
         
-        // Czyścimy tylko jeśli NIE mamy sesji (czyli wywołanie indywidualne)
         if (!session) {
             await Property.deleteMany({});
         }
@@ -156,7 +153,6 @@ export async function seedBookings(session?: ClientSession) {
     try {
         await ensureConnected();
 
-        // Pobranie domków (zawsze potrzebne)
         const props = session 
             ? await Property.find({ isActive: true }).session(session)
             : await Property.find({ isActive: true });
@@ -172,7 +168,6 @@ export async function seedBookings(session?: ClientSession) {
             return { success: false, error: "Nie znaleziono domków." };
         }
 
-        // Czyszczenie tylko przy wywołaniu indywidualnym
         if (!session) {
             await Booking.deleteMany({});
         }
@@ -266,8 +261,6 @@ export async function seedBookings(session?: ClientSession) {
     }
 }
 
-// --- GŁÓWNA FUNKCJA KOORDYNUJĄCA ---
-
 export async function seedAllData() {
     await ensureConnected();
 
@@ -275,19 +268,15 @@ export async function seedAllData() {
     session.startTransaction();
 
     try {
-        // 1. Wyczyść WSZYSTKO na start (tylko raz)
+
         await Property.deleteMany({}, { session });
         await Booking.deleteMany({}, { session });
         await PriceConfig.deleteMany({}, { session });
         await SystemConfig.deleteMany({}, { session });
-
-        // 2. Wywołaj funkcje składowe przekazując sesję
-        // Kolejność jest ważna: najpierw domki, potem rezerwacje (które potrzebują ID domków)
         await seedProperties(session);
         await seedSystemConfig(session);
         await seedPriceConfig(session);
         
-        // seedBookings pobierze domki z bazy (przez sesję) i utworzy rezerwacje
         await seedBookings(session);
 
         await session.commitTransaction();

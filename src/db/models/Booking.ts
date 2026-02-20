@@ -44,7 +44,6 @@ const BookingSchema = new Schema<IBooking>({
   paymentId: { type: String }
 }, { timestamps: true });
 
-// Indeksy dla wydajności
 BookingSchema.index({ propertyId: 1, startDate: 1, endDate: 1 });
 BookingSchema.index({ status: 1 });
 BookingSchema.index({ bookingType: 1 });

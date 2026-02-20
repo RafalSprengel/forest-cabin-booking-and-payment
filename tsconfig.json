@@ -30,7 +30,10 @@
         "./src/app/_components/*"
       ],
       "@actions/*": [
-        ".src/actions/*"
+        "./src/actions/*"
+      ],
+      "@hooks/*":[
+        "./src/hooks/*"
       ]
     }
   },
