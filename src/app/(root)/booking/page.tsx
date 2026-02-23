@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useRef } from 'react';
-import { searchAvailableProperties, SearchOption } from '@/actions/searchActions';
-import QuantityPicker from '../_components/QuantityPicker/QuantityPicker';
-import CalendarPicker from '../_components/CalendarPicker/CalendarPicker';
+import { searchAction, SearchOption } from '@/actions/searchActions';
+import QuantityPicker from '../../_components/QuantityPicker/QuantityPicker';
+import CalendarPicker from '../../_components/CalendarPicker/CalendarPicker';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import styles from "./page.module.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faCheck, faSpinner, faExclamationCircle, faHouse } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faSpinner, faExclamationCircle, faHouse } from '@fortawesome/free-solid-svg-icons';
 
 interface BookingDates {
     start: string | null;
@@ -61,7 +61,7 @@ export default function BookingPage() {
         closeAllBoxes();
 
         try {
-            const results = await searchAvailableProperties({
+            const results = await searchAction({
                 startDate: bookingDates.start,
                 endDate: bookingDates.end,
                 guests: totalGuests,
@@ -96,9 +96,7 @@ export default function BookingPage() {
                 <h2>Znajdź swój termin</h2>
             </div>
 
-            {/* --- PANEL WYSZUKIWANIA --- */}
             <div className={styles.searchBox}>
-                {/* Goście */}
                 <div className={styles.gestsBox}>
                     <div className={styles.gests} onClick={() => toggleBox('guests')}>
                         <FontAwesomeIcon icon={faUsers} className={styles.iconSmall} />
@@ -134,7 +132,6 @@ export default function BookingPage() {
                     </div>
                 </div>
 
-                {/* Daty */}
                 <div className={styles.dateBox}>
                     <div className={styles.date} onClick={() => toggleBox('dates')}>
                         {(bookingDates.start && bookingDates.end) 
@@ -154,7 +151,6 @@ export default function BookingPage() {
                     </div>
                 </div>
 
-                {/* Przycisk Szukaj */}
                 <button
                     className={styles.button}
                     disabled={isSearchDisabled || isLoading}
@@ -164,7 +160,6 @@ export default function BookingPage() {
                 </button>
             </div>
 
-            {/* --- WYNIKI WYSZUKIWANIA --- */}
             <div className={styles.resultsContainer}>
                 {isLoading && (
                     <div className={styles.loadingState}>
@@ -231,7 +226,6 @@ export default function BookingPage() {
                 )}
             </div>
 
-            {/* --- FORMULARZ REZERWACJI (MODAL) --- */}
             {showForm && selectedOption && (
                 <div className={styles.formOverlay} onClick={() => setShowForm(false)}>
                     <div className={styles.bookingForm} onClick={(e) => e.stopPropagation()}>

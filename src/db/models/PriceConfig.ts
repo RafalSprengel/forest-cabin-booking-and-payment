@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// Dodano eksport do wszystkich interfejsów
 export interface IRateTier {
   minGuests: number;
   maxGuests: number;

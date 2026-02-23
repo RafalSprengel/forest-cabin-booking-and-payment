@@ -1,8 +1,6 @@
 import { Sansita, PT_Serif, Mulish } from "next/font/google";
 import type { Metadata } from 'next';
-import './globals.css';
-import Header from '@components/Header/Header';
-import Footer from '@components/Footer/Footer';
+import '@/app/globals.css';
 
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -34,15 +32,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
     children,
-}: Readonly<{
+}: {
     children: React.ReactNode;
-}>) {
+}) {
     return (
         <html lang="pl">
             <body className={`${sansita.variable} ${ptSerif.variable} ${mulish.variable}`}>
-                <Header />
                 {children}
-                <Footer />
             </body>
         </html>
     );

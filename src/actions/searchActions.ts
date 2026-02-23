@@ -3,7 +3,8 @@
 import dbConnect from '@/db/connection';
 import Property, { IProperty } from '@/db/models/Property';
 import Booking from '@/db/models/Booking';
-import PriceConfig, { IPriceConfig, ISeason } from '@/db/models/PriceConfig'; // 1. Import typów
+import PriceConfig, { IPriceConfig, ISeason } from '@/db/models/PriceConfig';
+import SystemConfig from '@/db/models/SystemConfig';
 import { Types } from 'mongoose';
 
 export interface SearchOption {
@@ -13,7 +14,7 @@ export interface SearchOption {
   totalPrice: number;
   maxGuests: number;
   description: string;
-  available: true;
+  available: boolean;
 }
 
 interface SearchParams {
@@ -23,9 +24,6 @@ interface SearchParams {
   extraBeds?: number;
 }
 
-/**
- * Pomocnicza funkcja do liczenia ceny na podstawie PriceConfig
- */
 async function calculateTotalPrice(
   startDate: string,
   endDate: string,
@@ -35,10 +33,7 @@ async function calculateTotalPrice(
 ): Promise<number> {
   await dbConnect();
   const config = await PriceConfig.findById('main');
-  
-  if (!config) {
-    return 0; 
-  }
+  if (!config) return 0;
 
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -51,7 +46,6 @@ async function calculateTotalPrice(
     const day = d.getDay();
     const isWeekend = (day === 5 || day === 6);
     
-    // 2. Jawne typowanie parametru 's' jako ISeason
     const activeSeason = config.seasons.find((s: ISeason) => 
       s.isActive && d >= s.startDate && d <= s.endDate
     );
@@ -65,14 +59,13 @@ async function calculateTotalPrice(
     ) || ratesSource[tierKey][ratesSource[tierKey].length - 1];
 
     const nightPrice = tier.price + (extraBedsPerCabin * bedPrice);
-
     total += isDouble ? nightPrice * 2 : nightPrice;
   }
 
   return total;
 }
 
-export async function searchAvailableProperties({ 
+export async function searchAction({ 
   startDate, 
   endDate, 
   guests, 
@@ -84,8 +77,15 @@ export async function searchAvailableProperties({
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const properties = await Property.find({ isActive: true });
+    let sysConfig = await SystemConfig.findById('main');
     
+    if (!sysConfig) {
+      sysConfig = { autoBlockOtherCabins: true } as any; 
+    }
+    
+    const isAutoBlockEnabled = sysConfig.autoBlockOtherCabins;
+
+    const properties = await Property.find({ isActive: true });
     if (properties.length === 0) return [];
 
     const propertyIds = properties.map(p => p._id.toString());
@@ -115,7 +115,9 @@ export async function searchAvailableProperties({
           displayName: prop.name,
           totalPrice: price,
           maxGuests: prop.baseCapacity + (prop.maxCapacityWithExtra - prop.baseCapacity),
-          description: "Wynajem pojedynczego domku. Dostęp do wspólnego terenu.",
+          description: isAutoBlockEnabled 
+            ? "Wynajem pojedynczego domku. Przy tej rezerwacji drugi domek zostanie automatycznie zablokowany." 
+            : "Wynajem pojedynczego domku. Drugi domek może być wynajmowany niezależnie.",
           available: true
         });
       }
@@ -132,7 +134,9 @@ export async function searchAvailableProperties({
         displayName: "Cała Posesja (Wszystkie domki)",
         totalPrice: price,
         maxGuests: properties.reduce((sum, p) => sum + p.baseCapacity, 0),
-        description: "Maksymalna prywatność. Cały obiekt i teren tylko dla Twojej grupy.",
+        description: isAutoBlockEnabled
+          ? "Maksymalna prywatność. Rezerwacja całej posesji blokuje możliwość wynajmu pojedynczych domków."
+          : "Maksymalna prywatność. Wynajem wszystkich dostępnych domków w jednej transakcji.",
         available: true
       });
     }
