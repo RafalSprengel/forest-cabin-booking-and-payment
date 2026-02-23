@@ -99,8 +99,12 @@ export default function BookingPage() {
             <div className={styles.searchBox}>
                 <div className={styles.gestsBox}>
                     <div className={styles.gests} onClick={() => toggleBox('guests')}>
-                        <FontAwesomeIcon icon={faUsers} className={styles.iconSmall} />
-                        &nbsp;{renderGuestsText()}
+                        <div style={{display: 'flex', alignItems: 'center'}}>
+                            <FontAwesomeIcon icon={faUsers} className={styles.iconSmall} />
+                            <span>{renderGuestsText()}</span>
+                        </div>
+                        {/* Mała strzałka wskazująca interaktywność */}
+                        <span style={{fontSize: '0.8rem', color: '#aaa'}}>&#9662;</span>
                     </div>
                     
                     <div 
@@ -134,9 +138,14 @@ export default function BookingPage() {
 
                 <div className={styles.dateBox}>
                     <div className={styles.date} onClick={() => toggleBox('dates')}>
-                        {(bookingDates.start && bookingDates.end) 
-                            ? `${bookingDates.start} — ${bookingDates.end}` 
-                            : 'Wybierz daty'}
+                        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+                            <span>
+                                {(bookingDates.start && bookingDates.end) 
+                                    ? `${bookingDates.start} — ${bookingDates.end}` 
+                                    : 'Wybierz daty'}
+                            </span>
+                            <span style={{fontSize: '0.8rem', color: '#aaa'}}>&#9662;</span>
+                        </div>
                     </div>
                     
                     <div 
@@ -230,7 +239,7 @@ export default function BookingPage() {
                 <div className={styles.formOverlay} onClick={() => setShowForm(false)}>
                     <div className={styles.bookingForm} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.formHeader}>
-                            <h2>Podsumowanie rezerwacji</h2>
+                            <h2>Podsumowanie</h2>
                             <button className={styles.closeBtn} onClick={() => setShowForm(false)}>×</button>
                         </div>
                         
