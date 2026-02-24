@@ -1,21 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import styles from './page.module.css';
+import { createManualBooking } from '@/actions/adminBookingActions';
+
+const initialState = {
+  message: '',
+  success: false,
+};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button type="submit" className={styles.btnSubmit} disabled={pending}>
+      {pending ? 'Zapisywanie...' : 'Zapisz Rezerwację'}
+    </button>
+  );
+}
 
 export default function AddBookingPage() {
-  const [loading, setLoading] = useState(false);
+  const [state, formAction] = useFormState(createManualBooking, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Tu wywoać akcję serwera np. createManualBooking(formData)
-    setTimeout(() => {
-      alert('Rezerwacja dodana! (Symulacja)');
-      setLoading(false);
-    }, 1000);
-  };
+  useEffect(() => {
+    if (state.success) {
+      alert(state.message); // Lub lepszy UI np. toast
+      formRef.current?.reset();
+    }
+    if (!state.success && state.message) {
+      alert(`Błąd: ${state.message}`);
+    }
+  }, [state]);
 
   return (
     <div className={styles.container}>
@@ -24,29 +41,29 @@ export default function AddBookingPage() {
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej)</p>
       </header>
 
-      <form onSubmit={handleSubmit} className={styles.formCard}>
+      <form ref={formRef} action={formAction} className={styles.formCard}>
         <div className={styles.sectionTitle}>Termin i Obiekt</div>
         
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
-            <label>Data przyjazdu</label>
-            <input type="date" required name="startDate" />
+            <label htmlFor="startDate">Data przyjazdu</label>
+            <input id="startDate" type="date" required name="startDate" />
           </div>
           <div className={styles.inputGroup}>
-            <label>Data wyjazdu</label>
-            <input type="date" required name="endDate" />
+            <label htmlFor="endDate">Data wyjazdu</label>
+            <input id="endDate" type="date" required name="endDate" />
           </div>
           <div className={styles.inputGroup}>
-            <label>Obiekt</label>
-            <select name="propertyId">
+            <label htmlFor="propertyId">Obiekt</label>
+            <select id="propertyId" name="propertyId">
               <option value="cabin1">Domek 1 (Sosnowy)</option>
               <option value="cabin2">Domek 2 (Brzozowy)</option>
               <option value="both">Cała posesja</option>
             </select>
           </div>
           <div className={styles.inputGroup}>
-            <label>Liczba gości</label>
-            <input type="number" min="1" max="12" defaultValue="2" />
+            <label htmlFor="numGuests">Liczba gości</label>
+            <input id="numGuests" name="numGuests" type="number" min="1" max="12" defaultValue="2" />
           </div>
         </div>
 
@@ -54,33 +71,31 @@ export default function AddBookingPage() {
         
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
-            <label>Imię i Nazwisko</label>
-            <input type="text" required placeholder="np. Jan Kowalski" />
+            <label htmlFor="guestName">Imię i Nazwisko</label>
+            <input id="guestName" name="guestName" type="text" required placeholder="np. Jan Kowalski" />
           </div>
           <div className={styles.inputGroup}>
-            <label>Email</label>
-            <input type="email" required placeholder="jan@example.com" />
+            <label htmlFor="guestEmail">Email</label>
+            <input id="guestEmail" name="guestEmail" type="email" required placeholder="jan@example.com" />
           </div>
           <div className={styles.inputGroup}>
-            <label>Telefon</label>
-            <input type="tel" required placeholder="+48 123 456 789" />
+            <label htmlFor="guestPhone">Telefon</label>
+            <input id="guestPhone" name="guestPhone" type="tel" required placeholder="+48 123 456 789" />
           </div>
           <div className={styles.inputGroup}>
-            <label>Cena całkowita (PLN)</label>
-            <input type="number" required placeholder="0.00" step="0.01" />
+            <label htmlFor="totalPrice">Cena całkowita (PLN)</label>
+            <input id="totalPrice" name="totalPrice" type="number" required placeholder="0.00" step="0.01" />
           </div>
         </div>
 
         <div className={styles.inputGroup}>
-          <label>Uwagi wewnętrzne</label>
-          <textarea rows={3} placeholder="Np. Gość prosi o łóżeczko dla dziecka"></textarea>
+          <label htmlFor="internalNotes">Uwagi wewnętrzne</label>
+          <textarea id="internalNotes" name="internalNotes" rows={3} placeholder="Np. Gość prosi o łóżeczko dla dziecka"></textarea>
         </div>
 
         <div className={styles.actions}>
-          <button type="button" className={styles.btnCancel}>Anuluj</button>
-          <button type="submit" className={styles.btnSubmit} disabled={loading}>
-            {loading ? 'Zapisywanie...' : 'Zapisz Rezerwację'}
-          </button>
+          <button type="button" className={styles.btnCancel} onClick={() => formRef.current?.reset()}>Anuluj</button>
+          <SubmitButton />
         </div>
       </form>
     </div>
