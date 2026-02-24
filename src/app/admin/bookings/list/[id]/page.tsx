@@ -1,21 +1,16 @@
 import { getBookingById, deleteBooking } from '@/actions/adminBookingActions';
 import { notFound, redirect } from 'next/navigation';
-import DeleteButton from './DeleteButton';
-import EditBookingForm from './EditBookingForm'; 
+import EditBookingForm from './EditBookingForm';
 import Link from 'next/link';
 import styles from './page.module.css';
 
-// To jest Server Component (domyślnie)
-export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BookingDetailsPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   const booking = await getBookingById(id);
 
   if (!booking) {
     notFound();
   }
-  const handleDelete = async () => {
-    'use server';
-  };
 
   return (
     <div className={styles.container}>
@@ -54,17 +49,17 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
             <h3>Strefa Niebezpieczna</h3>
             <form action={async () => {
               'use server';
-              if (confirm('Czy na pewno chcesz usunąć tę rezerwację?')) {
-                await deleteBooking(booking._id);
+              const result = await deleteBooking(booking._id);
+              if (result.success) {
                 redirect('/admin/bookings/list');
+              } else {
+                console.error(result.message);
               }
             }}>
-               <button type="submit" className={styles.deleteBtn} formNoValidate>
+               <button type="submit" className={styles.deleteBtn}>
                  🗑️ Usuń Rezerwację
                </button>
             </form>
-             <DeleteButton bookingId={booking._id} />
-            
             <p className={styles.deleteHint}>Usunięcie rezerwacji zwolni termin w kalendarzu.</p>
           </div>
         </div>

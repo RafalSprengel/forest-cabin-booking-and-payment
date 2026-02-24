@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import '@/db/models/Booking';
+import '@/db/models/Property';
+import '@/db/models/PriceConfig';
+import '@/db/models/SystemConfig';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 

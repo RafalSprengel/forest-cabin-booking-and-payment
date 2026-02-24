@@ -27,12 +27,10 @@ export async function calculateDynamicPrice(
   const nightlyPrices: PriceBreakdown['nightlyPrices'] = [];
   let totalPrice = 0;
 
-  // Pętla po każdej nocy pobytu
   for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-    const currentDay = d.getDay(); // 0 = Niedziela, 6 = Sobota
-    const isWeekend = currentDay === 5 || currentDay === 6; // Piątek i Sobota to weekend (noc z Pt na Sb, Sb na Nd)
+    const currentDay = d.getDay();
+    const isWeekend = currentDay === 5 || currentDay === 6;
     
-    // Sprawdź czy jesteśmy w sezonie wysokim
     const activeSeason = config.seasons.find(s => 
       s.isActive && 
       d >= s.startDate && 
@@ -42,11 +40,6 @@ export async function calculateDynamicPrice(
     const ratesSource = activeSeason ? activeSeason : config.baseRates;
     const extraBedPrice = activeSeason?.extraBedPrice ?? config.baseRates.extraBedPrice;
 
-    // Znajdź odpowiedni próg cenowy dla liczby gości
-    // Uwaga: totalGuests to wszyscy goście (dorośli + dzieci powyżej limitu? - upraszczamy: całkowita liczba płatnych miejsc)
-    // W prostym modelu: cena zależy od całkowitej liczby osób śpiących (goście + dostawki) LUB samej grupy bazowej.
-    // Przyjmijmy logikę: Cena bazowa zależy od liczby osób (totalGuests), a dostawki są dodawane na wierzch.
-    
     const tier = ratesSource[isWeekend ? 'weekend' : 'weekday'].find(r => 
       totalGuests >= r.minGuests && totalGuests <= r.maxGuests
     ) || ratesSource[isWeekend ? 'weekend' : 'weekday'][ratesSource[isWeekend ? 'weekend' : 'weekday'].length - 1];

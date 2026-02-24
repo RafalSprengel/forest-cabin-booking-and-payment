@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import './admin.css';
+import styles from './admin.module.css';
 
 export default function AdminLayout({
   children,
@@ -11,7 +11,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [isBookingsOpen, setIsBookingsOpen] = useState(false); 
+  const [isBookingsOpen, setIsBookingsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isBookingsActive = pathname?.startsWith('/admin/bookings');
   const isSettingsActive = pathname === '/admin/settings';
@@ -19,52 +20,92 @@ export default function AdminLayout({
 
   const toggleBookings = () => setIsBookingsOpen(!isBookingsOpen);
 
+  const handleMenuLinkClick = () => {
+    if (isMobileMenuOpen) {
+      closeMobileMenu();
+    }
+  };
+
+  const openMobileMenu = () => {
+    document.body.classList.add('mobile-menu-open');
+    setIsMobileMenuOpen(true);
+  };
+
+  const closeMobileMenu = () => {
+    document.body.classList.remove('mobile-menu-open');
+    setIsMobileMenuOpen(false);
+  };
+
+  useEffect(() => {
+    if (isBookingsActive) {
+      setIsBookingsOpen(true);
+    }
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+    };
+  }, [isBookingsActive]);
+
+  const getLinkClassName = (path: string, isActive: boolean, isSubLink: boolean = false) => {
+    let className = `${styles.navLink}`;
+    if (isSubLink) className += ` ${styles.subLink}`;
+    if (isActive) className += ` ${styles.active}`;
+    return className;
+  };
+
   return (
-    <div className="admin-layout">
+    <div className={styles.adminLayout}>
+      <div 
+        className={`${styles.mobileOverlay} ${isMobileMenuOpen ? styles.visible : ''}`}
+        onClick={closeMobileMenu}
+      ></div>
+
       <button 
-        className="mobile-toggle" 
-        onClick={() => document.querySelector('.admin-sidebar')?.classList.toggle('mobile-open')}
+        className={styles.mobileToggle} 
+        onClick={openMobileMenu}
       >
         ☰ Menu
       </button>
 
-      <aside className="admin-sidebar">
-        <div className="sidebar-header">
-          <h2>Panel Administratora</h2>
+      <aside className={`${styles.adminSidebar} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
+        <div className={styles.sidebarHeader}>
+          <h2>Panel Adminia</h2>
         </div>
         
-        <nav className="sidebar-nav">
+        <nav className={styles.sidebarNav}>
           <div>
-            <div className="nav-group-title">Rezerwacje</div>
+            <div className={styles.navGroupTitle}>Rezerwacje</div>
             
             <div 
-              className={`nav-link ${isBookingsActive ? 'active' : ''}`} 
+              className={getLinkClassName('', isBookingsActive)}
               onClick={toggleBookings}
               style={{ cursor: 'pointer', justifyContent: 'space-between' }}
             >
               <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-                <span className="nav-icon">📅</span>
+                <span className={styles.navIcon}>📅</span>
                 <span>Obsługa Rezerwacji</span>
               </div>
               <span>{isBookingsOpen ? '▲' : '▼'}</span>
             </div>
 
-            <div className={`submenu ${isBookingsOpen ? 'open' : ''}`}>
+            <div className={`${styles.submenu} ${isBookingsOpen ? styles.open : ''}`}>
               <Link 
                 href="/admin/bookings/add" 
-                className={`nav-link sub-link ${pathname === '/admin/bookings/add' ? 'active' : ''}`}
+                className={getLinkClassName('/admin/bookings/add', pathname === '/admin/bookings/add', true)}
+                onClick={handleMenuLinkClick}
               >
                 ➕ Dodaj Nową
               </Link>
               <Link 
                 href="/admin/bookings/calendar" 
-                className={`nav-link sub-link ${pathname === '/admin/bookings/calendar' ? 'active' : ''}`}
+                className={getLinkClassName('/admin/bookings/calendar', pathname === '/admin/bookings/calendar', true)}
+                onClick={handleMenuLinkClick}
               >
                 🗓️ Kalendarz
               </Link>
               <Link 
                 href="/admin/bookings/list" 
-                className={`nav-link sub-link ${pathname === '/admin/bookings/list' ? 'active' : ''}`}
+                className={getLinkClassName('/admin/bookings/list', pathname === '/admin/bookings/list', true)}
+                onClick={handleMenuLinkClick}
               >
                 📋 Lista Rezerwacji
               </Link>
@@ -72,40 +113,42 @@ export default function AdminLayout({
           </div>
 
           <div>
-            <div className="nav-group-title">Konfiguracja</div>
+            <div className={styles.navGroupTitle}>Konfiguracja</div>
             <Link 
               href="/admin/settings" 
-              className={`nav-link ${isSettingsActive ? 'active' : ''}`}
+              className={getLinkClassName('/admin/settings', isSettingsActive)}
+              onClick={handleMenuLinkClick}
             >
-              <span className="nav-icon">⚙️</span>
+              <span className={styles.navIcon}>⚙️</span>
               Ustawienia Systemu
             </Link>
           </div>
 
           <div>
-            <div className="nav-group-title">Narzędzia</div>
+            <div className={styles.navGroupTitle}>Narzędzia</div>
             <Link 
               href="/admin/dev" 
-              className={`nav-link ${isDevActive ? 'active' : ''}`}
+              className={getLinkClassName('/admin/dev', isDevActive)}
+              onClick={handleMenuLinkClick}
             >
-              <span className="nav-icon">💻</span>
+              <span className={styles.navIcon}>💻</span>
               Dev / Debug
             </Link>
           </div>
         </nav>
 
-        <div className="sidebar-footer">
-          <Link href="/" className="nav-link" style={{marginBottom: '10px'}}>
-            <span className="nav-icon">🏠</span>
+        <div className={styles.sidebarFooter}>
+          <Link href="/" className={styles.navLink} style={{marginBottom: '10px'}} onClick={handleMenuLinkClick}>
+            <span className={styles.navIcon}>🏠</span>
             Wróć na stronę
           </Link>
-          <button className="btn-logout" onClick={() => alert('Wylogowanie (do implementacji)')}>
+          <button className={styles.btnLogout} onClick={() => alert('Wylogowanie (do implementacji)')}>
             Wyloguj się
           </button>
         </div>
       </aside>
 
-      <main className="admin-content">
+      <main className={styles.adminContent}>
         {children}
       </main>
     </div>

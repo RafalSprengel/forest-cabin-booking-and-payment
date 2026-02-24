@@ -140,7 +140,6 @@ export async function getCalendarData(daysToShow: number = 60, startDateString?:
       isFullyBlocked
     });
 
-    // Inkrementacja dnia
     currentDay.setDate(currentDay.getDate() + 1);
   }
 
