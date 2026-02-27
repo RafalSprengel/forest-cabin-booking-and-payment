@@ -1,51 +1,48 @@
 'use client';
-import { useState, useRef, useActionState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import styles from './page.module.css';
 import { createManualBooking } from '@/actions/adminBookingActions';
-import Link from 'next/link';
+import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 
 const initialState = {
   message: '',
   success: false,
 };
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" className={styles.btnSubmit} disabled={pending}>
+      {pending ? 'Zapisuję...' : 'Zapisz Rezerwację'}
+    </button>
+  );
+}
+
 export default function AddBookingPage() {
-  const [state, formAction, isPending] = useActionState(createManualBooking, initialState);
+  const [state, formAction] = useFormState(createManualBooking, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
-  if (state?.success) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <Link href="/admin/bookings/list" className={styles.backButton}>
-            ← Powrót do listy
-          </Link>
-          <h1>Sukces</h1>
-        </header>
-        <div className={styles.successBox}>
-          <p className={styles.successMessage}>{state.message}</p>
-          <Link href="/admin/bookings/list" className={styles.btnSubmit}>
-            Wróć do listy
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (state.success) {
+      alert(state.message);
+      formRef.current?.reset();
+    }
+    if (!state.success && state.message) {
+      alert(`Błąd: ${state.message}`);
+    }
+  }, [state]);
 
   return (
     <div className={styles.container}>
-      <Link href="/admin/bookings/list" className={styles.floatingBack}>
-        ←
-      </Link>
+      <FloatingBackButton />
       <header className={styles.header}>
         <h1>Dodaj Nową Rezerwację</h1>
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej)</p>
       </header>
-
       {state?.message && !state.success && (
         <div className={styles.errorBox}>{state.message}</div>
       )}
-
       <form ref={formRef} action={formAction} className={styles.formCard}>
         <div className={styles.sectionTitle}>Termin i Obiekt</div>
         <div className={styles.grid}>
@@ -71,7 +68,6 @@ export default function AddBookingPage() {
             <input id="numGuests" name="numGuests" type="number" min="1" max="12" defaultValue="2" />
           </div>
         </div>
-
         <div className={styles.sectionTitle}>Dane Gościa</div>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
@@ -91,17 +87,13 @@ export default function AddBookingPage() {
             <input id="totalPrice" name="totalPrice" type="number" required placeholder="0.00" step="0.01" />
           </div>
         </div>
-
         <div className={styles.inputGroup}>
           <label htmlFor="internalNotes">Uwagi wewnętrzne</label>
           <textarea id="internalNotes" name="internalNotes" rows={3} placeholder="Np. Gość prosi o łóżeczko dla dziecka"></textarea>
         </div>
-
         <div className={styles.actions}>
           <button type="button" className={styles.btnCancel} onClick={() => formRef.current?.reset()}>Anuluj</button>
-          <button type="submit" className={styles.btnSubmit} disabled={isPending}>
-            {isPending ? 'Zapisuję...' : 'Zapisz Rezerwację'}
-          </button>
+          <SubmitButton />
         </div>
       </form>
     </div>
