@@ -245,6 +245,178 @@
   }
 }
 
+.bookingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.dateLabel {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.dateValue {
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.guestName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 4px 0;
+}
+
+.guestEmail {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.propertyName {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.detailsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 8px 0;
+  border-top: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed #e2e8f0;
+  margin-bottom: 10px;
+}
+
+.detailRow {
+  display: flex;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.value {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.priceValue {
+  color: #16a34a;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badgeConfirmed { background: #dcfce7; color: #166534; }
+.badgeBlocked { background: #fee2e2; color: #991b1b; }
+.badgeCancelled { background: #f1f5f9; color: #475569; }
+.badgePending { background: #fef3c7; color: #92400e; }
+
+.badgePast {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.addedDate {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.editBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: #2563eb;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.editBtn:hover {
+  background: #1d4ed8;
+}
+
+.editBtnDisabled {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pastCard {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+  pointer-events: none;
+}
+
+.pastCard .guestName,
+.pastCard .guestEmail,
+.pastCard .propertyName,
+.pastCard .value,
+.pastCard .badge {
+  color: #94a3b8 !important;
+}
+
+.pastDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pastDivider::before,
+.pastDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #cbd5e1;
+  margin: 0 15px;
+}
+
 @media (min-width: 1024px) {
   .container {
     max-width: 900px;
@@ -261,4 +433,57 @@
   .detailRow {
     min-width: 150px;
   }
+}
+.pastDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pastDivider::before,
+.pastDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #cbd5e1;
+  margin: 0 15px;
+}
+
+.pastCard {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+  pointer-events: none;
+}
+
+.pastCard .guestName,
+.pastCard .guestEmail,
+.pastCard .propertyName,
+.pastCard .value,
+.pastCard .badge {
+  color: #94a3b8 !important;
+}
+
+.badgePast {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.editBtnDisabled {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  margin-top: 4px;
 }
