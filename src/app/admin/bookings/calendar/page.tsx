@@ -17,10 +17,9 @@ const MONTH_NAMES = [
 const BookingTooltip = ({ details }: { details: BookingDetails }) => {
   if (!details) return null;
   
-  const extraBedsText = details.extraBeds && details.extraBeds > 0 
-    ? `${details.extraBeds} dostawka${details.extraBeds > 1 ? 'ki' : ''}` 
-    : 'brak dostawek';
-  
+const extraBedsText = details.extraBeds && details.extraBeds > 0 
+  ? `${details.extraBeds} ${details.extraBeds === 1 ? 'dostawka' : 'dostawki'}`
+  : 'brak dostawek';
   return (
     <div className={styles.tooltip}>
       <div className={styles.tooltipHeader}>
@@ -177,11 +176,12 @@ export default function Calendar() {
                       if (!cellData) {
                         return (
                           <td key={id} className={`${styles.cell} ${styles.free} ${past ? styles.pastFree : ''}`}>
-                            <span>Wolny</span>
+                            <span className={styles.statusText}>Wolny</span>
                           </td>
                         );
                       }
-                      const hasDetails = cellData.status === 'booked' || cellData.status === 'cleaning';
+                      
+                      const hasDetails = cellData.status === 'booked' || cellData.status === 'blocked_sys';
                       let statusText = '';
                       let cellClass = styles.cell;
                       
@@ -189,10 +189,6 @@ export default function Calendar() {
                         case 'booked': 
                           statusText = 'Zajęty'; 
                           cellClass += ` ${styles.booked} ${past ? styles.pastBooked : ''}`; 
-                          break;
-                        case 'cleaning': 
-                          statusText = 'Sprzątanie'; 
-                          cellClass += ` ${styles.cleaning} ${past ? styles.pastCleaning : ''}`; 
                           break;
                         case 'blocked_sys': 
                           statusText = 'Zabl.'; 
@@ -224,7 +220,6 @@ export default function Calendar() {
       {!loading && data.length > 0 && (
         <div className={styles.legend}>
           <span><span className={`${styles.dot} ${styles.bookedDot}`}></span> Zajęty</span>
-          <span><span className={`${styles.dot} ${styles.cleaningDot}`}></span> Sprzątanie</span>
           <span><span className={`${styles.dot} ${styles.blockedSysDot}`}></span> Zabl. (Auto)</span>
           <span><span className={`${styles.dot} ${styles.freeDot}`}></span> Wolny</span>
         </div>

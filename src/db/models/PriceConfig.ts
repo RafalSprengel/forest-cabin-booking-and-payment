@@ -55,8 +55,8 @@ const SeasonSchema = new Schema<ISeason>({
 
 const PriceConfigSchema = new Schema<IPriceConfig>({
   _id: { type: String, default: 'main' },
-  baseRates: { 
-    type: BaseRatesSchema, 
+  baseRates: {
+    type: BaseRatesSchema,
     required: true,
     default: {
       weekday: [
@@ -76,7 +76,8 @@ const PriceConfigSchema = new Schema<IPriceConfig>({
   seasons: { type: [SeasonSchema], default: [] }
 }, {
   timestamps: true,
-  versionKey: false
+  versionKey: false,
+  strict: true // To spowoduje błąd przy zapisie nieznanych pól
 });
 
 export default mongoose.models.PriceConfig || mongoose.model<IPriceConfig>('PriceConfig', PriceConfigSchema);

@@ -43,6 +43,9 @@ const PropertySchema = new Schema<IProperty>({
     type: Boolean,
     default: true
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  strict: true // To spowoduje błąd przy zapisie nieznanych pól 
+});
 
 export default mongoose.models.Property || mongoose.model<IProperty>('Property', PropertySchema);

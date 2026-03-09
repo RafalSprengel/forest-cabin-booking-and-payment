@@ -187,13 +187,6 @@
     cursor: pointer;
 }
 
-.cleaning {
-    background-color: var(--cal-color-cleaning-bg);
-    color: var(--cal-color-cleaning);
-    font-style: italic;
-    cursor: pointer;
-}
-
 .blockedSys {
     background-color: var(--cal-color-blocked-bg);
     color: var(--cal-color-blocked);
@@ -432,12 +425,6 @@ td:focus-within .tooltipContainer {
 .pastBooked {
     background-color: var(--cal-past-bg) !important;
     color: var(--cal-past-text) !important;
-}
-
-.pastCleaning {
-    background-color: var(--cal-past-bg) !important;
-    color: var(--cal-past-text) !important;
-    font-style: italic;
 }
 
 .pastBlocked {

@@ -47,11 +47,13 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
     const { startDate, endDate, adults, children, extraBeds, selectedOption, guestData } = draftData;
 
     if (!selectedOption) {
+      console.error('Brak selectedOption');
       return { success: false, error: 'Brak wybranego obiektu' };
     }
 
     // Walidacja danych gościa
     if (!guestData.firstName || !guestData.lastName || !guestData.email || !guestData.phone) {
+      console.error('Niekompletne dane gościa');
       return { success: false, error: 'Niekompletne dane gościa' };
     }
 
@@ -66,6 +68,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
     
     // Jeśli nie ma propertyIds, spróbuj znaleźć domki po nazwie
     if (propertyIds.length === 0) {
+      
       if (selectedOption.type === 'double') {
         // Dla całej posesji, znajdź wszystkie aktywne domki
         const properties = await Property.find({ isActive: true }).select('_id');
@@ -80,24 +83,33 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
     }
 
     if (propertyIds.length === 0) {
+      console.error('Nie znaleziono domków w bazie');
       return { success: false, error: 'Nie można znaleźć domku w bazie' };
     }
 
     // Dla opcji 'double' (cała posesja) tworzymy osobne rezerwacje dla każdego domku
     if (selectedOption.type === 'double') {
-      // Dla całej posesji - rezerwacja dla każdego domku
-      for (const propertyId of propertyIds) {
+      
+      // Sprawiedliwy podział dostawek
+      const baseExtraBedsPerCabin = Math.floor(extraBeds / propertyIds.length);
+      const remainingExtraBeds = extraBeds % propertyIds.length;
+      
+      for (let i = 0; i < propertyIds.length; i++) {
+        // Dodaj pozostałe dostawki do pierwszych X domków
+        const extraBedsForThisCabin = baseExtraBedsPerCabin + (i < remainingExtraBeds ? 1 : 0);
+        const guestsPerCabin = Math.ceil(numberOfGuests / propertyIds.length);
+        
         bookings.push({
-          propertyId: new Types.ObjectId(propertyId),
+          propertyId: new Types.ObjectId(propertyIds[i]),
           startDate: new Date(startDate),
           endDate: new Date(endDate),
           guestName: `${guestData.firstName} ${guestData.lastName}`,
           guestEmail: guestData.email,
           guestPhone: guestData.phone,
           guestAddress: guestData.address,
-          numberOfGuests: Math.ceil(numberOfGuests / propertyIds.length), // Równomiernie rozdziel gości
-          extraBeds: Math.ceil(extraBeds / propertyIds.length), // Równomiernie rozdziel dostawki
-          totalPrice: selectedOption.totalPrice / propertyIds.length, // Podziel cenę
+          numberOfGuests: guestsPerCabin,
+          extraBedsCount: extraBedsForThisCabin,
+          totalPrice: Number((selectedOption.totalPrice / propertyIds.length).toFixed(2)),
           status: 'confirmed',
           bookingType: 'real',
           invoice: guestData.invoice,
@@ -108,7 +120,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         });
       }
     } else {
-      // Dla pojedynczego domku
+      
       bookings.push({
         propertyId: new Types.ObjectId(propertyIds[0]),
         startDate: new Date(startDate),
@@ -118,7 +130,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         guestPhone: guestData.phone,
         guestAddress: guestData.address,
         numberOfGuests,
-        extraBeds,
+        extraBedsCount: extraBeds,
         totalPrice: selectedOption.totalPrice,
         status: 'confirmed',
         bookingType: 'real',
@@ -130,6 +142,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
       });
     }
 
+    // Zapisz wszystkie rezerwacje
     const savedBookings = await Booking.insertMany(bookings);
 
     return { 
@@ -138,8 +151,20 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
       bookingIds: savedBookings.map(b => b._id.toString())
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Błąd podczas tworzenia rezerwacji:', error);
+    
+    // Sprawdź czy to błąd walidacji Mongoose
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      return { success: false, error: `Błąd walidacji: ${errors.join(', ')}` };
+    }
+    
+    // Sprawdź czy to błąd nieznanego pola (strict mode)
+    if (error.message && error.message.includes('Path') && error.message.includes('is not in schema')) {
+      return { success: false, error: `Próba zapisu nieznanego pola: ${error.message}` };
+    }
+    
     return { success: false, error: 'Nie udało się utworzyć rezerwacji' };
   }
 }

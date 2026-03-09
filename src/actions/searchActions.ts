@@ -74,9 +74,6 @@ export async function searchAction({
   try {
     await dbConnect();
     
-    console.log('=== SEARCH ACTION START ===');
-    console.log('Parametry:', { startDate, endDate, guests, extraBeds });
-    
     const start = new Date(startDate);
     const end = new Date(endDate);
 
@@ -86,7 +83,6 @@ export async function searchAction({
     }
 
     const properties = await Property.find({ isActive: true });
-    console.log('Properties z bazy (surowy JSON):', JSON.parse(JSON.stringify(properties)));
     
     if (properties.length === 0) return [];
 
@@ -116,14 +112,6 @@ export async function searchAction({
       
       const maxGuests = baseCapacity + maxExtraBedsValue;
       
-      console.log(`Prop ${prop.name}:`, {
-        baseCapacity: baseCapacity,
-        maxExtraBedsRaw: prop.maxExtraBeds,
-        maxExtraBedsConverted: maxExtraBedsValue,
-        maxGuests: maxGuests,
-        type: typeof prop.maxExtraBeds
-      });
-      
       options.push({
         type: 'single',
         propertyIds: [prop._id.toString()],
@@ -151,11 +139,6 @@ export async function searchAction({
       
       const price = await calculateTotalPrice(startDate, endDate, guests, extraBeds, properties.length);
       
-      console.log(`Double option:`, {
-        totalMaxGuests,
-        totalMaxExtraBeds,
-        propertiesCount: properties.length
-      });
       
       options.push({
         type: 'double',
@@ -168,9 +151,6 @@ export async function searchAction({
         available: true
       });
     }
-
-    console.log('Wygenerowane opcje:', JSON.parse(JSON.stringify(options)));
-    console.log('=== SEARCH ACTION END ===');
 
     return options.sort((a, b) => {
       if (a.type === 'double') return -1;

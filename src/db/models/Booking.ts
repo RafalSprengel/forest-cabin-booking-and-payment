@@ -49,7 +49,10 @@ const BookingSchema = new Schema<IBooking>({
     type: String,
     required: false  // ← Dodaj to
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  strict: true // To spowoduje błąd przy zapisie nieznanych pól
+});
 
 BookingSchema.index({ propertyId: 1, startDate: 1, endDate: 1 });
 BookingSchema.index({ status: 1 });

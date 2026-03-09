@@ -13,9 +13,9 @@ export type ISystemConfig = ISystemConfigDoc;
 
 const SystemConfigSchema = new Schema<ISystemConfig>(
   {
-    _id: { 
-      type: String, 
-      default: 'main' 
+    _id: {
+      type: String,
+      default: 'main'
     },
     autoBlockOtherCabins: { type: Boolean, default: true },
     highSeasonStart: { type: Date },
@@ -24,7 +24,8 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
     childrenFreeAgeLimit: { type: Number, default: 13 }
   },
   {
-    versionKey: false
+    versionKey: false,
+    strict: true // To spowoduje błąd przy zapisie nieznanych pól
   }
 );
 

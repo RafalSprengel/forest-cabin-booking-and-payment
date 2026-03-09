@@ -1,6 +1,6 @@
 'use server'
 
-import { dbConnect } from '@/db/connection'
+import dbConnect from '@/db/connection'
 import Property from '@/db/models/Property'
 import { revalidatePath } from 'next/cache'
 import { Types } from 'mongoose'

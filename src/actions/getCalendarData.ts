@@ -1,156 +1,117 @@
 'use server'
+
 import dbConnect from '@/db/connection';
 import Booking from '@/db/models/Booking';
 import Property from '@/db/models/Property';
-import SystemConfig from '@/db/models/SystemConfig';
-import { Types } from 'mongoose';
 
 export interface BookingDetails {
+  id: string;
   guestName: string;
   guestEmail: string;
   guestPhone: string;
   numberOfGuests: number;
+  extraBeds: number;
   totalPrice: number;
   status: string;
-  durationDays: number;
   startDate: string;
   endDate: string;
+  durationDays: number;
+}
+
+export interface CalendarCell {
+  status: 'free' | 'booked' | 'blocked_sys';
+  details?: BookingDetails;
 }
 
 export interface CalendarDay {
   date: string;
   datePL: string;
-  cabins: Record<string, {
-    status: 'free' | 'booked' | 'cleaning' | 'blocked_sys';
-    details?: BookingDetails
-  }>;
-  isFullyBlocked?: boolean;
+  cabins: Record<string, CalendarCell>;
 }
 
-export async function getCalendarData(daysToShow: number = 60, startDateString?: string): Promise<CalendarDay[]> {
+export async function getCalendarData(daysInMonth: number, startDateStr: string): Promise<CalendarDay[]> {
   await dbConnect();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const startDate = startDateString ? new Date(startDateString + 'T00:00:00') : today;
+  const startDate = new Date(startDateStr);
   startDate.setHours(0, 0, 0, 0);
-
+  
   const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + daysToShow - 1);
+  endDate.setDate(endDate.getDate() + daysInMonth);
+  endDate.setHours(23, 59, 59, 999);
 
-  const sysConfig = await SystemConfig.findById('main');
-  const isAutoBlockEnabled = sysConfig?.autoBlockOtherCabins ?? true;
-
-  const properties = await Property.find({ isActive: true });
-  if (properties.length === 0) return [];
-
-  const propertyIds = properties.map(p => p._id);
-
+  // Pobierz wszystkie aktywne domki
+  const properties = await Property.find({ isActive: true }).lean();
+  
+  // Pobierz wszystkie rezerwacje w tym okresie
   const bookings = await Booking.find({
-    propertyId: { $in: propertyIds },
-    status: { $in: ['confirmed', 'blocked'] },
-    startDate: { $lte: endDate },
-    endDate: { $gte: startDate }
-  })
-    .select('propertyId guestName guestEmail guestPhone numberOfGuests totalPrice status startDate endDate bookingType linkedBookingId')
-    .sort({ startDate: 1 });
+    startDate: { $lt: endDate },
+    endDate: { $gt: startDate },
+    status: { $in: ['confirmed', 'blocked'] }
+  }).lean();
 
-  const result: CalendarDay[] = [];
-  const seenDates = new Set<string>();
-  const currentDay = new Date(startDate);
+  const calendarData: CalendarDay[] = [];
 
-  while (currentDay <= endDate) {
-    const dateStr = currentDay.toISOString().split('T')[0];
+  for (let i = 0; i < daysInMonth; i++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + i);
+    currentDate.setHours(0, 0, 0, 0);
 
-    if (seenDates.has(dateStr)) {
-      currentDay.setDate(currentDay.getDate() + 1);
-      continue;
-    }
+    const dateStr = currentDate.toISOString().split('T')[0];
+    const datePL = currentDate.toLocaleDateString('pl-PL');
 
-    seenDates.add(dateStr);
-    const [year, month, day] = dateStr.split('-');
-    const datePL = `${day}-${month}-${year}`;
-    const dayTime = currentDay.getTime();
-
-    const cabinsStatus: Record<string, any> = {};
-    let bookedCount = 0;
-    let realBookingCount = 0;
-
-    for (const prop of properties) {
-      const propId = prop._id.toString();
-
-      const activeBooking = bookings.find(b =>
-        b.propertyId.toString() === propId &&
-        new Date(b.startDate).getTime() <= dayTime &&
-        new Date(b.endDate).getTime() > dayTime
-      );
-
-      const checkOutBooking = bookings.find(b =>
-        b.propertyId.toString() === propId &&
-        new Date(b.endDate).getTime() === dayTime
-      );
-
-      const bookingToUse = activeBooking || checkOutBooking;
-      const isCheckOutDay = !!checkOutBooking && !activeBooking;
-
-      if (bookingToUse) {
-        const start = new Date(bookingToUse.startDate);
-        const end = new Date(bookingToUse.endDate);
-        const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-
-        const isShadow = bookingToUse.bookingType === 'shadow';
-
-        if (isShadow) {
-          cabinsStatus[propId] = {
-            status: 'blocked_sys',
-            details: undefined
-          };
-          bookedCount++;
-        } else {
-          cabinsStatus[propId] = {
-            status: isCheckOutDay ? 'cleaning' : 'booked',
-            details: {
-              guestName: bookingToUse.guestName || 'Gość',
-              guestEmail: bookingToUse.guestEmail || '-',
-              guestPhone: bookingToUse.guestPhone || '-',
-              numberOfGuests: bookingToUse.numberOfGuests || 0,
-              totalPrice: bookingToUse.totalPrice || 0,
-              status: bookingToUse.status,
-              durationDays: duration,
-              startDate: bookingToUse.startDate.toISOString().split('T')[0],
-              endDate: bookingToUse.endDate.toISOString().split('T')[0],
-            }
-          };
-          bookedCount++;
-          realBookingCount++;
-        }
-      } else {
-        cabinsStatus[propId] = { status: 'free' };
-      }
-    }
-
-    if (isAutoBlockEnabled && realBookingCount > 0 && realBookingCount < properties.length) {
-      for (const prop of properties) {
-        const propId = prop._id.toString();
-        if (cabinsStatus[propId].status === 'free') {
-          cabinsStatus[propId] = {
-            status: 'blocked_sys',
-            details: undefined
-          };
-        }
-      }
-    }
-
-    result.push({
+    const dayData: CalendarDay = {
       date: dateStr,
       datePL,
-      cabins: cabinsStatus,
-      isFullyBlocked: realBookingCount === properties.length
-    });
+      cabins: {}
+    };
 
-    currentDay.setDate(currentDay.getDate() + 1);
+    // Dla każdego domku sprawdź status
+    for (const property of properties) {
+      const propertyId = property._id.toString();
+      
+      // Znajdź rezerwację dla tego domku w tym dniu
+      const booking = bookings.find(b => 
+        b.propertyId.toString() === propertyId &&
+        new Date(b.startDate) <= currentDate &&
+        new Date(b.endDate) > currentDate
+      );
+
+      let cell: CalendarCell;
+
+      if (booking) {
+        // Oblicz liczbę dni rezerwacji
+        const start = new Date(booking.startDate);
+        const end = new Date(booking.endDate);
+        const durationDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+        cell = {
+          status: booking.status === 'blocked' ? 'blocked_sys' : 'booked',
+          details: {
+            id: booking._id.toString(),
+            guestName: booking.guestName || 'Gość',
+            guestEmail: booking.guestEmail || '',
+            guestPhone: booking.guestPhone || '',
+            numberOfGuests: booking.numberOfGuests || 0,
+            extraBeds: booking.extraBedsCount || 0,
+            totalPrice: booking.totalPrice || 0,
+            status: booking.status,
+            startDate: booking.startDate.toISOString().split('T')[0],
+            endDate: booking.endDate.toISOString().split('T')[0],
+            durationDays
+          }
+        };
+      } else {
+        // Jeśli nie ma rezerwacji - dzień wolny
+        cell = {
+          status: 'free'
+        };
+      }
+
+      dayData.cabins[propertyId] = cell;
+    }
+
+    calendarData.push(dayData);
   }
 
-  return result;
+  return calendarData;
 }
