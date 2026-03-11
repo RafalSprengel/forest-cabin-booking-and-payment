@@ -38,7 +38,7 @@ export default function AddBookingPage() {
   const [properties, setProperties] = useState<PropertyOption[]>([])
   const [propertySelection, setPropertySelection] = useState('')
   const [selectedProperty, setSelectedProperty] = useState<PropertyOption | null>(null)
-  
+
   const [numGuests, setNumGuests] = useState(2)
   const [extraBeds, setExtraBeds] = useState(0)
   const [paidAmount, setPaidAmount] = useState(0)
@@ -46,7 +46,7 @@ export default function AddBookingPage() {
   const [bookingDates, setBookingDates] = useState<BookingDates>({ start: null, end: null, count: 0 })
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([])
-  
+
   const calendarRef = useRef<HTMLDivElement>(null)
   const [isCalculating, startPriceCalculation] = useTransition()
 
@@ -84,13 +84,11 @@ export default function AddBookingPage() {
     if (selectedProperty) {
       const maxGuests = selectedProperty.baseCapacity
       const maxExtraBedsValue = selectedProperty.maxExtraBeds
-      
-      // Resetuj liczbę gości jeśli przekracza limit nowego obiektu
+
       if (numGuests > maxGuests) {
         setNumGuests(Math.min(2, maxGuests))
       }
-      
-      // Resetuj dostawki jeśli przekracza limit nowego obiektu
+
       if (extraBeds > maxExtraBedsValue) {
         setExtraBeds(0)
       }
@@ -128,9 +126,6 @@ export default function AddBookingPage() {
       setNumGuests(2)
       setPropertySelection('')
       setSelectedProperty(null)
-    }
-    if (!state.success && state.message) {
-      // alert(`Błąd: ${JSON.stringify(state.message)}`)
     }
   }, [state])
 
@@ -179,7 +174,7 @@ export default function AddBookingPage() {
         <h1>Dodaj Nową Rezerwację</h1>
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej)</p>
       </header>
-     
+
       <form ref={formRef} action={formAction} className={styles.formCard}>
         <div className={styles.sectionTitle}>Termin i Obiekt</div>
         <div className={styles.grid}>
@@ -188,11 +183,11 @@ export default function AddBookingPage() {
 
           <div className={styles.inputGroup}>
             <label htmlFor="propertyId">Obiekt</label>
-            <select 
-              id="propertyId" 
-              name="propertyId" 
-              required 
-              onChange={(e) => setPropertySelection(e.target.value)} 
+            <select
+              id="propertyId"
+              name="propertyId"
+              required
+              onChange={(e) => setPropertySelection(e.target.value)}
               value={propertySelection}
             >
               <option value="">Wybierz domek</option>
@@ -207,8 +202,8 @@ export default function AddBookingPage() {
 
           <div className={styles.dateBox}>
             <label className={styles.label}>Wybierz termin</label>
-            <div 
-              className={`${styles.date} ${!propertySelection ? styles.disabledInput : ''}`}
+            <div
+              className={`${styles.date} ${!propertySelection ? styles.dateDisabled : ''}`}
               onClick={() => propertySelection && setCalendarOpen(!isCalendarOpen)}
             >
               <span>
@@ -233,7 +228,7 @@ export default function AddBookingPage() {
             )}
           </div>
 
-          <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledInput : ''}`}>
+          <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledGroup : ''}`}>
             <label htmlFor="numGuests">Liczba gości</label>
             <QuantityPicker
               value={numGuests}
@@ -242,10 +237,12 @@ export default function AddBookingPage() {
               min={1}
               max={maxGuests}
             />
-            <small className={styles.hint}>Maksymalnie {maxGuests} osób</small>
+            {propertySelection && (
+              <small className={styles.hint}>Maksymalnie {maxGuests} osób</small>
+            )}
           </div>
 
-          <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledInput : ''}`}>
+          <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledGroup : ''}`}>
             <label htmlFor="extraBeds">Liczba dostawek</label>
             <QuantityPicker
               value={extraBeds}
@@ -254,21 +251,23 @@ export default function AddBookingPage() {
               min={0}
               max={maxExtraBedsValue}
             />
-            <small className={styles.hint}>Maksymalnie {maxExtraBedsValue} dostawek</small>
+            {propertySelection && (
+              <small className={styles.hint}>Maksymalnie {maxExtraBedsValue} dostawek</small>
+            )}
           </div>
         </div>
-        
+
         <div className={styles.sectionTitle}>Płatność</div>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="totalPrice">Cena całkowita (PLN) *</label>
             <div className={styles.priceInputWrapper}>
-              <input 
-                id="totalPrice" 
-                name="totalPrice" 
-                type="number" 
-                required 
-                placeholder="0.00" 
+              <input
+                id="totalPrice"
+                name="totalPrice"
+                type="number"
+                required
+                placeholder="0.00"
                 step="0.01"
                 min="0"
                 value={totalPrice || ''}
@@ -279,12 +278,12 @@ export default function AddBookingPage() {
           </div>
           <div className={styles.inputGroup}>
             <label htmlFor="paidAmount">Wpłacono (PLN)</label>
-            <input 
-              id="paidAmount" 
-              name="paidAmount" 
-              type="number" 
-              placeholder="0.00" 
-              step="0.01" 
+            <input
+              id="paidAmount"
+              name="paidAmount"
+              type="number"
+              placeholder="0.00"
+              step="0.01"
               min="0"
               max={totalPrice}
               value={paidAmount || ''}
@@ -318,12 +317,12 @@ export default function AddBookingPage() {
             <input id="guestPhone" name="guestPhone" type="tel" required placeholder="+48 123 456 789" />
           </div>
         </div>
-        
+
         <div className={styles.inputGroup}>
           <label htmlFor="internalNotes">Uwagi wewnętrzne</label>
           <textarea id="internalNotes" name="internalNotes" rows={3} placeholder="Np. Gość prosi o łóżeczko dla dziecka"></textarea>
         </div>
-        
+
         <div className={styles.actions}>
           <button type="button" className={styles.btnCancel} onClick={() => formRef.current?.reset()}>Anuluj</button>
           <button type="submit" className={styles.btnSubmit} disabled={isPending}>

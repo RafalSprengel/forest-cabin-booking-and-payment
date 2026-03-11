@@ -78,6 +78,11 @@
   gap: 6px;
 }
 
+.disabledGroup {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .inputGroup label {
   font-size: 0.9rem;
   font-weight: 600;
@@ -106,6 +111,16 @@
 .inputGroup textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.priceInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.priceInputWrapper input {
+  width: 100%;
 }
 
 .actions {
@@ -169,14 +184,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 1rem;
+  font-size: 0.8rem;
   min-height: 50px;
   box-sizing: border-box;
 }
 
-.date:hover {
+.dateDisabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.date:hover:not(.dateDisabled) {
   border-color: var(--accent-color, #c9b363);
   background: var(--bg-white, #ffffff);
+}
+
+.dateArrow {
+  font-size: 0.8rem;
+  color: #aaa;
 }
 
 .setDate {
@@ -264,6 +289,7 @@
   border-top-color: #c9b363;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-left: 10px;
 }
 
 @keyframes spin {
@@ -352,9 +378,5 @@
 @media (min-width: 1024px) {
   .container {
     max-width: 1000px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
