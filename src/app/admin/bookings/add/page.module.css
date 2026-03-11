@@ -30,20 +30,6 @@
   transform: translateX(-3px);
 }
 
-.backButton {
-  display: inline-block;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: color 0.2s;
-  margin-bottom: 15px;
-}
-
-.backButton:hover {
-  color: #2563eb;
-}
-
 .header {
   margin-bottom: 30px;
   padding-top: 20px;
@@ -58,31 +44,6 @@
 .header p {
   color: #64748b;
   margin: 0;
-}
-
-.successBox {
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.successMessage {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-}
-
-.errorBox {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-weight: 500;
 }
 
 .formCard {
@@ -147,13 +108,6 @@
   min-height: 80px;
 }
 
-.hint {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-top: 4px;
-  display: block;
-}
-
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -198,83 +152,71 @@
   cursor: not-allowed;
 }
 
-.dateInputGroup {
-  position: relative;
-  margin: 10px 0 20px 0;
-}
-
-.dateInputTrigger {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #475569;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  min-height: 48px;
-}
-
-.dateInputTrigger:hover {
-  border-color: #3b82f6;
-}
-
-.dateInputTrigger:active {
-  background: #f8fafc;
-}
-
-.dateInputArrow {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  transition: transform 0.2s;
-}
-
-.calendarPopup {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 100;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e2e8f0;
-  padding: 16px;
-  min-width: 320px;
-  max-width: 95vw;
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.calendarConfirmBtn {
-  display: block;
+.dateBox {
   width: 100%;
-  margin-top: 12px;
-  padding: 10px 16px;
-  background: #22c55e;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  position: relative;
 }
 
-.calendarConfirmBtn:hover {
-  background: #16a34a;
+.date {
+  background: var(--secondary-color, #f4f1ea);
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 14px 15px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-main, #142a1d);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  min-height: 50px;
+  box-sizing: border-box;
+}
+
+.date:hover {
+  border-color: var(--accent-color, #c9b363);
+  background: var(--bg-white, #ffffff);
+}
+
+.setDate {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: var(--bg-white, #ffffff);
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  margin-top: 8px;
+  display: none;
+  z-index: 20;
+  flex-direction: column;
+  gap: 15px;
+  box-sizing: border-box;
+}
+
+.expandedDate {
+  display: flex;
+}
+
+.buttOk {
+  background: var(--primary-color, #262a10);
+  color: var(--text-light, #ffffff);
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 5px;
+  font-family: var(--font-body, sans-serif);
+}
+
+.buttOk:hover {
+  background: #34495e;
 }
 
 .remainingAmount {
@@ -291,18 +233,6 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
-}
-
-.remainingHint {
-  font-size: 0.8rem;
-  color: #dc2626;
-  font-weight: 500;
-}
-
-.paidFull {
-  font-size: 0.8rem;
-  color: #16a34a;
-  font-weight: 600;
 }
 
 .badge {
@@ -327,6 +257,21 @@
 .paymentUnpaid {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #c9b363;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 600px) {
@@ -355,10 +300,14 @@
     width: 100%;
   }
 
-  .calendarPopup {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setDate {
+    min-width: 280px;
     left: 50%;
     transform: translateX(-50%);
-    min-width: 280px;
   }
 }
 
