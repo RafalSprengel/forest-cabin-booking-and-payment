@@ -181,9 +181,7 @@
 
 .setDate {
   position: absolute;
-  top: 100%;
   left: 0;
-  width: 100%;
   background: var(--bg-white, #ffffff);
   border: 1px solid #eee;
   border-radius: 8px;
