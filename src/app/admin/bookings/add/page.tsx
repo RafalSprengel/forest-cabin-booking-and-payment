@@ -49,7 +49,7 @@ export default function AddBookingPage() {
 
   const calendarRef = useRef<HTMLDivElement>(null)
   const [isCalculating, startPriceCalculation] = useTransition()
-
+  const isDateRangeSelected = !!(bookingDates.start && bookingDates.end);
   useEffect(() => {
     const loadProperties = async () => {
       try {
@@ -63,12 +63,12 @@ export default function AddBookingPage() {
   }, [])
 
   useEffect(() => {
-    if (propertySelection && propertySelection !== 'both') {
+    if (propertySelection && propertySelection !== 'allProperties') {
       const prop = properties.find(p => p._id === propertySelection)
       setSelectedProperty(prop || null)
-    } else if (propertySelection === 'both') {
+    } else if (propertySelection === 'allProperties') {
       setSelectedProperty({
-        _id: 'both',
+        _id: 'allProperties',
         name: 'Cała posesja',
         baseCapacity: properties.reduce((sum, p) => sum + p.baseCapacity, 0),
         maxExtraBeds: properties.reduce((sum, p) => sum + p.maxExtraBeds, 0)
@@ -195,7 +195,7 @@ export default function AddBookingPage() {
                 <option key={prop._id} value={prop._id}>{prop.name}</option>
               ))}
               {properties.length > 1 && (
-                <option value="both">Cała posesja</option>
+                <option value="allProperties">Cała posesja</option>
               )}
             </select>
           </div>
@@ -271,6 +271,7 @@ export default function AddBookingPage() {
                 step="0.01"
                 min="0"
                 value={totalPrice || ''}
+                disabled={isCalculating || !propertySelection || !isDateRangeSelected}
                 onChange={(e) => setTotalPrice(parseFloat(e.target.value) || 0)}
               />
               {isCalculating && <div className={styles.spinner}></div>}
