@@ -88,6 +88,7 @@ export async function getBookingById(bookingId: string) {
 }
 
 export async function createManualBooking(prevState: any, formData: FormData) {
+  console.log(formData)
   await dbConnect()
 
   const rawData = Object.fromEntries(formData.entries())
@@ -99,23 +100,22 @@ export async function createManualBooking(prevState: any, formData: FormData) {
 
   try {
     const newBooking = new Booking({
-      propertyId: rawData.propertyId === 'allProperties' ? null : rawData.propertyId,
-      properties: rawData.propertyId === 'allProperties' ? [] : [rawData.propertyId],
+      propertyId: rawData.propertyId === 'allProperties' ? null : new Types.ObjectId(rawData.propertyId as string),
       startDate: new Date(rawData.startDate as string),
       endDate: new Date(rawData.endDate as string),
-      numGuests: Number(rawData.numGuests),
-      extraBeds: Number(rawData.extraBeds),
+      numberOfGuests: Number(rawData.numGuests),
+      extraBedsCount: Number(rawData.extraBeds),
       totalPrice: Number(rawData.totalPrice),
       paidAmount: Number(rawData.paidAmount),
-      guestInfo: {
-        name: rawData.guestName,
-        email: rawData.guestEmail,
-        phone: rawData.guestPhone,
-      },
+      guestName: rawData.guestName as string,
+      guestEmail: rawData.guestEmail as string,
+      guestPhone: rawData.guestPhone as string,
+      guestAddress: rawData.guestAddress as string,
       status: 'confirmed',
-      paymentStatus: Number(rawData.paidAmount) >= Number(rawData.totalPrice) ? 'paid' : (Number(rawData.paidAmount) > 0 ? 'deposit' : 'unpaid'),
-      bookingSource: 'manual',
-      internalNotes: rawData.internalNotes,
+      bookingType: 'real',
+      adminNotes: rawData.adminNotes as string,  // Zmiana z internalNotes na adminNotes
+      customerNotes: rawData.customerNotes as string, // Nowe pole dla notatek klienta
+      source: 'manual'
     })
 
     await newBooking.save()
@@ -140,22 +140,20 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
 
   try {
     const bookingData = {
-      propertyId: rawData.propertyId === 'allProperties' ? null : rawData.propertyId,
-      properties: rawData.propertyId === 'allProperties' ? [] : [rawData.propertyId],
+      propertyId: rawData.propertyId === 'allProperties' ? null : new Types.ObjectId(rawData.propertyId as string),
       startDate: new Date(rawData.startDate as string),
       endDate: new Date(rawData.endDate as string),
-      numGuests: Number(rawData.numGuests),
-      extraBeds: Number(rawData.extraBeds),
+      numberOfGuests: Number(rawData.numGuests),
+      extraBedsCount: Number(rawData.extraBeds),
       totalPrice: Number(rawData.totalPrice),
       paidAmount: Number(rawData.paidAmount),
-      guestInfo: {
-        name: rawData.guestName,
-        email: rawData.guestEmail,
-        phone: rawData.guestPhone,
-      },
-      status: 'confirmed',
-      paymentStatus: Number(rawData.paidAmount) >= Number(rawData.totalPrice) ? 'paid' : (Number(rawData.paidAmount) > 0 ? 'deposit' : 'unpaid'),
-      internalNotes: rawData.internalNotes,
+      guestName: rawData.guestName as string,
+      guestEmail: rawData.guestEmail as string,
+      guestPhone: rawData.guestPhone as string,
+      guestAddress: rawData.guestAddress as string,
+      status: rawData.status as string,
+      adminNotes: rawData.adminNotes as string,  // Zmiana z internalNotes na adminNotes
+      customerNotes: rawData.customerNotes as string,
     }
 
     const updatedBooking = await Booking.findByIdAndUpdate(bookingId, bookingData, { new: true })

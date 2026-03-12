@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IProperty extends Document {
   name: string;
+  propertyType: 'single' | 'whole';  // single-pojedynczy domek, whole-cała posesja
   slug?: string;
   description?: string;
   baseCapacity: number;

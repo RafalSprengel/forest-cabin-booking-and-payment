@@ -195,7 +195,7 @@
   cursor: pointer;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 900px) {
   .adminSidebar {
     left: 0;
     right: auto;
