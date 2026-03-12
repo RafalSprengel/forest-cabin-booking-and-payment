@@ -2,13 +2,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IProperty extends Document {
   name: string;
-  propertyType: 'single' | 'whole';  // single-pojedynczy domek, whole-cała posesja
   slug?: string;
   description?: string;
   baseCapacity: number;
   maxExtraBeds: number;
   images?: string[];
   isActive: boolean;
+  isComposite?: boolean;
+  componentPropertyIds?: mongoose.Types.ObjectId[];
 }
 
 const PropertySchema = new Schema<IProperty>({
@@ -43,10 +44,19 @@ const PropertySchema = new Schema<IProperty>({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isComposite: {
+    type: Boolean,
+    default: false
+  },
+  componentPropertyIds: {
+    type: [Schema.Types.ObjectId],
+    ref: 'Property'
   }
 }, {
   timestamps: true,
-  // strict: 'throw' // To spowoduje błąd przy zapisie nieznanych pól 
 });
+
+PropertySchema.index({ slug: 1 }, { unique: true, sparse: true });
 
 export default mongoose.models.Property || mongoose.model<IProperty>('Property', PropertySchema);

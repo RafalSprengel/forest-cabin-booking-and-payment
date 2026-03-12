@@ -1,4 +1,5 @@
 'use client'
+
 import React, { useEffect, useRef, useState, useTransition } from 'react'
 import { useActionState } from 'react'
 import styles from './page.module.css'
@@ -25,6 +26,7 @@ interface PropertyOption {
   name: string
   baseCapacity: number
   maxExtraBeds: number
+  isComposite?: boolean
 }
 
 interface UnavailableDate {
@@ -34,11 +36,9 @@ interface UnavailableDate {
 export default function AddBookingPage() {
   const [state, formAction, isPending] = useActionState(createManualBooking, initialState)
   const formRef = useRef<HTMLFormElement>(null)
-
   const [properties, setProperties] = useState<PropertyOption[]>([])
   const [propertySelection, setPropertySelection] = useState('')
   const [selectedProperty, setSelectedProperty] = useState<PropertyOption | null>(null)
-
   const [numGuests, setNumGuests] = useState(2)
   const [extraBeds, setExtraBeds] = useState(0)
   const [paidAmount, setPaidAmount] = useState(0)
@@ -46,10 +46,11 @@ export default function AddBookingPage() {
   const [bookingDates, setBookingDates] = useState<BookingDates>({ start: null, end: null, count: 0 })
   const [isCalendarOpen, setCalendarOpen] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([])
-
   const calendarRef = useRef<HTMLDivElement>(null)
   const [isCalculating, startPriceCalculation] = useTransition()
+
   const isDateRangeSelected = !!(bookingDates.start && bookingDates.end);
+
   useEffect(() => {
     const loadProperties = async () => {
       try {
@@ -63,16 +64,9 @@ export default function AddBookingPage() {
   }, [])
 
   useEffect(() => {
-    if (propertySelection && propertySelection !== 'allProperties') {
+    if (propertySelection) {
       const prop = properties.find(p => p._id === propertySelection)
       setSelectedProperty(prop || null)
-    } else if (propertySelection === 'allProperties') {
-      setSelectedProperty({
-        _id: 'allProperties',
-        name: 'Cała posesja',
-        baseCapacity: properties.reduce((sum, p) => sum + p.baseCapacity, 0),
-        maxExtraBeds: properties.reduce((sum, p) => sum + p.maxExtraBeds, 0)
-      })
     } else {
       setSelectedProperty(null)
     }
@@ -88,7 +82,6 @@ export default function AddBookingPage() {
       if (numGuests > maxGuests) {
         setNumGuests(Math.min(2, maxGuests))
       }
-
       if (extraBeds > maxExtraBedsValue) {
         setExtraBeds(0)
       }
@@ -170,6 +163,7 @@ export default function AddBookingPage() {
   return (
     <div className={styles.container}>
       <FloatingBackButton />
+
       <header className={styles.header}>
         <h1>Dodaj Nową Rezerwację</h1>
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej)</p>
@@ -177,9 +171,12 @@ export default function AddBookingPage() {
 
       <form ref={formRef} action={formAction} className={styles.formCard}>
         <div className={styles.sectionTitle}>Termin i Obiekt</div>
+
         <div className={styles.grid}>
           <input type="hidden" name="startDate" value={bookingDates.start || ''} />
           <input type="hidden" name="endDate" value={bookingDates.end || ''} />
+          <input type="hidden" name="numGuests" value={numGuests} />
+          <input type="hidden" name="extraBeds" value={extraBeds} />
 
           <div className={styles.inputGroup}>
             <label htmlFor="propertyId">Obiekt</label>
@@ -191,11 +188,15 @@ export default function AddBookingPage() {
               value={propertySelection}
             >
               <option value="">Wybierz domek</option>
-              {properties.map(prop => (
-                <option key={prop._id} value={prop._id}>{prop.name}</option>
-              ))}
-              {properties.length > 1 && (
-                <option value="allProperties">Cała posesja</option>
+              {properties
+                .filter(p => !p.isComposite)
+                .map(prop => (
+                  <option key={prop._id} value={prop._id}>{prop.name}</option>
+                ))}
+              {properties.some(p => p.isComposite) && (
+                <option value={properties.find(p => p.isComposite)?._id}>
+                  Cała posesja
+                </option>
               )}
             </select>
           </div>
@@ -258,6 +259,7 @@ export default function AddBookingPage() {
         </div>
 
         <div className={styles.sectionTitle}>Płatność</div>
+
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="totalPrice">Cena całkowita (PLN) *</label>
@@ -277,6 +279,7 @@ export default function AddBookingPage() {
               {isCalculating && <div className={styles.spinner}></div>}
             </div>
           </div>
+
           <div className={styles.inputGroup}>
             <label htmlFor="paidAmount">Wpłacono (PLN)</label>
             <input
@@ -291,12 +294,14 @@ export default function AddBookingPage() {
               onChange={handlePaidAmountChange}
             />
           </div>
+
           <div className={styles.inputGroup}>
             <label>Do zapłaty</label>
             <div className={styles.remainingAmount}>
               <span className={styles.remainingValue}>{remainingAmount.toFixed(2)} zł</span>
             </div>
           </div>
+
           <div className={styles.inputGroup}>
             <label>Status płatności</label>
             <span className={`${styles.badge} ${paymentBadge.class}`}>{paymentBadge.text}</span>
@@ -304,6 +309,7 @@ export default function AddBookingPage() {
         </div>
 
         <div className={styles.sectionTitle}>Dane Gościa</div>
+
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="guestName">Imię i Nazwisko</label>

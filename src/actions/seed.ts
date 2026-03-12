@@ -16,7 +16,6 @@ export async function clearAllData() {
     await Property.deleteMany({});
     await PriceConfig.deleteMany({});
     await SystemConfig.deleteMany({});
-
     return { success: true, message: 'Wszystkie dane zostały usunięte' };
   } catch (error) {
     console.error('Błąd podczas czyszczenia danych:', error);
@@ -47,16 +46,15 @@ export async function seedProperties() {
         isActive: true
       }
     ];
-
+    
     await Property.deleteMany({});
     const created = await Property.insertMany(properties);
-
     const plainProperties = created.map(doc => toPlainObject(doc));
-
-    return { 
-      success: true, 
+    
+    return {
+      success: true,
       message: `Utworzono ${plainProperties.length} domków`,
-      data: plainProperties 
+      data: plainProperties
     };
   } catch (error) {
     console.error('Błąd podczas seedowania domków:', error);
@@ -85,14 +83,13 @@ export async function seedPriceConfig() {
       },
       seasons: []
     };
-
+    
     await PriceConfig.deleteMany({});
     const created = await PriceConfig.create(priceConfig);
-
     const plainConfig = toPlainObject(created);
-
-    return { 
-      success: true, 
+    
+    return {
+      success: true,
       message: 'Konfiguracja cen została utworzona',
       data: plainConfig
     };
@@ -113,14 +110,13 @@ export async function seedSystemConfig() {
       maxGuestsPerCabin: 8,
       childrenFreeAgeLimit: 13
     };
-
+    
     await SystemConfig.deleteMany({});
     const created = await SystemConfig.create(systemConfig);
-
     const plainConfig = toPlainObject(created);
-
-    return { 
-      success: true, 
+    
+    return {
+      success: true,
       message: 'Konfiguracja systemowa została utworzona',
       data: plainConfig
     };
@@ -134,19 +130,20 @@ export async function seedBookings() {
   try {
     await dbConnect();
     const properties = await Property.find().lean();
+    
     if (properties.length === 0) {
       return { success: false, error: 'Najpierw utwórz domki' };
     }
-
+    
     const today = new Date();
     const nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
     nextWeek.setHours(14, 0, 0, 0);
-
+    
     const twoWeeks = new Date(today);
     twoWeeks.setDate(today.getDate() + 14);
     twoWeeks.setHours(11, 0, 0, 0);
-
+    
     const bookings = [
       {
         propertyId: properties[0]._id,
@@ -162,18 +159,17 @@ export async function seedBookings() {
         paidAmount: 500,
         status: 'confirmed',
         bookingType: 'real',
-        notes: 'Przykładowa rezerwacja',
-        source: 'seed'
+        customerNotes: 'Przykładowa rezerwacja',
+        source: 'customer'
       }
     ];
-
+    
     await Booking.deleteMany({});
     const created = await Booking.insertMany(bookings);
-
     const plainBookings = created.map(doc => toPlainObject(doc));
-
-    return { 
-      success: true, 
+    
+    return {
+      success: true,
       message: `Utworzono ${plainBookings.length} rezerwacji`,
       data: plainBookings
     };
@@ -187,21 +183,21 @@ export async function seedAllData() {
   try {
     await dbConnect();
     await clearAllData();
-
+    
     const properties = await seedProperties();
     if (!properties.success) throw new Error(properties.error);
-
+    
     const prices = await seedPriceConfig();
     if (!prices.success) throw new Error(prices.error);
-
+    
     const system = await seedSystemConfig();
     if (!system.success) throw new Error(system.error);
-
+    
     const bookings = await seedBookings();
-
-    return { 
-      success: true, 
-      message: 'Wszystkie dane zostały zresetowane do stanu początkowego' 
+    
+    return {
+      success: true,
+      message: 'Wszystkie dane zostały zresetowane do stanu początkowego'
     };
   } catch (error) {
     console.error('Błąd podczas seedowania wszystkich danych:', error);
