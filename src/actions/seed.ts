@@ -4,6 +4,7 @@ import Property from '@/db/models/Property';
 import Booking from '@/db/models/Booking';
 import PriceConfig from '@/db/models/PriceConfig';
 import SystemConfig from '@/db/models/SystemConfig';
+import { Types } from 'mongoose';
 
 function toPlainObject(doc: any) {
   return JSON.parse(JSON.stringify(doc));
@@ -26,6 +27,7 @@ export async function clearAllData() {
 export async function seedProperties() {
   try {
     await dbConnect();
+    
     const properties = [
       {
         name: 'Chatka A (Wilcza)',
@@ -65,6 +67,7 @@ export async function seedProperties() {
 export async function seedPriceConfig() {
   try {
     await dbConnect();
+    
     const priceConfig = {
       _id: 'main',
       baseRates: {
@@ -102,6 +105,7 @@ export async function seedPriceConfig() {
 export async function seedSystemConfig() {
   try {
     await dbConnect();
+    
     const systemConfig = {
       _id: 'main',
       autoBlockOtherCabins: true,
@@ -129,26 +133,36 @@ export async function seedSystemConfig() {
 export async function seedBookings() {
   try {
     await dbConnect();
-    const properties = await Property.find().lean();
     
-    if (properties.length === 0) {
-      return { success: false, error: 'Najpierw utwórz domki' };
+    const properties = await Property.find({ isActive: true }).lean();
+    
+    if (properties.length < 2) {
+      return { success: false, error: 'Najpierw utwórz minimum 2 domki' };
     }
     
     const today = new Date();
-    const nextWeek = new Date(today);
-    nextWeek.setDate(today.getDate() + 7);
-    nextWeek.setHours(14, 0, 0, 0);
     
-    const twoWeeks = new Date(today);
-    twoWeeks.setDate(today.getDate() + 14);
-    twoWeeks.setHours(11, 0, 0, 0);
+    const nextWeekStart = new Date(today);
+    nextWeekStart.setDate(today.getDate() + 7);
+    nextWeekStart.setHours(14, 0, 0, 0);
+    
+    const nextWeekEnd = new Date(nextWeekStart);
+    nextWeekEnd.setDate(nextWeekStart.getDate() + 4);
+    nextWeekEnd.setHours(11, 0, 0, 0);
+    
+    const twoWeeksStart = new Date(today);
+    twoWeeksStart.setDate(today.getDate() + 21);
+    twoWeeksStart.setHours(14, 0, 0, 0);
+    
+    const twoWeeksEnd = new Date(twoWeeksStart);
+    twoWeeksEnd.setDate(twoWeeksStart.getDate() + 3);
+    twoWeeksEnd.setHours(11, 0, 0, 0);
     
     const bookings = [
       {
-        propertyId: properties[0]._id,
-        startDate: nextWeek,
-        endDate: twoWeeks,
+        propertyId: new Types.ObjectId(properties[0]._id),
+        startDate: nextWeekStart,
+        endDate: nextWeekEnd,
         guestName: 'Jan Kowalski',
         guestEmail: 'jan@example.com',
         guestPhone: '+48 123 456 789',
@@ -159,7 +173,33 @@ export async function seedBookings() {
         paidAmount: 500,
         status: 'confirmed',
         bookingType: 'real',
+        invoice: true,
+        invoiceData: {
+          companyName: 'Test Sp. z o.o.',
+          nip: '1234567890',
+          street: 'ul. Faktury 10',
+          city: 'Warszawa',
+          postalCode: '00-002'
+        },
         customerNotes: 'Przykładowa rezerwacja',
+        source: 'customer'
+      },
+      {
+        propertyId: new Types.ObjectId(properties[1]._id),
+        startDate: twoWeeksStart,
+        endDate: twoWeeksEnd,
+        guestName: 'Anna Nowak',
+        guestEmail: 'anna@example.com',
+        guestPhone: '+48 987 654 321',
+        guestAddress: 'ul. Inna 5, 80-001 Gdańsk',
+        numberOfGuests: 2,
+        extraBedsCount: 0,
+        totalPrice: 1800,
+        paidAmount: 1800,
+        status: 'confirmed',
+        bookingType: 'real',
+        invoice: false,
+        customerNotes: '',
         source: 'customer'
       }
     ];
@@ -182,6 +222,7 @@ export async function seedBookings() {
 export async function seedAllData() {
   try {
     await dbConnect();
+    
     await clearAllData();
     
     const properties = await seedProperties();
@@ -202,5 +243,20 @@ export async function seedAllData() {
   } catch (error) {
     console.error('Błąd podczas seedowania wszystkich danych:', error);
     return { success: false, error: 'Nie udało się zresetować danych' };
+  }
+}
+
+export async function removeShadowBookings() {
+  try {
+    await dbConnect();
+    const result = await Booking.deleteMany({ bookingType: 'shadow' });
+    return {
+      success: true,
+      message: `Usunięto ${result.deletedCount} shadow bookings`,
+      deletedCount: result.deletedCount
+    };
+  } catch (error) {
+    console.error('Błąd podczas usuwania shadow bookings:', error);
+    return { success: false, error: 'Nie udało się usunąć shadow bookings' };
   }
 }

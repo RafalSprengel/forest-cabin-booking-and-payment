@@ -12,34 +12,26 @@ interface UnavailableDate {
 
 export async function getUnavailableDatesForProperty(propertyId: string): Promise<UnavailableDate[]> {
   await dbConnect()
-  
   const config = await SystemConfig.findById('main')
   const autoBlockOtherCabins = config?.autoBlockOtherCabins ?? true
-  
   const query: any = {
     status: { $in: ['confirmed', 'blocked'] }
   }
-  
   if (!autoBlockOtherCabins && propertyId !== 'allProperties') {
     query.propertyId = new Types.ObjectId(propertyId)
   }
-  
   const bookings = await Booking.find(query)
     .select('startDate endDate')
     .lean()
-  
   const unavailableDates = new Set<string>()
-  
   for (const booking of bookings) {
     const start = new Date(booking.startDate)
     const end = new Date(booking.endDate)
-    
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
       const dateStr = d.toISOString().split('T')[0]
       unavailableDates.add(dateStr)
     }
   }
-  
   return Array.from(unavailableDates)
     .map(date => ({ date }))
     .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
@@ -62,6 +54,13 @@ function validateBookingData(data: any) {
   if (!data.guestName) errors.push('Należy podać imię i nazwisko gościa')
   if (!data.guestEmail || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(data.guestEmail)) errors.push('Niepoprawny format adresu email')
   if (!data.guestPhone) errors.push('Należy podać numer telefonu gościa')
+  if (data.invoice === 'true') {
+    if (!data.invoiceCompany) errors.push('Nazwa firmy jest wymagana dla faktury')
+    if (!data.invoiceNip) errors.push('NIP jest wymagany dla faktury')
+    if (!data.invoiceStreet) errors.push('Ulica jest wymagana dla faktury')
+    if (!data.invoicePostalCode) errors.push('Kod pocztowy jest wymagany dla faktury')
+    if (!data.invoiceCity) errors.push('Miejscowość jest wymagana dla faktury')
+  }
   return errors
 }
 
@@ -81,42 +80,40 @@ export async function getBookingById(bookingId: string) {
 }
 
 export async function createManualBooking(prevState: any, formData: FormData) {
-  console.log(formData)
   await dbConnect()
-  
   const rawData = Object.fromEntries(formData.entries())
   const validationErrors = validateBookingData(rawData)
-  
   if (validationErrors.length > 0) {
     return { message: validationErrors.join(', '), success: false }
   }
-  
   try {
+    const invoiceData = rawData.invoice === 'true' ? {
+      companyName: rawData.invoiceCompany,
+      nip: rawData.invoiceNip,
+      street: rawData.invoiceStreet,
+      city: rawData.invoiceCity,
+      postalCode: rawData.invoicePostalCode,
+    } : undefined
     const newBooking = new Booking({
-      propertyId: rawData.propertyId === 'allProperties' ? null : rawData.propertyId,
-      properties: rawData.propertyId === 'allProperties' ? [] : [rawData.propertyId],
+      propertyId: rawData.propertyId,
       startDate: new Date(rawData.startDate as string),
       endDate: new Date(rawData.endDate as string),
-      numGuests: Number(rawData.numGuests),
-      extraBeds: Number(rawData.extraBeds),
+      guestName: rawData.guestName,
+      guestEmail: rawData.guestEmail,
+      guestPhone: rawData.guestPhone,
+      numberOfGuests: Number(rawData.numGuests),
+      extraBedsCount: Number(rawData.extraBeds),
       totalPrice: Number(rawData.totalPrice),
       paidAmount: Number(rawData.paidAmount),
-      guestInfo: {
-        name: rawData.guestName,
-        email: rawData.guestEmail,
-        phone: rawData.guestPhone,
-      },
       status: 'confirmed',
-      paymentStatus: Number(rawData.paidAmount) >= Number(rawData.totalPrice) ? 'paid' : (Number(rawData.paidAmount) > 0 ? 'deposit' : 'unpaid'),
-      bookingSource: 'admin',
-      customerNotes: rawData.customerNotes,
-      adminNotes: rawData.adminNotes,
+      bookingType: 'real',
+      invoice: rawData.invoice === 'true',
+      invoiceData,
+      customerNotes: rawData.internalNotes,
+      source: 'admin',
     })
-    
     await newBooking.save()
-    
     revalidatePath('/admin/bookings')
-    
     return { message: 'Rezerwacja została pomyślnie utworzona!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -125,44 +122,43 @@ export async function createManualBooking(prevState: any, formData: FormData) {
 
 export async function updateBookingAction(prevState: any, formData: FormData) {
   await dbConnect()
-  
   const rawData = Object.fromEntries(formData.entries())
   const bookingId = rawData.bookingId as string
-  
   const validationErrors = validateBookingData(rawData)
   if (validationErrors.length > 0) {
     return { message: validationErrors.join(', '), success: false }
   }
-  
   try {
+    const invoiceData = rawData.invoice === 'true' ? {
+      companyName: rawData.invoiceCompany,
+      nip: rawData.invoiceNip,
+      street: rawData.invoiceStreet,
+      city: rawData.invoiceCity,
+      postalCode: rawData.invoicePostalCode,
+    } : undefined
     const bookingData = {
-      propertyId: rawData.propertyId === 'allProperties' ? null : rawData.propertyId,
-      properties: rawData.propertyId === 'allProperties' ? [] : [rawData.propertyId],
+      propertyId: rawData.propertyId,
       startDate: new Date(rawData.startDate as string),
       endDate: new Date(rawData.endDate as string),
-      numGuests: Number(rawData.numGuests),
-      extraBeds: Number(rawData.extraBeds),
+      guestName: rawData.guestName,
+      guestEmail: rawData.guestEmail,
+      guestPhone: rawData.guestPhone,
+      numberOfGuests: Number(rawData.numGuests),
+      extraBedsCount: Number(rawData.extraBeds),
       totalPrice: Number(rawData.totalPrice),
       paidAmount: Number(rawData.paidAmount),
-      guestInfo: {
-        name: rawData.guestName,
-        email: rawData.guestEmail,
-        phone: rawData.guestPhone,
-      },
       status: 'confirmed',
-      paymentStatus: Number(rawData.paidAmount) >= Number(rawData.totalPrice) ? 'paid' : (Number(rawData.paidAmount) > 0 ? 'deposit' : 'unpaid'),
-      internalNotes: rawData.internalNotes,
+      bookingType: 'real',
+      invoice: rawData.invoice === 'true',
+      invoiceData,
+      customerNotes: rawData.internalNotes,
     }
-    
     const updatedBooking = await Booking.findByIdAndUpdate(bookingId, bookingData, { new: true })
-    
     if (!updatedBooking) {
       return { message: 'Nie znaleziono rezerwacji do zaktualizowania.', success: false }
     }
-    
     revalidatePath('/admin/bookings')
     revalidatePath(`/admin/bookings/list/${bookingId}`)
-    
     return { message: 'Rezerwacja została pomyślnie zaktualizowana!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -171,16 +167,12 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
 
 export async function deleteBookingAction(bookingId: string) {
   await dbConnect()
-  
   try {
     const result = await Booking.findByIdAndDelete(bookingId)
-    
     if (!result) {
       return { message: 'Nie znaleziono rezerwacji.', success: false }
     }
-    
     revalidatePath('/admin/bookings')
-    
     return { message: 'Rezerwacja została pomyślnie usunięta!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }

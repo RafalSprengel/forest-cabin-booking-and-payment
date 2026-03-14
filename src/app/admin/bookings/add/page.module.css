@@ -113,14 +113,24 @@
   min-height: 80px;
 }
 
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
 .priceInputWrapper {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.priceInputWrapper input {
-  width: 100%;
 }
 
 .actions {
@@ -173,13 +183,12 @@
 }
 
 .date {
-  /* background: var(--secondary-color, #f4f1ea); */
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 10px 12px;
   cursor: pointer;
   font-weight: 500;
-  color: var(--text-main, #142a1d);
+  color: #142a1d;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -194,8 +203,8 @@
 }
 
 .date:hover:not(.dateDisabled) {
-  border-color: var(--accent-color, #c9b363);
-  background: var(--bg-white, #ffffff);
+  border-color: #c9b363;
+  background: #ffffff;
 }
 
 .dateArrow {
@@ -206,7 +215,7 @@
 .setDate {
   position: absolute;
   left: 0;
-  background: var(--bg-white, #ffffff);
+  background: #ffffff;
   border: 1px solid #eee;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -224,8 +233,8 @@
 }
 
 .buttOk {
-  background: var(--primary-color, #262a10);
-  color: var(--text-light, #ffffff);
+  background: #262a10;
+  color: #ffffff;
   border: none;
   padding: 12px;
   border-radius: 6px;
@@ -234,7 +243,7 @@
   font-size: 1rem;
   width: 100%;
   margin-top: 5px;
-  font-family: var(--font-body, sans-serif);
+  font-family: sans-serif;
 }
 
 .buttOk:hover {
@@ -295,6 +304,79 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.invoiceOptionGroup {
+  margin: 15px 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: #475569;
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #c9b363;
+}
+
+.invoiceWrapper {
+  margin-top: 20px;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.invoiceWrapper.expanded {
+  grid-template-rows: 1fr;
+}
+
+.invoiceContent {
+  overflow: hidden;
+  min-height: 0;
+  padding: 0 20px;
+}
+
+.invoiceWrapper.expanded .invoiceContent {
+  padding: 20px;
+}
+
+.invoiceTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.fadeIn {
+  animation: fadeSlideUp 0.3s ease-out forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes fadeSlideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 4px;
 }
 
 @media (max-width: 600px) {

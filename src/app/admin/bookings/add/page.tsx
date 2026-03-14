@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useEffect, useRef, useState, useTransition } from 'react'
 import { useActionState } from 'react'
 import styles from './page.module.css'
@@ -33,6 +32,14 @@ interface UnavailableDate {
   date: string | null
 }
 
+interface InvoiceData {
+  companyName: string
+  nip: string
+  street: string
+  postalCode: string
+  city: string
+}
+
 export default function AddBookingPage() {
   const [state, formAction, isPending] = useActionState(createManualBooking, initialState)
   const formRef = useRef<HTMLFormElement>(null)
@@ -48,8 +55,17 @@ export default function AddBookingPage() {
   const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([])
   const calendarRef = useRef<HTMLDivElement>(null)
   const [isCalculating, startPriceCalculation] = useTransition()
+  const [wantsInvoice, setWantsInvoice] = useState(false)
+  const [invoiceData, setInvoiceData] = useState<InvoiceData>({
+    companyName: '',
+    nip: '',
+    street: '',
+    postalCode: '',
+    city: '',
+  })
+  const [invoiceErrors, setInvoiceErrors] = useState<Record<string, string>>({})
 
-  const isDateRangeSelected = !!(bookingDates.start && bookingDates.end);
+  const isDateRangeSelected = !!(bookingDates.start && bookingDates.end)
 
   useEffect(() => {
     const loadProperties = async () => {
@@ -78,7 +94,6 @@ export default function AddBookingPage() {
     if (selectedProperty) {
       const maxGuests = selectedProperty.baseCapacity
       const maxExtraBedsValue = selectedProperty.maxExtraBeds
-
       if (numGuests > maxGuests) {
         setNumGuests(Math.min(2, maxGuests))
       }
@@ -119,6 +134,15 @@ export default function AddBookingPage() {
       setNumGuests(2)
       setPropertySelection('')
       setSelectedProperty(null)
+      setWantsInvoice(false)
+      setInvoiceData({
+        companyName: '',
+        nip: '',
+        street: '',
+        postalCode: '',
+        city: '',
+      })
+      setInvoiceErrors({})
     }
   }, [state])
 
@@ -147,37 +171,83 @@ export default function AddBookingPage() {
     setPaidAmount(Math.max(0, value))
   }
 
-  const remainingAmount = Math.max(0, totalPrice - paidAmount)
+  const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setInvoiceData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    if (invoiceErrors[name]) {
+      setInvoiceErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
 
+  const validateInvoiceData = (): boolean => {
+    const errors: Record<string, string> = {}
+    if (!invoiceData.companyName.trim()) {
+      errors.companyName = 'Nazwa firmy jest wymagana'
+    }
+    if (!invoiceData.nip.trim()) {
+      errors.nip = 'NIP jest wymagany'
+    } else if (!/^[\d-]{10,13}$/.test(invoiceData.nip.replace(/-/g, ''))) {
+      errors.nip = 'Nieprawidłowy format NIP'
+    }
+    if (!invoiceData.street.trim()) {
+      errors.street = 'Ulica jest wymagana'
+    }
+    if (!invoiceData.postalCode.trim()) {
+      errors.postalCode = 'Kod pocztowy jest wymagany'
+    } else if (!/^\d{2}-\d{3}$/.test(invoiceData.postalCode)) {
+      errors.postalCode = 'Nieprawidłowy format (XX-XXX)'
+    }
+    if (!invoiceData.city.trim()) {
+      errors.city = 'Miejscowość jest wymagana'
+    }
+    setInvoiceErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (wantsInvoice && !validateInvoiceData()) {
+      e.preventDefault()
+      alert('Proszę wypełnić wszystkie wymagane pola faktury')
+      return
+    }
+  }
+
+  const remainingAmount = Math.max(0, totalPrice - paidAmount)
   const getPaymentBadge = () => {
     if (paidAmount >= totalPrice && totalPrice > 0) return { text: 'Opłacone', class: styles.paymentPaid }
     if (paidAmount > 0) return { text: 'Zaliczka', class: styles.paymentDeposit }
     return { text: 'Nieopłacone', class: styles.paymentUnpaid }
   }
-
   const paymentBadge = getPaymentBadge()
-
   const maxGuests = selectedProperty ? selectedProperty.baseCapacity : 12
   const maxExtraBedsValue = selectedProperty ? selectedProperty.maxExtraBeds : 4
 
   return (
     <div className={styles.container}>
       <FloatingBackButton />
-
       <header className={styles.header}>
         <h1>Dodaj Nową Rezerwację</h1>
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej)</p>
       </header>
-
-      <form ref={formRef} action={formAction} className={styles.formCard}>
+      <form ref={formRef} action={formAction} onSubmit={handleSubmit} className={styles.formCard}>
         <div className={styles.sectionTitle}>Termin i Obiekt</div>
-
         <div className={styles.grid}>
           <input type="hidden" name="startDate" value={bookingDates.start || ''} />
           <input type="hidden" name="endDate" value={bookingDates.end || ''} />
           <input type="hidden" name="numGuests" value={numGuests} />
           <input type="hidden" name="extraBeds" value={extraBeds} />
-
+          <input type="hidden" name="invoice" value={wantsInvoice ? 'true' : 'false'} />
+          <input type="hidden" name="invoiceCompany" value={invoiceData.companyName} />
+          <input type="hidden" name="invoiceNip" value={invoiceData.nip} />
+          <input type="hidden" name="invoiceStreet" value={invoiceData.street} />
+          <input type="hidden" name="invoicePostalCode" value={invoiceData.postalCode} />
+          <input type="hidden" name="invoiceCity" value={invoiceData.city} />
           <div className={styles.inputGroup}>
             <label htmlFor="propertyId">Obiekt</label>
             <select
@@ -200,7 +270,6 @@ export default function AddBookingPage() {
               )}
             </select>
           </div>
-
           <div className={styles.dateBox}>
             <label className={styles.label}>Wybierz termin</label>
             <div
@@ -214,7 +283,6 @@ export default function AddBookingPage() {
               </span>
               <span className={styles.dateArrow}>&#9662;</span>
             </div>
-
             {isCalendarOpen && (
               <div
                 ref={calendarRef}
@@ -228,7 +296,6 @@ export default function AddBookingPage() {
               </div>
             )}
           </div>
-
           <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledGroup : ''}`}>
             <label htmlFor="numGuests">Liczba gości</label>
             <QuantityPicker
@@ -242,7 +309,6 @@ export default function AddBookingPage() {
               <small className={styles.hint}>Maksymalnie {maxGuests} osób</small>
             )}
           </div>
-
           <div className={`${styles.inputGroup} ${!propertySelection ? styles.disabledGroup : ''}`}>
             <label htmlFor="extraBeds">Liczba dostawek</label>
             <QuantityPicker
@@ -259,7 +325,6 @@ export default function AddBookingPage() {
         </div>
 
         <div className={styles.sectionTitle}>Płatność</div>
-
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="totalPrice">Cena całkowita (PLN) *</label>
@@ -279,7 +344,6 @@ export default function AddBookingPage() {
               {isCalculating && <div className={styles.spinner}></div>}
             </div>
           </div>
-
           <div className={styles.inputGroup}>
             <label htmlFor="paidAmount">Wpłacono (PLN)</label>
             <input
@@ -294,22 +358,110 @@ export default function AddBookingPage() {
               onChange={handlePaidAmountChange}
             />
           </div>
-
           <div className={styles.inputGroup}>
             <label>Do zapłaty</label>
             <div className={styles.remainingAmount}>
               <span className={styles.remainingValue}>{remainingAmount.toFixed(2)} zł</span>
             </div>
           </div>
-
           <div className={styles.inputGroup}>
             <label>Status płatności</label>
             <span className={`${styles.badge} ${paymentBadge.class}`}>{paymentBadge.text}</span>
           </div>
         </div>
 
-        <div className={styles.sectionTitle}>Dane Gościa</div>
+        <div className={styles.sectionTitle}>Dodatkowe opcje</div>
+        <div className={styles.invoiceOptionGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={wantsInvoice}
+              onChange={(e) => setWantsInvoice(e.target.checked)}
+            />
+            <span>Chcę otrzymać fakturę VAT</span>
+          </label>
+        </div>
 
+        <div className={`${styles.invoiceWrapper} ${wantsInvoice ? styles.expanded : ''}`}>
+          <div className={styles.invoiceContent}>
+            <h3 className={styles.invoiceTitle}>Dane do faktury VAT</h3>
+            <div className={`${styles.inputGroup} ${styles.fadeIn}`} style={{ animationDelay: '0.05s' }}>
+              <label htmlFor="invoiceCompanyName">Nazwa firmy *</label>
+              <input
+                id="invoiceCompanyName"
+                name="companyName"
+                type="text"
+                value={invoiceData.companyName}
+                onChange={handleInvoiceChange}
+                className={invoiceErrors.companyName ? styles.inputError : ''}
+                placeholder="Pełna nazwa firmy"
+                disabled={!wantsInvoice}
+              />
+              {invoiceErrors.companyName && <span className={styles.errorText}>{invoiceErrors.companyName}</span>}
+            </div>
+            <div className={`${styles.inputGroup} ${styles.fadeIn}`} style={{ animationDelay: '0.1s' }}>
+              <label htmlFor="invoiceNip">NIP *</label>
+              <input
+                id="invoiceNip"
+                name="nip"
+                type="text"
+                value={invoiceData.nip}
+                onChange={handleInvoiceChange}
+                className={invoiceErrors.nip ? styles.inputError : ''}
+                placeholder="123-456-78-90"
+                disabled={!wantsInvoice}
+              />
+              {invoiceErrors.nip && <span className={styles.errorText}>{invoiceErrors.nip}</span>}
+            </div>
+            <div className={`${styles.inputGroup} ${styles.fadeIn}`} style={{ animationDelay: '0.15s' }}>
+              <label htmlFor="invoiceStreet">Ulica i numer *</label>
+              <input
+                id="invoiceStreet"
+                name="street"
+                type="text"
+                value={invoiceData.street}
+                onChange={handleInvoiceChange}
+                className={invoiceErrors.street ? styles.inputError : ''}
+                placeholder="ul. Przykładowa 123"
+                disabled={!wantsInvoice}
+              />
+              {invoiceErrors.street && <span className={styles.errorText}>{invoiceErrors.street}</span>}
+            </div>
+            <div className={`${styles.grid} ${styles.fadeIn}`} style={{ animationDelay: '0.2s' }}>
+              <div className={styles.inputGroup}>
+                <label htmlFor="invoicePostalCode">Kod pocztowy *</label>
+                <input
+                  id="invoicePostalCode"
+                  name="postalCode"
+                  type="text"
+                  value={invoiceData.postalCode}
+                  onChange={handleInvoiceChange}
+                  className={invoiceErrors.postalCode ? styles.inputError : ''}
+                  placeholder="00-000"
+                  maxLength={6}
+                  disabled={!wantsInvoice}
+                />
+                {invoiceErrors.postalCode && <span className={styles.errorText}>{invoiceErrors.postalCode}</span>}
+              </div>
+              <div className={styles.inputGroup}>
+                <label htmlFor="invoiceCity">Miejscowość *</label>
+                <input
+                  id="invoiceCity"
+                  name="city"
+                  type="text"
+                  value={invoiceData.city}
+                  onChange={handleInvoiceChange}
+                  className={invoiceErrors.city ? styles.inputError : ''}
+                  placeholder="Miejscowość"
+                  disabled={!wantsInvoice}
+                />
+                {invoiceErrors.city && <span className={styles.errorText}>{invoiceErrors.city}</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.sectionTitle}>Dane Gościa</div>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="guestName">Imię i Nazwisko</label>
@@ -324,12 +476,10 @@ export default function AddBookingPage() {
             <input id="guestPhone" name="guestPhone" type="tel" required placeholder="+48 123 456 789" />
           </div>
         </div>
-
         <div className={styles.inputGroup}>
           <label htmlFor="internalNotes">Uwagi wewnętrzne</label>
           <textarea id="internalNotes" name="internalNotes" rows={3} placeholder="Np. Gość prosi o łóżeczko dla dziecka"></textarea>
         </div>
-
         <div className={styles.actions}>
           <button type="button" className={styles.btnCancel} onClick={() => formRef.current?.reset()}>Anuluj</button>
           <button type="submit" className={styles.btnSubmit} disabled={isPending}>
