@@ -1,3 +1,4 @@
+import { getBookingConfig } from '@/actions/bookingConfigActions';
 import styles from './Services.module.css';
 
 interface PriceItem {
@@ -5,7 +6,15 @@ interface PriceItem {
     amount: string;
 }
 
-export default function Services() {
+export default async function Services() {
+    let childrenFreeAge
+    try {
+        const bookingConfig = await getBookingConfig();
+        childrenFreeAge = bookingConfig?.childrenFreeAgeLimit ?? 13;
+    } catch {
+        console.log('error')
+    }
+
     const weekdayRates: PriceItem[] = [
         { description: '2-3 osoby', amount: '300 zł' },
         { description: '4-5 osób', amount: '400 zł' },
@@ -19,6 +28,7 @@ export default function Services() {
         { description: '6 osób', amount: '600 zł' },
         { description: 'Dostawka', amount: '+50 zł' }
     ];
+
 
     return (
         <section id="services" className={styles.section}>
@@ -80,7 +90,9 @@ export default function Services() {
                                 </div>
                             ))}
                         </div>
-                        <div className={styles.note}>* Dzieci do trzynastego roku życia bezpłatnie.</div>
+                        {childrenFreeAge &&
+                            <div className={styles.note}>* Dzieci do {childrenFreeAge} roku życia bezpłatnie.</div>
+                        }
                         <div className={styles.note}>* Cennik obowiązuje poza sezonem wysokim.</div>
                     </div>
 

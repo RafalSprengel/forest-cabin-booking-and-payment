@@ -175,6 +175,15 @@ export default function BookingDetailsPage() {
     }
   };
 
+  const handleTermAndConditionsClick = () => {
+    const updatedData: BookingData = {
+      ...(bookingSummary as BookingData),
+      guestData: formData,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+    router.push('/terms-and-conditions');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -391,9 +400,13 @@ export default function BookingDetailsPage() {
             />
             <span>
               Zapoznałem/am się i akceptuję{' '}
-              <Link href="/regulamin.pdf" target="_blank" className={styles.link}>
+              <button
+                type="button"
+                onClick={handleTermAndConditionsClick}
+                className={styles.linkButton}
+              >
                 regulamin obiektu
-              </Link>{' '}
+              </button>{' '}
               *
             </span>
           </label>
