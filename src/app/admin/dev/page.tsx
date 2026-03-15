@@ -6,6 +6,7 @@ import {
   seedBookings,
   seedSystemConfig,
   seedPriceConfig,
+  seedBookingConfig,
   clearAllData
 } from '@/actions/seed';
 import styles from './page.module.css';
@@ -50,6 +51,9 @@ export default function DevPage() {
               </button>
               <button className={styles.btnSecondary} onClick={() => runAction('Seed System Config', seedSystemConfig)}>
                 Seed System Config
+              </button>
+              <button className={styles.btnSecondary} onClick={() => runAction('Seed Booking Config', seedBookingConfig)}>
+                Seed Booking Config
               </button>
               <button className={styles.btnSecondary} onClick={() => runAction('Seed Bookings', seedBookings)}>
                 Seed Bookings Only

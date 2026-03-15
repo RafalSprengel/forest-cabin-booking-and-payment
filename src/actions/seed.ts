@@ -4,6 +4,7 @@ import Property from '@/db/models/Property';
 import Booking from '@/db/models/Booking';
 import PriceConfig from '@/db/models/PriceConfig';
 import SystemConfig from '@/db/models/SystemConfig';
+import BookingConfig from '@/db/models/BookingConfig';
 import { Types } from 'mongoose';
 
 function toPlainObject(doc: any) {
@@ -27,7 +28,7 @@ export async function clearAllData() {
 export async function seedProperties() {
   try {
     await dbConnect();
-    
+
     const properties = [
       {
         name: 'Chatka A (Wilcza)',
@@ -49,7 +50,7 @@ export async function seedProperties() {
         isActive: true,
         type: 'single'
       },
-         {
+      {
         name: 'Cała posesja',
         slug: 'cala-posesja',
         description: 'Cała posesja do dyspozycji',
@@ -60,11 +61,11 @@ export async function seedProperties() {
         type: 'whole'
       }
     ];
-    
+
     await Property.deleteMany({});
     const created = await Property.insertMany(properties);
     const plainProperties = created.map(doc => toPlainObject(doc));
-    
+
     return {
       success: true,
       message: `Utworzono ${plainProperties.length} domków`,
@@ -79,7 +80,7 @@ export async function seedProperties() {
 export async function seedPriceConfig() {
   try {
     await dbConnect();
-    
+
     const priceConfig = {
       _id: 'main',
       baseRates: {
@@ -98,11 +99,11 @@ export async function seedPriceConfig() {
       },
       seasons: []
     };
-    
+
     await PriceConfig.deleteMany({});
     const created = await PriceConfig.create(priceConfig);
     const plainConfig = toPlainObject(created);
-    
+
     return {
       success: true,
       message: 'Konfiguracja cen została utworzona',
@@ -117,20 +118,16 @@ export async function seedPriceConfig() {
 export async function seedSystemConfig() {
   try {
     await dbConnect();
-    
+
     const systemConfig = {
       _id: 'main',
-      autoBlockOtherCabins: true,
-      highSeasonStart: new Date(new Date().getFullYear(), 5, 1),
-      highSeasonEnd: new Date(new Date().getFullYear(), 7, 31),
-      maxGuestsPerCabin: 8,
-      childrenFreeAgeLimit: 13
+      autoBlockOtherCabins: true
     };
-    
+
     await SystemConfig.deleteMany({});
     const created = await SystemConfig.create(systemConfig);
     const plainConfig = toPlainObject(created);
-    
+
     return {
       success: true,
       message: 'Konfiguracja systemowa została utworzona',
@@ -145,31 +142,31 @@ export async function seedSystemConfig() {
 export async function seedBookings() {
   try {
     await dbConnect();
-    
+
     const properties = await Property.find({ isActive: true }).lean();
-    
+
     if (properties.length < 2) {
       return { success: false, error: 'Najpierw utwórz minimum 2 domki' };
     }
-    
+
     const today = new Date();
-    
+
     const nextWeekStart = new Date(today);
     nextWeekStart.setDate(today.getDate() + 7);
     nextWeekStart.setHours(14, 0, 0, 0);
-    
+
     const nextWeekEnd = new Date(nextWeekStart);
     nextWeekEnd.setDate(nextWeekStart.getDate() + 4);
     nextWeekEnd.setHours(11, 0, 0, 0);
-    
+
     const twoWeeksStart = new Date(today);
     twoWeeksStart.setDate(today.getDate() + 21);
     twoWeeksStart.setHours(14, 0, 0, 0);
-    
+
     const twoWeeksEnd = new Date(twoWeeksStart);
     twoWeeksEnd.setDate(twoWeeksStart.getDate() + 3);
     twoWeeksEnd.setHours(11, 0, 0, 0);
-    
+
     const bookings = [
       {
         propertyId: new Types.ObjectId(properties[0]._id),
@@ -215,11 +212,11 @@ export async function seedBookings() {
         source: 'customer'
       }
     ];
-    
+
     await Booking.deleteMany({});
     const created = await Booking.insertMany(bookings);
     const plainBookings = created.map(doc => toPlainObject(doc));
-    
+
     return {
       success: true,
       message: `Utworzono ${plainBookings.length} rezerwacji`,
@@ -230,24 +227,55 @@ export async function seedBookings() {
     return { success: false, error: 'Nie udało się utworzyć rezerwacji' };
   }
 }
+export async function seedBookingConfig() {
+  try {
+    await dbConnect();
+
+    const bookingConfig = {
+      _id: 'main',
+      minBookingDays: 1,
+      maxBookingDays: 30,
+      highSeasonStart: new Date(new Date().getFullYear(), 5, 1), // 1 czerwca
+      highSeasonEnd: new Date(new Date().getFullYear(), 7, 31), // 31 sierpnia
+      maxGuestsPerCabin: 6,
+      childrenFreeAgeLimit: 13
+    };
+
+    await BookingConfig.deleteMany({});
+    const created = await BookingConfig.create(bookingConfig);
+    const plainConfig = toPlainObject(created);
+
+    return {
+      success: true,
+      message: 'Konfiguracja rezerwacji została utworzona',
+      data: plainConfig
+    };
+  } catch (error) {
+    console.error('Błąd podczas seedowania konfiguracji rezerwacji:', error);
+    return { success: false, error: 'Nie udało się utworzyć konfiguracji rezerwacji' };
+  }
+}
 
 export async function seedAllData() {
   try {
     await dbConnect();
-    
+
     await clearAllData();
-    
+
     const properties = await seedProperties();
     if (!properties.success) throw new Error(properties.error);
-    
+
     const prices = await seedPriceConfig();
     if (!prices.success) throw new Error(prices.error);
-    
+
     const system = await seedSystemConfig();
     if (!system.success) throw new Error(system.error);
-    
+
+    const bookingConfig = await seedBookingConfig(); // NOWE
+    if (!bookingConfig.success) throw new Error(bookingConfig.error);
+
     const bookings = await seedBookings();
-    
+
     return {
       success: true,
       message: 'Wszystkie dane zostały zresetowane do stanu początkowego'
@@ -255,20 +283,5 @@ export async function seedAllData() {
   } catch (error) {
     console.error('Błąd podczas seedowania wszystkich danych:', error);
     return { success: false, error: 'Nie udało się zresetować danych' };
-  }
-}
-
-export async function removeShadowBookings() {
-  try {
-    await dbConnect();
-    const result = await Booking.deleteMany({ bookingType: 'shadow' });
-    return {
-      success: true,
-      message: `Usunięto ${result.deletedCount} shadow bookings`,
-      deletedCount: result.deletedCount
-    };
-  } catch (error) {
-    console.error('Błąd podczas usuwania shadow bookings:', error);
-    return { success: false, error: 'Nie udało się usunąć shadow bookings' };
   }
 }

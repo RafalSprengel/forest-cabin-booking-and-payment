@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import styles from './page.module.css'
 import { createManualBooking, calculatePriceAction, getUnavailableDatesForProperty } from '@/actions/adminBookingActions'
 import { getAllProperties } from '@/actions/adminPropertyActions'
+import { getBookingConfig } from '@/actions/bookingConfigActions'
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
 import CalendarPicker from '@/app/_components/CalendarPicker/CalendarPicker'
 import QuantityPicker from '@/app/_components/QuantityPicker/QuantityPicker'
@@ -21,7 +22,6 @@ interface PropertyOption {
   name: string
   baseCapacity: number
   maxExtraBeds: number
-  // isComposite?: boolean  // usunięte
 }
 
 interface UnavailableDate {
@@ -65,19 +65,22 @@ export default function AddBookingPage() {
     city: '',
   })
   const [invoiceErrors, setInvoiceErrors] = useState<Record<string, string>>({})
+  const [minBookingDays, setMinBookingDays] = useState(1)
+  const [maxBookingDays, setMaxBookingDays] = useState(30)
 
   const isDateRangeSelected = !!(bookingDates.start && bookingDates.end)
 
   useEffect(() => {
-    const loadProperties = async () => {
-      try {
-        const data = await getAllProperties()
-        setProperties(data)
-      } catch (error) {
-        console.error('Failed to load properties:', error)
-      }
-    }
-    loadProperties()
+    const loadInitialData = async () => {
+      const [props, config] = await Promise.all([
+        getAllProperties(),
+        getBookingConfig()
+      ]);
+      setProperties(props);
+      setMinBookingDays(config.minBookingDays);
+      setMaxBookingDays(config.maxBookingDays);
+    };
+    loadInitialData();
   }, [])
 
   useEffect(() => {
@@ -286,6 +289,8 @@ export default function AddBookingPage() {
                 <CalendarPicker
                   unavailableDates={unavailableDates}
                   onDateChange={setBookingDates}
+                  minBookingDays={minBookingDays}
+                  maxBookingDays={maxBookingDays}
                 />
                 <button type="button" className={styles.buttOk} onClick={() => setCalendarOpen(false)}>Gotowe</button>
               </div>

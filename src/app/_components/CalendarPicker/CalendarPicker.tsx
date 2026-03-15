@@ -27,7 +27,7 @@ interface DayProps {
     isSunday: boolean;
     isSaturday: boolean;
     isWeekend: boolean;
-    handleClickOnDay: (date: string) => void;
+    handleClickOnDay: (date: string, isPast: boolean, isReserved: boolean) => void;
     handleMouseHoverDay: (date: string) => void;
 }
 
@@ -64,7 +64,7 @@ const Day = ({
     return (
         <div
             className={dayClasses}
-            onClick={() => handleClickOnDay(currentDate)}
+            onClick={() => handleClickOnDay(currentDate, isPast, isReserved)}
             onMouseEnter={() => handleMouseHoverDay(currentDate)}
         >
             {currentDay}
@@ -79,9 +79,12 @@ interface MonthProps {
     selectedEnd: string | null;
     setSelectedStart: (date: string | null) => void;
     setSelectedEnd: (date: string | null) => void;
+    minBookingDays: number;
+    maxBookingDays: number;
+    onError: (error: string | null) => void;
 }
 
-const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setSelectedStart, setSelectedEnd }: MonthProps) => {
+const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setSelectedStart, setSelectedEnd, minBookingDays, maxBookingDays, onError }: MonthProps) => {
     const [hoveredDate, setHoveredDate] = useState<string | null>(null);
     const res = [];
     let currentDay = 0;
@@ -104,6 +107,13 @@ const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setS
             tempDate.setDate(tempDate.getDate() + 1);
         }
         return false;
+    };
+
+    const getDaysDifference = (start: string, end: string): number => {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
     for (let i = 1; i <= 42; i++) {
@@ -144,22 +154,36 @@ const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setS
                     new Date(currentDateFormatted) < new Date(selectedEnd);
             }
 
-            const handleClickOnDay = (date: string) => {
+            const handleClickOnDay = (date: string, isPast: boolean, isReserved: boolean) => {
                 if (isPast || isReserved) return;
                 
                 if (!selectedStart || (selectedStart && selectedEnd)) {
                     setSelectedStart(date);
                     setSelectedEnd(null);
+                    onError(null);
                 } else {
                     if (hasReservedInRange(selectedStart, date)) {
                         setSelectedStart(date);
                         setSelectedEnd(null);
+                        onError(null);
                     } else {
-                        if (new Date(date) < new Date(selectedStart)) {
-                            setSelectedEnd(selectedStart);
-                            setSelectedStart(date);
+                        const daysDiff = getDaysDifference(selectedStart, date);
+                        if (daysDiff < minBookingDays) {
+                            onError(`Minimalna ilość nocy to ${minBookingDays}.`);
+                            setSelectedStart(null);
+                            setSelectedEnd(null);
+                        } else if (daysDiff > maxBookingDays) {
+                            onError(`Maksymalny okres rezerwacji to ${maxBookingDays} dni.`);
+                            setSelectedStart(null);
+                            setSelectedEnd(null);
                         } else {
-                            setSelectedEnd(date);
+                            if (new Date(date) < new Date(selectedStart)) {
+                                setSelectedEnd(selectedStart);
+                                setSelectedStart(date);
+                            } else {
+                                setSelectedEnd(date);
+                            }
+                            onError(null);
                         }
                     }
                 }
@@ -205,12 +229,20 @@ function formatDate(dateObj: Date): string {
 interface CalendarPickerProps {
     unavailableDates: UnavailableDates | null;
     onDateChange: (dates: BookingDates) => void;
+    minBookingDays?: number;
+    maxBookingDays?: number;
 }
 
-export default function CalendarPicker({ unavailableDates, onDateChange }: CalendarPickerProps) { 
+export default function CalendarPicker({ 
+    unavailableDates, 
+    onDateChange, 
+    minBookingDays = 1,
+    maxBookingDays = 30 
+}: CalendarPickerProps) { 
     const [currentDate, setDate] = useState<Date>(new Date());
     const [selectedStart, setSelectedStart] = useState<string | null>(null);
     const [selectedEnd, setSelectedEnd] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const weekDays: string[]= ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const monthsNames: string[] = [
@@ -279,7 +311,12 @@ export default function CalendarPicker({ unavailableDates, onDateChange }: Calen
                 selectedEnd={selectedEnd}
                 setSelectedStart={setSelectedStart}
                 setSelectedEnd={setSelectedEnd}
+                minBookingDays={minBookingDays}
+                maxBookingDays={maxBookingDays}
+                onError={setError}
             />
+
+            {error && <div className="calendar-error">{error}</div>}
         </div>
     );
 }

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { searchAction, SearchOption, getMaxTotalGuests } from '@/actions/searchActions'
+import { getBookingConfig } from '@/actions/bookingConfigActions'
 import QuantityPicker from '../../_components/QuantityPicker/QuantityPicker'
 import CalendarPicker from '../../_components/CalendarPicker/CalendarPicker'
 import { useClickOutside } from '@/hooks/useClickOutside'
@@ -35,6 +36,9 @@ export default function BookingPage() {
   const [adults, setAdults] = useState(2)
   const [children, setChildren] = useState(0)
   const [maxTotalGuests, setMaxTotalGuests] = useState(12)
+  const [minBookingDays, setMinBookingDays] = useState(1)
+  const [maxBookingDays, setMaxBookingDays] = useState(30)
+  const [childrenFreeAgeLimit, setChildrenFreeAgeLimit] = useState(13)
   const [bookingDates, setBookingDates] = useState<BookingDates>({
     start: null,
     end: null,
@@ -49,11 +53,17 @@ export default function BookingPage() {
   const datesRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
-    const loadMaxGuests = async () => {
-      const max = await getMaxTotalGuests();
+    const loadConfig = async () => {
+      const [max, bookingConfig] = await Promise.all([
+        getMaxTotalGuests(),
+        getBookingConfig()
+      ]);
       setMaxTotalGuests(max);
+      setMinBookingDays(bookingConfig.minBookingDays);
+      setMaxBookingDays(bookingConfig.maxBookingDays);
+      setChildrenFreeAgeLimit(bookingConfig.childrenFreeAgeLimit);
     };
-    loadMaxGuests();
+    loadConfig();
   }, []);
   
   useEffect(() => {
@@ -208,7 +218,7 @@ export default function BookingPage() {
                 disableIncrement={atMaxGuests}
               />
             </div>
-            <span className={styles.info}>* Dzieci do lat 13 bezpłatnie</span>
+            <span className={styles.info}>* Dzieci do lat {childrenFreeAgeLimit} bezpłatnie</span>
             <button className={styles.buttOk} onClick={closeAllBoxes}>Gotowe</button>
           </div>
         </div>
@@ -232,6 +242,8 @@ export default function BookingPage() {
             <CalendarPicker
               unavailableDates={[]}
               onDateChange={setBookingDates}
+              minBookingDays={minBookingDays}
+              maxBookingDays={maxBookingDays}
             />
             <button className={styles.buttOk} onClick={closeAllBoxes}>Gotowe</button>
           </div>

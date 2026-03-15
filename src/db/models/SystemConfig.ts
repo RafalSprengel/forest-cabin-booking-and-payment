@@ -3,10 +3,6 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 interface ISystemConfigDoc extends Omit<Document, '_id'> {
   _id: string;
   autoBlockOtherCabins: boolean;
-  highSeasonStart?: Date;
-  highSeasonEnd?: Date;
-  maxGuestsPerCabin: number;
-  childrenFreeAgeLimit: number;
 }
 
 export type ISystemConfig = ISystemConfigDoc;
@@ -17,11 +13,7 @@ const SystemConfigSchema = new Schema<ISystemConfig>(
       type: String,
       default: 'main'
     },
-    autoBlockOtherCabins: { type: Boolean, default: true },
-    highSeasonStart: { type: Date },
-    highSeasonEnd: { type: Date },
-    maxGuestsPerCabin: { type: Number, default: 6 },
-    childrenFreeAgeLimit: { type: Number, default: 13 }
+    autoBlockOtherCabins: { type: Boolean, default: true }
   },
   {
     versionKey: false,

@@ -6,9 +6,9 @@
 }
 
 .calendar {
-    font-size: 12px; 
+    font-size: 12px;
     width: 100%;
-    max-width: 36em; 
+    max-width: 36em;
     text-align: center;
     box-sizing: border-box;
 }
@@ -21,7 +21,7 @@
     margin-bottom: 1em;
 }
 
-.navigation__arrow, 
+.navigation__arrow,
 .navigation__current-month {
     padding: 0.3em;
     margin: auto;
@@ -38,7 +38,7 @@
     font-weight: bold;
 }
 
-.navigation__arrow:hover, 
+.navigation__arrow:hover,
 .navigation__current-month:hover {
     background-color: rgb(231, 231, 231);
 }
@@ -117,10 +117,15 @@
     background-color: red;
 }
 
-.day__reserved::before { transform: rotate(45deg); }
-.day__reserved::after { transform: rotate(-45deg); }
+.day__reserved::before {
+    transform: rotate(45deg);
+}
 
-.day__sunday, 
+.day__reserved::after {
+    transform: rotate(-45deg);
+}
+
+.day__sunday,
 .day__saturday {
     color: #d10000;
 }
@@ -137,8 +142,8 @@
     color: white !important;
 }
 
-.day__selected-between:hover, 
-.day__selected-as-start:hover, 
+.day__selected-between:hover,
+.day__selected-as-start:hover,
 .day__selected-as-end:hover {
     background-color: #f0c96e !important;
 }
@@ -150,4 +155,12 @@
     font-size: 1.5em;
     line-height: 1;
     display: inline-block;
+}
+
+.calendar-error {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 500;
 }
