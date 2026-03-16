@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { searchAction, SearchOption, getMaxTotalGuests } from '@/actions/searchActions'
 import { getBookingConfig } from '@/actions/bookingConfigActions'
+import { getBlockedDates } from '@/actions/bookingActions' // NOWE
 import QuantityPicker from '../../_components/QuantityPicker/QuantityPicker'
 import CalendarPicker from '../../_components/CalendarPicker/CalendarPicker'
 import { useClickOutside } from '@/hooks/useClickOutside'
@@ -48,10 +49,11 @@ export default function BookingPage() {
   const [searchResults, setSearchResults] = useState<SearchOption[] | null>(null)
   const [extraBedsMap, setExtraBedsMap] = useState<Record<string, number>>({})
   const [hasDraft, setHasDraft] = useState(false)
-  
+  const [blockedDates, setBlockedDates] = useState<{ date: string }[]>([]) // NOWE
+
   const guestsRef = useRef<HTMLDivElement>(null)
   const datesRef = useRef<HTMLDivElement>(null)
-  
+
   useEffect(() => {
     const loadConfig = async () => {
       const [max, bookingConfig] = await Promise.all([
@@ -65,7 +67,16 @@ export default function BookingPage() {
     };
     loadConfig();
   }, []);
-  
+
+  // NOWE: Pobierz zablokowane daty po załadowaniu strony
+  useEffect(() => {
+    const loadBlockedDates = async () => {
+      const dates = await getBlockedDates();
+      setBlockedDates(dates);
+    };
+    loadBlockedDates();
+  }, []);
+
   useEffect(() => {
     const draft = localStorage.getItem(STORAGE_KEY)
     if (draft) {
@@ -79,31 +90,31 @@ export default function BookingPage() {
       }
     }
   }, [])
-  
+
   useClickOutside(guestsRef, () => {
     if (activeBox === 'guests') setActiveBox(null)
   })
-  
+
   useClickOutside(datesRef, () => {
     if (activeBox === 'dates') setActiveBox(null)
   })
-  
+
   const totalGuests = adults + children
   const atMaxGuests = totalGuests >= maxTotalGuests
-  
+
   const toggleBox = (boxName: string) => {
     setActiveBox(activeBox === boxName ? null : boxName)
   }
-  
+
   const closeAllBoxes = () => setActiveBox(null)
-  
+
   const handleSearch = async () => {
     if (!bookingDates.start || !bookingDates.end || totalGuests === 0) return
-    
+
     setIsLoading(true)
     setSearchResults(null)
     setExtraBedsMap({})
-    
+
     try {
       const results = await searchAction({
         startDate: bookingDates.start,
@@ -111,7 +122,7 @@ export default function BookingPage() {
         guests: totalGuests,
         extraBeds: 0
       })
-      
+
       setSearchResults(results)
     } catch (error) {
       console.error('Search error:', error)
@@ -121,27 +132,27 @@ export default function BookingPage() {
       setIsLoading(false)
     }
   }
-  
+
   const handleExtraBedsChange = (optionDisplayName: string, value: number) => {
     setExtraBedsMap(prev => ({
       ...prev,
       [optionDisplayName]: value
     }))
   }
-  
+
   const getBasePrice = (option: SearchOption) => {
     return option.totalPrice
   }
-  
+
   const getTotalPriceWithExtraBeds = (option: SearchOption) => {
     const extraBeds = extraBedsMap[option.displayName] || 0
     return option.totalPrice + (extraBeds * EXTRA_BED_PRICE)
   }
-  
+
   const handleSelectOption = (option: SearchOption) => {
     const extraBeds = extraBedsMap[option.displayName] || 0
     const totalPriceWithExtraBeds = getTotalPriceWithExtraBeds(option)
-    
+
     const draft: BookingDraft = {
       startDate: bookingDates.start!,
       endDate: bookingDates.end!,
@@ -153,20 +164,20 @@ export default function BookingPage() {
         totalPrice: totalPriceWithExtraBeds
       }
     }
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
     router.push('/booking/details')
   }
-  
+
   const renderGuestsText = () => {
     if (totalGuests === 0) return 'Wybierz ilość osób'
     const adultsText = adults === 1 ? '1 dorosły' : `${adults} dorosłych`
     const childrenText = children === 0 ? '' : children === 1 ? ', 1 dziecko' : `, ${children} dzieci`
     return `${adultsText}${childrenText}`
   }
-  
+
   const isSearchDisabled = totalGuests === 0 || !bookingDates.start || !bookingDates.end
-  
+
   return (
     <div className={styles.container}>
       {hasDraft && (
@@ -177,11 +188,11 @@ export default function BookingPage() {
           </Link>
         </div>
       )}
-      
+
       <div className={styles.head}>
         <h2>Znajdź swój termin</h2>
       </div>
-      
+
       <div className={styles.searchBox}>
         <div className={styles.gestsBox}>
           <div className={styles.gests} onClick={() => toggleBox('guests')}>
@@ -191,7 +202,7 @@ export default function BookingPage() {
             </div>
             <span style={{ fontSize: '0.8rem', color: '#aaa' }}>&#9662;</span>
           </div>
-          
+
           <div
             ref={guestsRef}
             className={`${styles.setGests} ${activeBox === 'guests' ? styles.expandedGests : ''}`}
@@ -222,7 +233,7 @@ export default function BookingPage() {
             <button className={styles.buttOk} onClick={closeAllBoxes}>Gotowe</button>
           </div>
         </div>
-        
+
         <div className={styles.dateBox}>
           <div className={styles.date} onClick={() => toggleBox('dates')}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -234,13 +245,13 @@ export default function BookingPage() {
               <span style={{ fontSize: '0.8rem', color: '#aaa' }}>&#9662;</span>
             </div>
           </div>
-          
+
           <div
             ref={datesRef}
             className={`${styles.setDate} ${activeBox === 'dates' ? styles.expandedDate : ''}`}
           >
             <CalendarPicker
-              unavailableDates={[]}
+              unavailableDates={blockedDates} // NOWE: przekazujemy pobrane daty
               onDateChange={setBookingDates}
               minBookingDays={minBookingDays}
               maxBookingDays={maxBookingDays}
@@ -248,7 +259,7 @@ export default function BookingPage() {
             <button className={styles.buttOk} onClick={closeAllBoxes}>Gotowe</button>
           </div>
         </div>
-        
+
         <button
           className={styles.button}
           disabled={isSearchDisabled || isLoading}
@@ -257,7 +268,7 @@ export default function BookingPage() {
           {isLoading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Szukaj'}
         </button>
       </div>
-      
+
       <div className={styles.resultsContainer}>
         {isLoading && (
           <div className={styles.loadingState}>
@@ -265,7 +276,7 @@ export default function BookingPage() {
             <p>Sprawdzam dostępność domków...</p>
           </div>
         )}
-        
+
         {!isLoading && searchResults !== null && (
           <>
             {(() => {
@@ -288,7 +299,7 @@ export default function BookingPage() {
                   {availableOptions.map((option) => {
                     const extraBeds = extraBedsMap[option.displayName] || 0
                     const totalPriceWithExtraBeds = getTotalPriceWithExtraBeds(option)
-                    
+
                     return (
                       <div key={option.displayName} className={styles.resultCard}>
                         <div className={styles.cardHeader}>
@@ -299,7 +310,7 @@ export default function BookingPage() {
                             <span className={styles.privacyBadge}>Prywatny teren</span>
                           )}
                         </div>
-                        
+
                         <h4 className={styles.cardTitle}>
                           {option.type === 'whole' ? (
                             <>
@@ -308,15 +319,15 @@ export default function BookingPage() {
                             </>
                           ) : option.displayName}
                         </h4>
-                        
+
                         <p className={styles.cardDesc}>{option.description}</p>
-                        
+
                         <div className={styles.cardDetails}>
                           <span>Pojemność: {option.maxGuests} osób</span>
                           <span className={styles.separator}> • </span>
                           <span>Max dostawek: {option.maxExtraBeds}</span>
                         </div>
-                        
+
                         {option.maxExtraBeds > 0 && (
                           <div className={styles.extraBedsSection}>
                             <div className={styles.extraBedsHeader}>
@@ -333,12 +344,12 @@ export default function BookingPage() {
                             <span className={styles.extraBedsPrice}>+{extraBeds * EXTRA_BED_PRICE} zł</span>
                           </div>
                         )}
-                        
+
                         <div className={styles.cardPrice}>
                           <span className={styles.priceLabel}>Cena całkowita:</span>
                           <span className={styles.priceValue}>{totalPriceWithExtraBeds} zł</span>
                         </div>
-                        
+
                         <button
                           className={styles.btnSelect}
                           onClick={() => handleSelectOption(option)}

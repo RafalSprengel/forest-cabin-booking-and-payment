@@ -1,7 +1,10 @@
 'use server'
+
 import dbConnect from '@/db/connection';
 import Booking from '@/db/models/Booking';
 import Property from '@/db/models/Property';
+import SystemConfig from '@/db/models/SystemConfig';
+import BookingConfig from '@/db/models/BookingConfig';
 import { Types } from 'mongoose';
 
 interface GuestData {
@@ -147,5 +150,59 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
     }
     
     return { success: false, error: 'Nie udało się utworzyć rezerwacji' };
+  }
+}
+
+export async function getBlockedDates(): Promise<{ date: string }[]> {
+  try {
+    await dbConnect();
+
+    // Pobierz konfigurację systemu i rezerwacji
+    const [systemConfig, bookingConfig] = await Promise.all([
+      SystemConfig.findById('main'),
+      BookingConfig.findById('main')
+    ]);
+
+    const autoBlock = systemConfig?.autoBlockOtherCabins ?? true;
+
+    // Jeśli autoBlock wyłączone, nie blokujemy żadnych dni w kalendarzu
+    if (!autoBlock) {
+      return [];
+    }
+
+    const allowCheckinOnDepartureDay = bookingConfig?.allowCheckinOnDepartureDay ?? true;
+
+    // Pobierz wszystkie aktywne rezerwacje (potwierdzone i blokady systemowe)
+    const bookings = await Booking.find({
+      status: { $in: ['confirmed', 'blocked'] }
+    }).select('startDate endDate').lean();
+
+    const blockedSet = new Set<string>();
+
+    for (const booking of bookings) {
+      const start = new Date(booking.startDate);
+      const end = new Date(booking.endDate);
+
+      // Dni w pełni zajęte: od start+1 do end-1
+      const firstFullDay = new Date(start);
+      firstFullDay.setDate(firstFullDay.getDate() + 1);
+      const lastFullDay = new Date(end);
+      lastFullDay.setDate(lastFullDay.getDate() - 1);
+
+      for (let d = new Date(firstFullDay); d <= lastFullDay; d.setDate(d.getDate() + 1)) {
+        blockedSet.add(d.toISOString().split('T')[0]);
+      }
+
+      // Jeśli nie pozwalamy na zameldowanie w dniu wymeldowania, blokujemy dzień endDate
+      if (!allowCheckinOnDepartureDay) {
+        blockedSet.add(end.toISOString().split('T')[0]);
+      }
+    }
+
+    // Konwertujemy na format oczekiwany przez CalendarPicker
+    return Array.from(blockedSet).map(date => ({ date }));
+  } catch (error) {
+    console.error('Błąd podczas pobierania zablokowanych dat:', error);
+    return [];
   }
 }

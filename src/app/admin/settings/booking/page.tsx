@@ -4,7 +4,7 @@ import BookingSettingsForm from './BookingSettingsForm';
 
 export default async function BookingSettingsPage() {
   const config = await getBookingConfig();
-  
+
   return (
     <div className="admin-settings-container">
       <FloatingBackButton />

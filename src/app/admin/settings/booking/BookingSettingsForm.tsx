@@ -10,6 +10,7 @@ interface BookingConfig {
   highSeasonStart: string | null;
   highSeasonEnd: string | null;
   childrenFreeAgeLimit: number;
+  allowCheckinOnDepartureDay: boolean; // NOWE
 }
 
 interface Props {
@@ -125,6 +126,30 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
             max="18"
             defaultValue={initialConfig.childrenFreeAgeLimit}
             className="number-input"
+          />
+        </div>
+      </div>
+
+      {/* NOWY WPIS */}
+      <div className="card-header card-header-spaced">
+        <h2 className="card-title">Dostępność terminów</h2>
+      </div>
+      <div className="setting-row">
+        <div className="setting-content">
+          <label htmlFor="allowCheckinOnDepartureDay" className="setting-label">
+            Zezwalaj na zameldowanie w dniu wymeldowania poprzednich gości
+          </label>
+          <p className="setting-description">
+            Jeśli włączone, nowi goście mogą przyjechać tego samego dnia, w którym poprzedni wyjeżdżają (po 11:00).<br />
+            Jeśli wyłączone, dzień wymeldowania jest niedostępny dla nowych rezerwacji.
+          </p>
+        </div>
+        <div className="setting-control">
+          <input
+            type="checkbox"
+            id="allowCheckinOnDepartureDay"
+            name="allowCheckinOnDepartureDay"
+            defaultChecked={initialConfig.allowCheckinOnDepartureDay}
           />
         </div>
       </div>

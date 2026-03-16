@@ -238,7 +238,8 @@ export async function seedBookingConfig() {
       highSeasonStart: new Date(new Date().getFullYear(), 5, 1), // 1 czerwca
       highSeasonEnd: new Date(new Date().getFullYear(), 7, 31), // 31 sierpnia
       maxGuestsPerCabin: 6,
-      childrenFreeAgeLimit: 13
+      childrenFreeAgeLimit: 13,
+      allowCheckinOnDepartureDay: true
     };
 
     await BookingConfig.deleteMany({});

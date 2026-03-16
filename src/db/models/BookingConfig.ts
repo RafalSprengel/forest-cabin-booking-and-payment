@@ -7,6 +7,7 @@ export interface IBookingConfig {
   highSeasonStart?: Date;
   highSeasonEnd?: Date;
   childrenFreeAgeLimit: number;
+  allowCheckinOnDepartureDay: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -17,7 +18,8 @@ const BookingConfigSchema = new Schema<IBookingConfig>({
   maxBookingDays: { type: Number, default: 30, min: 1 },
   highSeasonStart: { type: Date },
   highSeasonEnd: { type: Date },
-  childrenFreeAgeLimit: { type: Number, default: 13 }
+  childrenFreeAgeLimit: { type: Number, default: 13 },
+  allowCheckinOnDepartureDay: { type: Boolean, default: true }
 }, {
   timestamps: true,
   versionKey: false

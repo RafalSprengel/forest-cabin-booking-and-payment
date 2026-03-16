@@ -8,7 +8,10 @@ async function ensureBookingConfigExists() {
   await dbConnect();
   const exists = await BookingConfig.findById('main');
   if (!exists) {
-    await BookingConfig.create({ _id: 'main' });
+    await BookingConfig.create({ 
+      _id: 'main',
+      allowCheckinOnDepartureDay: true 
+    });
   }
 }
 
@@ -18,7 +21,8 @@ export async function getBookingConfig() {
   return {
     minBookingDays: config?.minBookingDays ?? 1,
     maxBookingDays: config?.maxBookingDays ?? 30,
-    childrenFreeAgeLimit: config?.childrenFreeAgeLimit ?? 13
+    childrenFreeAgeLimit: config?.childrenFreeAgeLimit ?? 13,
+    allowCheckinOnDepartureDay: config?.allowCheckinOnDepartureDay ?? true
   };
 }
 
@@ -28,13 +32,15 @@ export async function updateBookingConfig(prevState: any, formData: FormData) {
     const minBookingDays = parseInt(formData.get('minBookingDays') as string) || 1;
     const maxBookingDays = parseInt(formData.get('maxBookingDays') as string) || 30;
     const childrenFreeAgeLimit = parseInt(formData.get('childrenFreeAgeLimit') as string) || 13;
+    const allowCheckinOnDepartureDay = formData.get('allowCheckinOnDepartureDay') === 'on';
 
     await BookingConfig.findByIdAndUpdate(
       'main',
       {
         minBookingDays,
         maxBookingDays,
-        childrenFreeAgeLimit
+        childrenFreeAgeLimit,
+        allowCheckinOnDepartureDay
       },
       { upsert: true, new: true }
     );
