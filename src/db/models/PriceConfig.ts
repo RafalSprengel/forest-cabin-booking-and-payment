@@ -11,7 +11,7 @@ export interface IBaseRates {
   weekend: IRateTier[];
   extraBedPrice: number;
   childrenFreeAgeLimit: number;
-  
+
 }
 
 export interface ISeason {
@@ -24,10 +24,15 @@ export interface ISeason {
   isActive: boolean;
 }
 
-export interface IPriceConfig extends Document {
+export interface IPriceConfig {
   _id: string;
   baseRates: IBaseRates;
   seasons: ISeason[];
+  customPrices?: {
+    propertyId: string;
+    date: string;
+    price: number;
+  }[];
   updatedAt: Date;
 }
 
@@ -56,24 +61,6 @@ const SeasonSchema = new Schema<ISeason>({
 
 const PriceConfigSchema = new Schema<IPriceConfig>({
   _id: { type: String, default: 'main' },
-  baseRates: {
-    type: BaseRatesSchema,
-    required: true,
-    default: {
-      weekday: [
-        { minGuests: 2, maxGuests: 3, price: 300 },
-        { minGuests: 4, maxGuests: 5, price: 400 },
-        { minGuests: 6, maxGuests: 10, price: 500 }
-      ],
-      weekend: [
-        { minGuests: 2, maxGuests: 3, price: 400 },
-        { minGuests: 4, maxGuests: 5, price: 500 },
-        { minGuests: 6, maxGuests: 10, price: 600 }
-      ],
-      extraBedPrice: 50,
-      childrenFreeAgeLimit: 13
-    }
-  },
   seasons: { type: [SeasonSchema], default: [] }
 }, {
   timestamps: true,

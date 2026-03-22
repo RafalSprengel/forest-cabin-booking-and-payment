@@ -47,18 +47,6 @@ export default function AdminLayout({
     };
   }, [isBookingsActive]);
 
-  const getLinkClassName = (path: string, isActive: boolean, isSubLink: boolean = false) => {
-    let className = isSubLink ? `${styles.subLink}` : `${styles.navLink}`;
-    if (isActive) className += ` ${styles.active}`;
-    return className;
-  };
-
-  const getStaticLinkClassName = (isActive: boolean) => {
-    let className = `${styles.navLinkStatic}`;
-    if (isActive) className += ` ${styles.active}`;
-    return className;
-  };
-
   return (
     <div className={styles.adminLayout}>
       <div
@@ -75,7 +63,7 @@ export default function AdminLayout({
 
       <aside className={`${styles.adminSidebar} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
         <div className={styles.sidebarHeader}>
-          <h2>Panel Adminia</h2>
+          <h2>Panel Admina</h2>
         </div>
 
         <nav className={styles.sidebarNav}>
@@ -84,9 +72,9 @@ export default function AdminLayout({
 
             <div>
               <div
-                className={getLinkClassName('', isBookingsActive)}
+                className={`${styles.navLink} ${isBookingsActive ? styles.active : ''}`}
                 onClick={toggleBookings}
-                style={{ justifyContent: 'space-between' }}
+                style={{ justifyContent: 'space-between', cursor: 'pointer' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span className={styles.navIcon}>📅</span>
@@ -98,21 +86,21 @@ export default function AdminLayout({
               <div className={`${styles.submenu} ${isBookingsOpen ? styles.open : ''}`}>
                 <Link
                   href="/admin/bookings/add"
-                  className={getLinkClassName('/admin/bookings/add', pathname === '/admin/bookings/add', true)}
+                  className={`${styles.subLink} ${pathname === '/admin/bookings/add' ? styles.active : ''}`}
                   onClick={handleMenuLinkClick}
                 >
                   ➕ Dodaj Nową
                 </Link>
                 <Link
                   href="/admin/bookings/calendar"
-                  className={getLinkClassName('/admin/bookings/calendar', pathname === '/admin/bookings/calendar', true)}
+                  className={`${styles.subLink} ${pathname === '/admin/bookings/calendar' ? styles.active : ''}`}
                   onClick={handleMenuLinkClick}
                 >
                   🗓️ Kalendarz
                 </Link>
                 <Link
                   href="/admin/bookings/list"
-                  className={getLinkClassName('/admin/bookings/list', pathname === '/admin/bookings/list', true)}
+                  className={`${styles.subLink} ${pathname === '/admin/bookings/list' ? styles.active : ''}`}
                   onClick={handleMenuLinkClick}
                 >
                   📋 Lista Rezerwacji
@@ -122,7 +110,7 @@ export default function AdminLayout({
 
             <Link
               href="/admin/properties"
-              className={getStaticLinkClassName(isPropertiesActive)}
+              className={`${styles.navLink} ${isPropertiesActive ? styles.active : ''}`}
               onClick={handleMenuLinkClick}
             >
               <span className={styles.navIcon}>🏠</span>
@@ -131,7 +119,7 @@ export default function AdminLayout({
 
             <Link
               href="/admin/prices"
-              className={getStaticLinkClassName(isPricesActive)}
+              className={`${styles.navLink} ${isPricesActive ? styles.active : ''}`}
               onClick={handleMenuLinkClick}
             >
               <span className={styles.navIcon}>💰</span>
@@ -143,7 +131,7 @@ export default function AdminLayout({
             <div className={styles.navGroupTitle}>Konfiguracja</div>
             <Link
               href="/admin/settings"
-              className={getLinkClassName('/admin/settings', isSettingsActive)}
+              className={`${styles.navLink} ${isSettingsActive ? styles.active : ''}`}
               onClick={handleMenuLinkClick}
             >
               <span className={styles.navIcon}>⚙️</span>
@@ -151,7 +139,7 @@ export default function AdminLayout({
             </Link>
             <Link
               href="/admin/settings/booking"
-              className={getLinkClassName('/admin/settings/booking', pathname === '/admin/settings/booking')}
+              className={`${styles.navLink} ${pathname === '/admin/settings/booking' ? styles.active : ''}`}
               onClick={handleMenuLinkClick}
             >
               <span className={styles.navIcon}>📅</span>
@@ -163,7 +151,7 @@ export default function AdminLayout({
             <div className={styles.navGroupTitle}>Narzędzia</div>
             <Link
               href="/admin/dev"
-              className={getLinkClassName('/admin/dev', isDevActive)}
+              className={`${styles.navLink} ${isDevActive ? styles.active : ''}`}
               onClick={handleMenuLinkClick}
             >
               <span className={styles.navIcon}>💻</span>
@@ -173,7 +161,12 @@ export default function AdminLayout({
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <Link href="/" className={styles.navLink} style={{ marginBottom: '10px' }} onClick={handleMenuLinkClick}>
+          <Link 
+            href="/" 
+            className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`} 
+            style={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }} 
+            onClick={handleMenuLinkClick}
+          >
             <span className={styles.navIcon}>🏠</span>
             Wróć na stronę
           </Link>

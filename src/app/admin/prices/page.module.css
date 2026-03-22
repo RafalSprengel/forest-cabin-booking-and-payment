@@ -1,0 +1,181 @@
+.tiersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.tierRange {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+  min-width: 70px;
+}
+
+.priceInput {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.priceInputLarge {
+  width: 100px;
+  padding: 8px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  text-align: right;
+  font-weight: 600;
+}
+
+.currency {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.removeTierBtn {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.removeTierBtn:hover {
+  background: #fecaca;
+}
+
+.removeTierBtn:focus {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+}
+
+.addTierBtn {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+
+.addTierBtn:hover {
+  background: #bae6fd;
+}
+
+.priceControl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendarWrapper {
+  width: 100%;
+  max-width: 360px;
+}
+
+.selectedDateInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.dayType {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.customPricesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.customPriceItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.customPriceDate {
+  font-weight: 600;
+  color: #334155;
+}
+
+.customPriceValue {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.moreItems {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .tierRow {
+    flex-wrap: wrap;
+  }
+
+  .tierRange {
+    min-width: auto;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .priceControl {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .priceInputLarge {
+    width: 100%;
+  }
+
+  .selectedDateInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
