@@ -1,322 +1,234 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import dayjs from 'dayjs';
 import './ClendarPicker.css';
 
-interface UnavailableDate {
-    date: string | null;
+export interface DayData {
+  price?: number;
+  available: boolean;
+  discount?: boolean;
 }
 
-type UnavailableDates = UnavailableDate[];
+export type DatesData = Record<string, DayData>;
 
 interface BookingDates {
-    start: string | null;
-    end: string | null;
-    count: number;
+  start: string | null;
+  end: string | null;
+  count: number;
 }
 
 interface DayProps {
-    currentDay: number;
-    currentDate: string;
-    isPast: boolean;
-    isToday: boolean;
-    isSelectedAsStart: boolean;
-    isSelectedAsEnd: boolean;
-    isSelectedBetween: boolean;
-    isHovered: boolean;
-    isReserved: boolean;
-    isSunday: boolean;
-    isSaturday: boolean;
-    isWeekend: boolean;
-    handleClickOnDay: (date: string, isPast: boolean, isReserved: boolean) => void;
-    handleMouseHoverDay: (date: string) => void;
+  dateStr: string;
+  dayNumber: number;
+  data?: DayData;
+  isPast: boolean;
+  isToday: boolean;
+  isSelectedAsStart: boolean;
+  isSelectedAsEnd: boolean;
+  isSelectedBetween: boolean;
+  isHovered: boolean;
+  isWeekend: boolean;
+  onClick: (date: string, isPast: boolean, available: boolean) => void;
+  onMouseEnter: (date: string) => void;
 }
 
 const Day = ({
-    currentDay,
-    currentDate,
-    isPast,
-    isToday,
-    isSelectedAsStart,
-    isSelectedAsEnd,
-    isSelectedBetween,
-    isHovered,
-    isReserved,
-    isSunday,
-    isSaturday,
-    isWeekend,
-    handleClickOnDay,
-    handleMouseHoverDay,
+  dateStr,
+  dayNumber,
+  data,
+  isPast,
+  isToday,
+  isSelectedAsStart,
+  isSelectedAsEnd,
+  isSelectedBetween,
+  isHovered,
+  isWeekend,
+  onClick,
+  onMouseEnter,
 }: DayProps) => {
-    const dayClasses = [
-        'day',
-        isPast ? 'day__past' : '',
-        isToday ? 'day__today' : '',
-        isReserved ? 'day__reserved' : '',
-        isSaturday ? 'day__saturday' : '',
-        isSunday ? 'day__sunday' : '',
-        isSelectedAsStart ? 'day__selected-as-start' : '',
-        isSelectedAsEnd ? 'day__selected-as-end' : '',
-        isSelectedBetween ? 'day__selected-between' : '',
-        isHovered ? 'day__hovered' : '',
-        isWeekend ? 'day__weekend' : '',
-    ].filter(Boolean).join(' ');
+  const isAvailable = data ? data.available : true;
+  const isReserved = !isAvailable;
 
-    return (
-        <div
-            className={dayClasses}
-            onClick={() => handleClickOnDay(currentDate, isPast, isReserved)}
-            onMouseEnter={() => handleMouseHoverDay(currentDate)}
-        >
-            {currentDay}
-        </div>
-    );
+  const dayClasses = [
+    'day',
+    isPast ? 'day__past' : '',
+    isToday ? 'day__today' : '',
+    isReserved ? 'day__reserved' : '',
+    isSelectedAsStart ? 'day__selected-as-start' : '',
+    isSelectedAsEnd ? 'day__selected-as-end' : '',
+    isSelectedBetween ? 'day__selected-between' : '',
+    isHovered ? 'day__hovered' : '',
+    isWeekend ? 'day__weekend' : '',
+    data?.discount ? 'day__discount' : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div
+      className={dayClasses}
+      onClick={() => onClick(dateStr, isPast, isAvailable)}
+      onMouseEnter={() => onMouseEnter(dateStr)}
+    >
+      <span className="day-number">{dayNumber}</span>
+      {data?.price && (
+        <span className="day-price">
+          £{data.price}
+        </span>
+      )}
+    </div>
+  );
 };
-
-interface MonthProps {
-    currentDate: Date;
-    unavailableDates: UnavailableDates | null;
-    selectedStart: string | null;
-    selectedEnd: string | null;
-    setSelectedStart: (date: string | null) => void;
-    setSelectedEnd: (date: string | null) => void;
-    minBookingDays: number;
-    maxBookingDays: number;
-    onError: (error: string | null) => void;
-}
-
-const Month = ({ currentDate, unavailableDates, selectedStart, selectedEnd, setSelectedStart, setSelectedEnd, minBookingDays, maxBookingDays, onError }: MonthProps) => {
-    const [hoveredDate, setHoveredDate] = useState<string | null>(null);
-    const res = [];
-    let currentDay = 0;
-
-    let firstDayOfTheMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-    if (firstDayOfTheMonth === 0) firstDayOfTheMonth = 7;
-
-    const numberOfDaysCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-
-    const hasReservedInRange = (dateA: string, dateB: string) => {
-        if (!unavailableDates) return false;
-        let start = new Date(dateA);
-        let end = new Date(dateB);
-        if (start > end) [start, end] = [end, start];
-
-        let tempDate = new Date(start);
-        while (tempDate <= end) {
-            const formatted = formatDate(tempDate);
-            if (unavailableDates.some(el => el.date === formatted)) return true;
-            tempDate.setDate(tempDate.getDate() + 1);
-        }
-        return false;
-    };
-
-    const getDaysDifference = (start: string, end: string): number => {
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    };
-
-    for (let i = 1; i <= 42; i++) {
-        if (i >= firstDayOfTheMonth && i < numberOfDaysCurrentMonth + firstDayOfTheMonth) {
-            currentDay++;
-            let isSelectedBetween = false;
-            let isReserved = false;
-            let dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDay);
-            let currentDateFormatted = formatDate(dateObj);
-
-            const todayFormatted = formatDate(new Date());
-
-            const isToday = todayFormatted === currentDateFormatted;
-            const isSunday = dateObj.getDay() === 0;
-            const isSaturday = dateObj.getDay() === 6;
-            const isPast = new Date(currentDateFormatted + 'T23:59:59') < new Date();
-            const isWeekend = isSunday || isSaturday;
-
-            let isSelectedAsStart = selectedStart === currentDateFormatted;
-            let isSelectedAsEnd = selectedEnd === currentDateFormatted;
-
-            if (unavailableDates) {
-                isReserved = unavailableDates.some(el => el.date === currentDateFormatted);
-            }
-
-            let isHovered = Boolean(
-                selectedStart && 
-                !selectedEnd && 
-                hoveredDate &&
-                new Date(currentDateFormatted) > new Date(selectedStart) &&
-                new Date(currentDateFormatted) < new Date(hoveredDate) &&
-                !isReserved &&
-                !hasReservedInRange(selectedStart, hoveredDate)
-            );
-
-            if (selectedStart && selectedEnd) {
-                isSelectedBetween = new Date(currentDateFormatted) > new Date(selectedStart) &&
-                    new Date(currentDateFormatted) < new Date(selectedEnd);
-            }
-
-            const handleClickOnDay = (date: string, isPast: boolean, isReserved: boolean) => {
-                if (isPast || isReserved) return;
-                
-                if (!selectedStart || (selectedStart && selectedEnd)) {
-                    setSelectedStart(date);
-                    setSelectedEnd(null);
-                    onError(null);
-                } else {
-                    if (hasReservedInRange(selectedStart, date)) {
-                        setSelectedStart(date);
-                        setSelectedEnd(null);
-                        onError(null);
-                    } else {
-                        const daysDiff = getDaysDifference(selectedStart, date);
-                        if (daysDiff < minBookingDays) {
-                            onError(`Minimalna ilość nocy to ${minBookingDays}.`);
-                            setSelectedStart(null);
-                            setSelectedEnd(null);
-                        } else if (daysDiff > maxBookingDays) {
-                            onError(`Maksymalny okres rezerwacji to ${maxBookingDays} dni.`);
-                            setSelectedStart(null);
-                            setSelectedEnd(null);
-                        } else {
-                            if (new Date(date) < new Date(selectedStart)) {
-                                setSelectedEnd(selectedStart);
-                                setSelectedStart(date);
-                            } else {
-                                setSelectedEnd(date);
-                            }
-                            onError(null);
-                        }
-                    }
-                }
-            };
-
-            const handleMouseHoverDay = (date: string) => {
-                if (selectedStart && !selectedEnd) setHoveredDate(date);
-            };
-
-            res.push(
-                <Day
-                    key={currentDateFormatted}
-                    currentDay={currentDay}
-                    currentDate={currentDateFormatted}
-                    isPast={isPast}
-                    isToday={isToday}
-                    isSelectedAsStart={isSelectedAsStart}
-                    isSelectedAsEnd={isSelectedAsEnd}
-                    isSelectedBetween={isSelectedBetween}
-                    isReserved={isReserved}
-                    isSunday={isSunday}
-                    isSaturday={isSaturday}
-                    isWeekend={isWeekend}
-                    handleClickOnDay={handleClickOnDay}
-                    handleMouseHoverDay={handleMouseHoverDay}
-                    isHovered={isHovered}
-                />
-            );
-        } else {
-            res.push(<div className="day__blank" key={`blank-${i}`}></div>);
-        }
-    }
-    return <div className="month-container">{res}</div>;
-};
-
-function formatDate(dateObj: Date): string {
-    let year = dateObj.getFullYear();
-    let month = ((dateObj.getMonth() + 1)).toString().padStart(2, '0');
-    let day = dateObj.getDate().toString().padStart(2, '0');
-    return (year + "-" + month + '-' + day);
-}
 
 interface CalendarPickerProps {
-    unavailableDates: UnavailableDates | null;
-    onDateChange: (dates: BookingDates) => void;
-    minBookingDays?: number;
-    maxBookingDays?: number;
+  dates: DatesData;
+  onDateChange: (dates: BookingDates) => void;
+  minBookingDays?: number;
+  maxBookingDays?: number;
 }
 
-export default function CalendarPicker({ 
-    unavailableDates, 
-    onDateChange, 
-    minBookingDays = 1,
-    maxBookingDays = 30 
-}: CalendarPickerProps) { 
-    const [currentDate, setDate] = useState<Date>(new Date());
-    const [selectedStart, setSelectedStart] = useState<string | null>(null);
-    const [selectedEnd, setSelectedEnd] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+export default function CalendarPicker({
+  dates,
+  onDateChange,
+  minBookingDays = 1,
+  maxBookingDays = 30
+}: CalendarPickerProps) {
+  const [viewDate, setViewDate] = useState(dayjs());
+  const [selectedStart, setSelectedStart] = useState<string | null>(null);
+  const [selectedEnd, setSelectedEnd] = useState<string | null>(null);
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-    const weekDays: string[]= ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const monthsNames: string[] = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+  const weekDays = ['P', 'W', 'Ś', 'C', 'P', 'S', 'N'];
 
-    const getSelectedDaysCount = (): number => {
-        if (!selectedStart) return 0;
-        if (!selectedEnd) return 1;
+  const days = useMemo(() => {
+    const startOfMonth = viewDate.startOf('month');
+    const daysInMonth = viewDate.daysInMonth();
+    
+    let startDayOfWeek = startOfMonth.day();
+    if (startDayOfWeek === 0) startDayOfWeek = 7;
 
-        let count = 0;
-        let start = new Date(selectedStart);
-        let end = new Date(selectedEnd);
+    const result = [];
+    const today = dayjs().startOf('day');
 
-        if (start > end) [start, end] = [end, start];
+    for (let i = 1; i < startDayOfWeek; i++) {
+      result.push({ isBlank: true, key: `blank-${i}` });
+    }
 
-        let tempDate = new Date(start);
-        while (tempDate <= end) {
-            count++;
-            tempDate.setDate(tempDate.getDate() + 1);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = viewDate.date(d);
+      const fullDate = dateObj.format('YYYY-MM-DD');
+      const isWeekend = dateObj.day() === 0 || dateObj.day() === 6;
+      const isPast = dateObj.isBefore(today);
+
+      result.push({
+        isBlank: false,
+        dateStr: fullDate,
+        dayNumber: d,
+        isPast,
+        isToday: dateObj.isSame(today, 'day'),
+        isWeekend,
+        data: dates[fullDate]
+      });
+    }
+
+    return result;
+  }, [viewDate, dates]);
+
+  const handleDayClick = (date: string, isPast: boolean, available: boolean) => {
+    if (isPast || !available) return;
+
+    if (!selectedStart || (selectedStart && selectedEnd)) {
+      setSelectedStart(date);
+      setSelectedEnd(null);
+      setError(null);
+    } else {
+      let start = dayjs(selectedStart);
+      let end = dayjs(date);
+
+      if (end.isBefore(start)) {
+        [start, end] = [end, start];
+      }
+
+      let hasReserved = false;
+      let curr = start;
+      while (curr.isBefore(end) || curr.isSame(end, 'day')) {
+        if (dates[curr.format('YYYY-MM-DD')]?.available === false) {
+          hasReserved = true;
+          break;
         }
-        return count;
-    };
+        curr = curr.add(1, 'day');
+      }
 
-    const totalSelected = getSelectedDaysCount();
-
-    useEffect(() => {
-        if (onDateChange) {
-            onDateChange({ start: selectedStart, end: selectedEnd, count: totalSelected });
+      if (hasReserved) {
+        setSelectedStart(date);
+        setSelectedEnd(null);
+      } else {
+        const diff = end.diff(start, 'day');
+        if (diff < minBookingDays) {
+          setError(`Minimalna ilość nocy to ${minBookingDays}.`);
+        } else if (diff > maxBookingDays) {
+          setError(`Maksymalny okres rezerwacji to ${maxBookingDays} dni.`);
+        } else {
+          setSelectedStart(start.format('YYYY-MM-DD'));
+          setSelectedEnd(end.format('YYYY-MM-DD'));
+          setError(null);
         }
-    }, [selectedStart, selectedEnd, totalSelected, onDateChange]);
+      }
+    }
+  };
 
-    const changeMonth = (offset: number) => {
-        const newDate = new Date(currentDate);
-        newDate.setMonth(newDate.getMonth() + offset);
-        setDate(newDate);
-    };
+  useEffect(() => {
+    const start = selectedStart ? dayjs(selectedStart) : null;
+    const end = selectedEnd ? dayjs(selectedEnd) : null;
+    const count = start && end ? end.diff(start, 'day') : (start ? 1 : 0);
+    onDateChange({ start: selectedStart, end: selectedEnd, count });
+  }, [selectedStart, selectedEnd, onDateChange]);
 
-    const changeYear = (offset: number) => {
-        const newDate = new Date(currentDate);
-        newDate.setFullYear(newDate.getFullYear() + offset);
-        setDate(newDate);
-    };
-
-    return (
-        <div className="calendar">
-            <div className="navigation">
-                <div className="navigation__arrow material-symbols-outlined" onClick={() => changeYear(-1)}>keyboard_double_arrow_left</div>
-                <div className="navigation__arrow material-symbols-outlined" onClick={() => changeMonth(-1)}>keyboard_arrow_left</div>
-                <div className="navigation__current-month" onClick={() => setDate(new Date())}>
-                    {monthsNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                </div>
-                <div className="navigation__arrow material-symbols-outlined" onClick={() => changeMonth(1)}>keyboard_arrow_right</div>
-                <div className="navigation__arrow material-symbols-outlined" onClick={() => changeYear(1)}>keyboard_double_arrow_right</div>
-            </div>
-
-            <div className="week-days">
-                {weekDays.map((day) => <span className="week-days__names" key={day}>{day}</span>)}
-            </div>
-
-            <Month
-                currentDate={currentDate}
-                unavailableDates={unavailableDates}
-                selectedStart={selectedStart}
-                selectedEnd={selectedEnd}
-                setSelectedStart={setSelectedStart}
-                setSelectedEnd={setSelectedEnd}
-                minBookingDays={minBookingDays}
-                maxBookingDays={maxBookingDays}
-                onError={setError}
-            />
-
-            {error && <div className="calendar-error">{error}</div>}
+  return (
+    <div className="calendar">
+      <div className="navigation">
+        <div className="navigation__arrow material-symbols-outlined" onClick={() => setViewDate(viewDate.subtract(1, 'year'))}>keyboard_double_arrow_left</div>
+        <div className="navigation__arrow material-symbols-outlined" onClick={() => setViewDate(viewDate.subtract(1, 'month'))}>keyboard_arrow_left</div>
+        <div className="navigation__current-month" onClick={() => setViewDate(dayjs())}>
+          {viewDate.format('MMMM YYYY')}
         </div>
-    );
+        <div className="navigation__arrow material-symbols-outlined" onClick={() => setViewDate(viewDate.add(1, 'month'))}>keyboard_arrow_right</div>
+        <div className="navigation__arrow material-symbols-outlined" onClick={() => setViewDate(viewDate.add(1, 'year'))}>keyboard_double_arrow_right</div>
+      </div>
+
+      <div className="week-days">
+        {weekDays.map((day, index) => <span className="week-days__names" key={index}>{day}</span>)}
+      </div>
+
+      <div className="month-container">
+        {days.map((day: any) => {
+          if (day.isBlank) return <div key={day.key} className="day__blank" />;
+
+          const isSelectedAsStart = selectedStart === day.dateStr;
+          const isSelectedAsEnd = selectedEnd === day.dateStr;
+          const isSelectedBetween = selectedStart && selectedEnd && 
+                                    dayjs(day.dateStr).isAfter(selectedStart) && 
+                                    dayjs(day.dateStr).isBefore(selectedEnd);
+          
+          const isHovered = selectedStart && !selectedEnd && hoveredDate &&
+                            dayjs(day.dateStr).isAfter(selectedStart) && 
+                            dayjs(day.dateStr).isBefore(dayjs(hoveredDate).add(1, 'day'));
+
+          return (
+            <Day
+              key={day.dateStr}
+              {...day}
+              isSelectedAsStart={isSelectedAsStart}
+              isSelectedAsEnd={isSelectedAsEnd}
+              isSelectedBetween={isSelectedBetween}
+              isHovered={isHovered}
+              onClick={handleDayClick}
+              onMouseEnter={setHoveredDate}
+            />
+          );
+        })}
+      </div>
+
+      {error && <div className="calendar-error">{error}</div>}
+    </div>
+  );
 }

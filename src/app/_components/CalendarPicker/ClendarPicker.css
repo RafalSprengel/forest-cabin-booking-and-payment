@@ -6,146 +6,138 @@
 }
 
 .calendar {
-    font-size: 12px;
+    font-size: 14px;
     width: 100%;
-    max-width: 36em;
+    max-width: 400px;
     text-align: center;
     box-sizing: border-box;
+    background-color: #333333;
+    padding: 20px;
+    border-radius: 8px;
+    color: white;
 }
 
 .navigation {
     display: flex;
     justify-content: space-between;
-    height: 2.75em;
-    color: #4a4949;
+    height: 3em;
     margin-bottom: 1em;
 }
 
 .navigation__arrow,
 .navigation__current-month {
-    padding: 0.3em;
-    margin: auto;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
 .navigation__current-month {
-    margin: 0 0.3em;
-    font-size: 1.1em;
+    font-size: 1.2em;
     font-weight: bold;
+    text-transform: lowercase;
 }
 
-.navigation__arrow:hover,
-.navigation__current-month:hover {
-    background-color: rgb(231, 231, 231);
+.navigation__arrow:hover {
+    opacity: 0.7;
 }
 
 .week-days {
     display: flex;
+    margin-bottom: 10px;
 }
 
 .week-days__names {
-    padding: 0.3em;
     flex: 0 0 14.28%;
-    text-transform: uppercase;
-    text-decoration: underline dotted;
-    color: #565656;
+    color: #cccccc;
     font-size: 0.9em;
+    font-weight: bold;
 }
 
 .month-container {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
+    gap: 0;
 }
 
 .day {
-    padding: 1.2em 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 14.28%;
+    aspect-ratio: 1 / 1;
     cursor: pointer;
-    background-color: white;
-    border: solid 1px white;
-    border-radius: 0.2em;
-    color: #4a4949;
     user-select: none;
-    box-shadow: 0.2em 0.2em 0.4em 0px #d2d2d280;
-    z-index: 2;
-    font-size: 1.1em;
     transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.day-number {
+    font-size: 1.1em;
+}
+
+.day-price {
+    font-size: 0.7em;
+    margin-top: 2px;
+    font-weight: bold;
+}
+
+.day__discount .day-price {
+    color: #4ade80;
 }
 
 .day:not(.day__reserved):not(.day__past):hover {
-    background-color: #8d8c8c !important;
-    color: white !important;
+    background-color: #555555;
+    border-radius: 4px;
 }
 
 .day__blank {
-    padding: 0.6em;
     flex: 0 0 14.28%;
+    aspect-ratio: 1 / 1;
 }
 
 .day__today {
-    outline: 0.125em dotted red;
-    outline-offset: -0.2em;
+    color: #ff4d4d;
+    font-weight: bold;
 }
 
-.day__past,
-.day__past.day__sunday,
-.day__past.day__saturday {
-    color: #d3d3d3 !important;
+.day__past {
+    color: #666666 !important;
     cursor: default;
 }
 
 .day__reserved {
-    color: gray;
-    opacity: 0.5;
+    color: #555555;
     position: relative;
     pointer-events: none;
 }
 
-.day__reserved::before,
 .day__reserved::after {
     content: "";
     position: absolute;
-    top: 50%;
-    left: 15%;
-    width: 70%;
+    width: 60%;
     height: 1px;
-    background-color: red;
-}
-
-.day__reserved::before {
-    transform: rotate(45deg);
-}
-
-.day__reserved::after {
+    background-color: #ff4d4d;
     transform: rotate(-45deg);
-}
-
-.day__sunday,
-.day__saturday {
-    color: #d10000;
-}
-
-.day__weekend {
-    background-color: #fcfcfc;
 }
 
 .day__selected-as-start,
 .day__selected-as-end,
 .day__selected-between,
 .day__hovered {
-    background-color: #ffe299 !important;
-    color: white !important;
+    background-color: #facc15 !important;
+    color: #000 !important;
+    border-radius: 4px;
 }
 
-.day__selected-between:hover,
-.day__selected-as-start:hover,
-.day__selected-as-end:hover {
-    background-color: #f0c96e !important;
+.day__selected-as-start .day-price,
+.day__selected-as-end .day-price,
+.day__selected-between .day-price,
+.day__hovered .day-price {
+    color: #000 !important;
 }
 
 .material-symbols-outlined {
@@ -158,9 +150,8 @@
 }
 
 .calendar-error {
-    color: #e74c3c;
+    color: #ff4d4d;
     font-size: 0.85rem;
-    margin-top: 10px;
-    text-align: center;
+    margin-top: 15px;
     font-weight: 500;
 }
