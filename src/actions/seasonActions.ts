@@ -4,7 +4,7 @@ import dbConnect from '@/db/connection';
 import Season from '@/db/models/Season';
 import { revalidatePath } from 'next/cache';
 
-export interface SeasonData {
+export interface ISeasonData {
   _id: string;
   name: string;
   description?: string;
@@ -22,7 +22,7 @@ export async function getAllSeasons() {
   try {
     await dbConnect();
     const seasons = await Season.find({}).sort({ order: 1 }).lean();
-    return JSON.parse(JSON.stringify(seasons)) as SeasonData[];
+    return JSON.parse(JSON.stringify(seasons)) as ISeasonData[];
   } catch (error) {
     console.error('Błąd pobierania sezonów:', error);
     return [];
@@ -34,17 +34,19 @@ export async function getSeasonById(id: string) {
     await dbConnect();
     const season = await Season.findById(id).lean();
     if (!season) return null;
-    return JSON.parse(JSON.stringify(season)) as SeasonData;
+    return JSON.parse(JSON.stringify(season)) as ISeasonData;
   } catch (error) {
     console.error('Błąd pobierania sezonu:', error);
     return null;
   }
 }
 
-export async function updateSeasonDates(seasonId: string, startDate: string, endDate: string) {
+export async function updateSeasonDates(seasonName :string, seasonDesc:string, seasonId: string, startDate: string, endDate: string, ) {
   try {
     await dbConnect();
     await Season.findByIdAndUpdate(seasonId, {
+      name: seasonName,
+      description: seasonDesc,
       startDate: new Date(startDate),
       endDate: new Date(endDate)
     });

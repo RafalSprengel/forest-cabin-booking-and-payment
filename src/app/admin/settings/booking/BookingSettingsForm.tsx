@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from 'react';
 import { updateBookingConfig, updateAllowCheckinOnDepartureDay } from '@/actions/bookingConfigActions';
-import { getAllSeasons, updateSeasonDates, updateSeasonOrder, SeasonData } from '@/actions/seasonActions';
+import { getAllSeasons, updateSeasonDates, updateSeasonOrder, ISeasonData } from '@/actions/seasonActions';
 import dayjs from 'dayjs';
 import '../settings.css';
 
@@ -41,12 +41,14 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
   const [allowCheckin, setAllowCheckin] = useState(initialConfig.allowCheckinOnDepartureDay);
   const [togglePending, startToggleTransition] = useTransition();
 
-  const [seasons, setSeasons] = useState<SeasonData[]>([]);
+  const [seasons, setSeasons] = useState<ISeasonData[]>([]);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
-  const [selectedSeason, setSelectedSeason] = useState<SeasonData | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<ISeasonData | null>(null);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
   const [isUpdatingSeason, setIsUpdatingSeason] = useState(false);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+  const [seasonName, setSeasonName] = useState('');
+  const [seasonDesc, setSeasonDesc] = useState('');
   const [seasonStartDate, setSeasonStartDate] = useState('');
   const [seasonEndDate, setSeasonEndDate] = useState('');
   const [seasonOrder, setSeasonOrder] = useState<number>(0);
@@ -56,22 +58,22 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       setIsLoadingSeasons(true);
       const seasonsList = await getAllSeasons();
       setSeasons(seasonsList);
-      if (seasonsList.length > 0) {
-        setSelectedSeasonId(seasonsList[0]._id);
-        setSelectedSeason(seasonsList[0]);
-        setSeasonStartDate(dayjs(seasonsList[0].startDate).format('YYYY-MM-DD'));
-        setSeasonEndDate(dayjs(seasonsList[0].endDate).format('YYYY-MM-DD'));
-        setSeasonOrder(seasonsList[0].order);
-      }
       setIsLoadingSeasons(false);
     };
     loadSeasons();
   }, []);
 
   useEffect(() => {
+    if (!selectedSeasonId && seasons.length > 0) {
+      setSelectedSeasonId(seasons[0]._id);
+      return;
+    }
+
     const season = seasons.find(s => s._id === selectedSeasonId);
     setSelectedSeason(season || null);
     if (season) {
+      setSeasonName(season.name);
+      setSeasonDesc(season.description || '');
       setSeasonStartDate(dayjs(season.startDate).format('YYYY-MM-DD'));
       setSeasonEndDate(dayjs(season.endDate).format('YYYY-MM-DD'));
       setSeasonOrder(season.order);
@@ -106,10 +108,10 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
   };
 
   const handleUpdateSeasonDates = async () => {
-    if (!selectedSeasonId || !seasonStartDate || !seasonEndDate) return;
-    
+    if (!seasonName || !seasonDesc || !selectedSeasonId || !seasonStartDate || !seasonEndDate) return;
+
     setIsUpdatingSeason(true);
-    const result = await updateSeasonDates(selectedSeasonId, seasonStartDate, seasonEndDate);
+    const result = await updateSeasonDates(seasonName, seasonDesc, selectedSeasonId, seasonStartDate, seasonEndDate);
     if (result.success) {
       const updatedSeasons = await getAllSeasons();
       setSeasons(updatedSeasons);
@@ -128,7 +130,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
 
   const handleUpdateSeasonOrder = async () => {
     if (!selectedSeasonId) return;
-    
+
     setIsUpdatingOrder(true);
     const result = await updateSeasonOrder(selectedSeasonId, seasonOrder);
     if (result.success) {
@@ -248,12 +250,12 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       </div>
 
       <div className="card-header card-header-spaced">
-        <h2 className="card-title">Sezony cenowe</h2>
+        <h2 className="card-title">Daty sezonów</h2>
       </div>
 
       <div className="setting-row">
         <div className="setting-content">
-          <label className="setting-label">Wybierz sezon do edycji</label>
+          <label className="setting-label">Wybierz sezon:</label>
           <p className="setting-description">Zarządzaj datami obowiązywania poszczególnych sezonów.</p>
         </div>
         <div className="setting-control">
@@ -279,101 +281,177 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
         </div>
       </div>
 
-      {selectedSeason && (
-        <>
-          <div className="setting-row">
-            <div className="setting-content">
-              <label className="setting-label">
-                {selectedSeason.name}
-              </label>
-              {selectedSeason.description && (
-                <p className="setting-description">{selectedSeason.description}</p>
-              )}
+      {
+        selectedSeason && (
+          <>
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">
+                  {selectedSeason.name}
+                </label>
+                {selectedSeason.description && (
+                  <p className="setting-description">{selectedSeason.description}</p>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div className="setting-row">
-            <div className="setting-content">
-              <label className="setting-label">Data rozpoczęcia</label>
-            </div>
-            <div className="setting-control">
-              <input
-                type="date"
-                value={seasonStartDate}
-                onChange={(e) => setSeasonStartDate(e.target.value)}
-                className="date-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
-
-          <div className="setting-row">
-            <div className="setting-content">
-              <label className="setting-label">Data zakończenia</label>
-            </div>
-            <div className="setting-control">
-              <input
-                type="date"
-                value={seasonEndDate}
-                onChange={(e) => setSeasonEndDate(e.target.value)}
-                className="date-input"
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
-
-          <div className="setting-row">
-            <div className="setting-content">
-              <label className="setting-label">Kolejność wyświetlania</label>
-              <p className="setting-description">
-                Niższa wartość oznacza wyższą pozycję na liście (1, 2, 3...).
-              </p>
-            </div>
-            <div className="setting-control">
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">
+                  Nazwa sezonu:
+                </label>
+              </div>
+              <div className='setting-control'>
                 <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={seasonOrder}
-                  onChange={(e) => setSeasonOrder(parseInt(e.target.value) || 0)}
-                  className="number-input"
-                  style={{ width: '80px' }}
+                  placeholder='nazwa sezonu...'
+                  value={seasonName}
+                  onChange={(e) => setSeasonName(e.target.value)}
+                ></input>
+              </div>
+            </div>
+
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">
+                  Opis sezonu:
+                </label>
+              </div>
+              <div className='setting-control'>
+                <input
+                  placeholder='opis zezonu...'
+                  value={seasonDesc}
+                  onChange={(e) => setSeasonDesc(e.target.value)}
+                ></input>
+              </div>
+            </div>
+
+
+
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">Data rozpoczęcia:</label>
+              </div>
+              <div className="setting-control">
+                <input
+                  type="date"
+                  value={seasonStartDate}
+                  onChange={(e) => setSeasonStartDate(e.target.value)}
+                  className="date-input"
+                  style={{ width: '100%' }}
                 />
+              </div>
+            </div>
+
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">Data zakończenia:</label>
+              </div>
+              <div className="setting-control">
+                <input
+                  type="date"
+                  value={seasonEndDate}
+                  onChange={(e) => setSeasonEndDate(e.target.value)}
+                  className="date-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div className="setting-row">
+              <div className="setting-content">
+                <label className="setting-label">Kolejność wyświetlania</label>
+                <p className="setting-description">
+                  Niższa wartość oznacza wyższą pozycję na liście (1, 2, 3...).
+                </p>
+              </div>
+              <div className="setting-control">
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={seasonOrder}
+                    onBlur={handleUpdateSeasonOrder}
+                    onChange={(e) => setSeasonOrder(parseInt(e.target.value) || 0)}
+                    className="number-input"
+                    style={{ width: '80px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleUpdateSeasonOrder}
+                    disabled={isUpdatingOrder}
+                    className="btn-secondary"
+                  >
+                    {isUpdatingOrder ? 'Zapisywanie...' : 'Zapisz kolejność'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="setting-row">
+              <div className="setting-content"></div>
+              <div className="setting-control">
                 <button
                   type="button"
-                  onClick={handleUpdateSeasonOrder}
-                  disabled={isUpdatingOrder}
-                  className="btn-secondary"
+                  onClick={handleUpdateSeasonDates}
+                  disabled={isUpdatingSeason}
+                  className="btn-primary"
                 >
-                  {isUpdatingOrder ? 'Zapisywanie...' : 'Zapisz kolejność'}
+                  {isUpdatingSeason ? 'Zapisywanie...' : 'Zapisz dane sezonu'}
                 </button>
               </div>
             </div>
-          </div>
+          </>
+        )
+      }
 
-          <div className="setting-row">
-            <div className="setting-content"></div>
-            <div className="setting-control">
-              <button
-                type="button"
-                onClick={handleUpdateSeasonDates}
-                disabled={isUpdatingSeason}
-                className="btn-primary"
-              >
-                {isUpdatingSeason ? 'Zapisywanie...' : 'Zapisz daty sezonu'}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      <div className="card-header card-header-spaced">
+        <h2 className="card-title">Doba hotelowa</h2>
+      </div>
+      <div className="setting-row">
+        <div className="setting-content">
+          <label htmlFor="checkInHour" className="setting-label">Godzina rozpoczęcia doby (check-in):</label>
+          <p className="setting-description">Od której godziny można się zameldować w dniu przyjazdu.</p>
+        </div>
+        <div className="setting-control">
+          <input
+            type="number"
+            id="checkInHour"
+            name="checkInHour"
+            min="0"
+            max="23"
+            step="1"
+            defaultValue={localCheckInHour}
+            onBlur={handleBlurCheckIn}
+            className="number-input"
+          />
+        </div>
+      </div>
+      <div className="setting-row">
+        <div className="setting-content">
+          <label htmlFor="checkOutHour" className="setting-label">Godzina zakończenia doby (check-out):</label>
+          <p className="setting-description">Do której godziny trzeba opuścić domek w dniu wyjazdu.</p>
+        </div>
+        <div className="setting-control">
+          <input
+            type="number"
+            id="checkOutHour"
+            name="checkOutHour"
+            min="0"
+            max="23"
+            step="1"
+            defaultValue={localCheckOutHour}
+            onBlur={handleBlurCheckOut}
+            className="number-input"
+          />
+        </div>
+      </div>
 
       <div className="card-header card-header-spaced">
         <h2 className="card-title">Dzieci</h2>
       </div>
       <div className="setting-row">
         <div className="setting-content">
-          <label htmlFor="childrenFreeAgeLimit" className="setting-label">Wiek dzieci bezpłatnych (do lat)</label>
+          <label htmlFor="childrenFreeAgeLimit" className="setting-label">Wiek dzieci bezpłatnych (do lat):</label>
         </div>
         <div className="setting-control">
           <input
@@ -420,59 +498,19 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
         </div>
       </div>
 
-      <div className="card-header card-header-spaced">
-        <h2 className="card-title">Doba hotelowa</h2>
-      </div>
-      <div className="setting-row">
-        <div className="setting-content">
-          <label htmlFor="checkInHour" className="setting-label">Godzina rozpoczęcia doby (check-in)</label>
-          <p className="setting-description">Od której godziny można się zameldować w dniu przyjazdu.</p>
-        </div>
-        <div className="setting-control">
-          <input
-            type="number"
-            id="checkInHour"
-            name="checkInHour"
-            min="0"
-            max="23"
-            step="1"
-            defaultValue={localCheckInHour}
-            onBlur={handleBlurCheckIn}
-            className="number-input"
-          />
-        </div>
-      </div>
-      <div className="setting-row">
-        <div className="setting-content">
-          <label htmlFor="checkOutHour" className="setting-label">Godzina zakończenia doby (check-out)</label>
-          <p className="setting-description">Do której godziny trzeba opuścić domek w dniu wyjazdu.</p>
-        </div>
-        <div className="setting-control">
-          <input
-            type="number"
-            id="checkOutHour"
-            name="checkOutHour"
-            min="0"
-            max="23"
-            step="1"
-            defaultValue={localCheckOutHour}
-            onBlur={handleBlurCheckOut}
-            className="number-input"
-          />
-        </div>
-      </div>
-
       <div className="form-actions">
         <button type="submit" className="btn-primary" disabled={isPending}>
           {isPending ? 'Zapisywanie...' : 'Zapisz ustawienia'}
         </button>
       </div>
 
-      {showMessage && (
-        <div className={`form-message ${message.success ? 'success-message' : 'error-message'}`}>
-          {message.text}
-        </div>
-      )}
-    </form>
+      {
+        showMessage && (
+          <div className={`form-message ${message.success ? 'success-message' : 'error-message'}`}>
+            {message.text}
+          </div>
+        )
+      }
+    </form >
   );
 }
