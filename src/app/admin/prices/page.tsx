@@ -13,6 +13,7 @@ export default async function PricesPage() {
   ]);
 
   const singleProperties = properties.filter(p => p.type === 'single');
+  const childrenFreeAge = bookingConfig?.childrenFreeAgeLimit ?? 13;
 
   return (
     <div className="admin-settings-container">
@@ -21,9 +22,9 @@ export default async function PricesPage() {
         <h1 className="admin-title">Zarządzanie cenami</h1>
         <p className="admin-subtitle">Konfiguruj stawki podstawowe, w sezonie wysokim oraz ceny indywidualne</p>
       </header>
-      <PriceSettingsForm 
+      <PriceSettingsForm
         properties={singleProperties}
-        childrenFreeAgeLimit={bookingConfig.childrenFreeAgeLimit}
+        childrenFreeAgeLimit={childrenFreeAge}
         seasons={seasons}
       />
     </div>

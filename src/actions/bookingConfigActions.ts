@@ -1,5 +1,4 @@
 'use server'
-
 import dbConnect from '@/db/connection';
 import BookingConfig from '@/db/models/BookingConfig';
 import { revalidatePath } from 'next/cache';
@@ -16,31 +15,49 @@ export interface BookingConfig {
 }
 
 async function ensureBookingConfigExists() {
-  await dbConnect();
-  const exists = await BookingConfig.findById('main');
-  if (!exists) {
-    await BookingConfig.create({
-      _id: 'main',
-      allowCheckinOnDepartureDay: true,
-      checkInHour: 15,
-      checkOutHour: 12
-    });
+  try {
+    await dbConnect();
+    const exists = await BookingConfig.findById('main');
+    if (!exists) {
+      await BookingConfig.create({
+        _id: 'main',
+        allowCheckinOnDepartureDay: true,
+        checkInHour: 15,
+        checkOutHour: 12
+      });
+    }
+  } catch (error) {
+    console.error('Błąd podczas sprawdzania konfiguracji rezerwacji:', error);
   }
 }
 
-export async function getBookingConfig() : Promise<BookingConfig>{
-  await ensureBookingConfigExists();
-  const config = await BookingConfig.findById('main').lean();
-  return {
-    minBookingDays: config?.minBookingDays ?? 1,
-    maxBookingDays: config?.maxBookingDays ?? 30,
-    highSeasonEnd: config?.highSeasonEnd ?? null,
-    highSeasonStart: config?.highSeasonStart ?? null,
-    childrenFreeAgeLimit: config?.childrenFreeAgeLimit ?? 13,
-    allowCheckinOnDepartureDay: config?.allowCheckinOnDepartureDay ?? true,
-    checkInHour: config?.checkInHour ?? 15,
-    checkOutHour: config?.checkOutHour ?? 12
-  };
+export async function getBookingConfig(): Promise<BookingConfig> {
+  try {
+    await ensureBookingConfigExists();
+    const config = await BookingConfig.findById('main').lean();
+    return {
+      minBookingDays: config?.minBookingDays ?? 1,
+      maxBookingDays: config?.maxBookingDays ?? 30,
+      highSeasonEnd: config?.highSeasonEnd ?? null,
+      highSeasonStart: config?.highSeasonStart ?? null,
+      childrenFreeAgeLimit: config?.childrenFreeAgeLimit ?? 13,
+      allowCheckinOnDepartureDay: config?.allowCheckinOnDepartureDay ?? true,
+      checkInHour: config?.checkInHour ?? 15,
+      checkOutHour: config?.checkOutHour ?? 12
+    };
+  } catch (error) {
+    console.error('Błąd podczas pobierania konfiguracji rezerwacji:', error);
+    return {
+      minBookingDays: 1,
+      maxBookingDays: 30,
+      highSeasonEnd: null,
+      highSeasonStart: null,
+      childrenFreeAgeLimit: 13,
+      allowCheckinOnDepartureDay: true,
+      checkInHour: 15,
+      checkOutHour: 12
+    };
+  }
 }
 
 export async function updateAllowCheckinOnDepartureDay(allow: boolean) {
@@ -85,7 +102,6 @@ export async function updateBookingConfig(prevState: any, formData: FormData) {
       },
       { upsert: true, new: true }
     );
-
     revalidatePath('/admin/settings/booking');
     return { success: true, message: 'Zapisano ustawienia rezerwacji.' };
   } catch (error) {

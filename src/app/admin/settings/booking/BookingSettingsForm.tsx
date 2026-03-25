@@ -1,5 +1,4 @@
 'use client';
-
 import { useActionState, useEffect, useState, useTransition } from 'react';
 import { updateBookingConfig, updateAllowCheckinOnDepartureDay } from '@/actions/bookingConfigActions';
 import { getAllSeasons, updateSeasonDates, updateSeasonOrder, ISeasonData } from '@/actions/seasonActions';
@@ -26,10 +25,8 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     message: '',
     success: false,
   });
-
   const [showMessage, setShowMessage] = useState(false);
   const [message, setMessage] = useState({ text: '', success: false });
-
   const [localMinDays, setLocalMinDays] = useState(initialConfig.minBookingDays);
   const [localMaxDays, setLocalMaxDays] = useState(initialConfig.maxBookingDays);
   const [localHighSeasonStart, setLocalHighSeasonStart] = useState(initialConfig.highSeasonStart);
@@ -37,10 +34,8 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
   const [localChildrenFreeAge, setLocalChildrenFreeAge] = useState(initialConfig.childrenFreeAgeLimit);
   const [localCheckInHour, setLocalCheckInHour] = useState(initialConfig.checkInHour);
   const [localCheckOutHour, setLocalCheckOutHour] = useState(initialConfig.checkOutHour);
-
   const [allowCheckin, setAllowCheckin] = useState(initialConfig.allowCheckinOnDepartureDay);
   const [togglePending, startToggleTransition] = useTransition();
-
   const [seasons, setSeasons] = useState<ISeasonData[]>([]);
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [selectedSeason, setSelectedSeason] = useState<ISeasonData | null>(null);
@@ -52,6 +47,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
   const [seasonStartDate, setSeasonStartDate] = useState('');
   const [seasonEndDate, setSeasonEndDate] = useState('');
   const [seasonOrder, setSeasonOrder] = useState<number>(0);
+  const [isEditExpanded, setIsEditExpanded] = useState(false);
 
   useEffect(() => {
     const loadSeasons = async () => {
@@ -68,7 +64,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       setSelectedSeasonId(seasons[0]._id);
       return;
     }
-
     const season = seasons.find(s => s._id === selectedSeasonId);
     setSelectedSeason(season || null);
     if (season) {
@@ -109,7 +104,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
 
   const handleUpdateSeasonDates = async () => {
     if (!seasonName || !seasonDesc || !selectedSeasonId || !seasonStartDate || !seasonEndDate) return;
-
     setIsUpdatingSeason(true);
     const result = await updateSeasonDates(seasonName, seasonDesc, selectedSeasonId, seasonStartDate, seasonEndDate);
     if (result.success) {
@@ -122,6 +116,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       setMessage({ text: result.message, success: true });
       setShowMessage(true);
       setTimeout(() => setShowMessage(false), 2000);
+      setIsEditExpanded(false);
     } else {
       alert(result.message);
     }
@@ -130,7 +125,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
 
   const handleUpdateSeasonOrder = async () => {
     if (!selectedSeasonId) return;
-
     setIsUpdatingOrder(true);
     const result = await updateSeasonOrder(selectedSeasonId, seasonOrder);
     if (result.success) {
@@ -200,6 +194,10 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     setLocalCheckOutHour(val);
   };
 
+  const toggleEditExpanded = () => {
+    setIsEditExpanded(!isEditExpanded);
+  };
+
   return (
     <form action={formAction} className="settings-card">
       <input type="hidden" name="minBookingDays" value={localMinDays} />
@@ -209,7 +207,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       <input type="hidden" name="childrenFreeAgeLimit" value={localChildrenFreeAge} />
       <input type="hidden" name="checkInHour" value={localCheckInHour} />
       <input type="hidden" name="checkOutHour" value={localCheckOutHour} />
-
       <div className="card-header">
         <h2 className="card-title">Długość pobytu</h2>
       </div>
@@ -230,7 +227,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           />
         </div>
       </div>
-
       <div className="setting-row">
         <div className="setting-content">
           <label htmlFor="maxBookingDays" className="setting-label">Maksymalna liczba nocy</label>
@@ -248,11 +244,9 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           />
         </div>
       </div>
-
       <div className="card-header card-header-spaced">
         <h2 className="card-title">Daty sezonów</h2>
       </div>
-
       <div className="setting-row">
         <div className="setting-content">
           <label className="setting-label">Wybierz sezon:</label>
@@ -268,8 +262,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
               id="seasonSelect"
               value={selectedSeasonId}
               onChange={(e) => setSelectedSeasonId(e.target.value)}
-              className="date-input"
-              style={{ width: '100%', padding: '8px' }}
+              className="date-input season-select-full"
             >
               {seasons.map((season) => (
                 <option key={season._id} value={season._id}>
@@ -280,130 +273,129 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           )}
         </div>
       </div>
-
-      {
-        selectedSeason && (
-          <>
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">
-                  {selectedSeason.name}
-                </label>
-                {selectedSeason.description && (
-                  <p className="setting-description">{selectedSeason.description}</p>
-                )}
-              </div>
+      {selectedSeason && (
+        <>
+          <div className="setting-row">
+            <div className="setting-content">
+              <label className="setting-label">
+                {selectedSeason.name}
+              </label>
+              {selectedSeason.description && (
+                <p className="setting-description">{selectedSeason.description}</p>
+              )}
             </div>
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">
-                  Nazwa sezonu:
-                </label>
-              </div>
-              <div className='setting-control'>
-                <input
-                  placeholder='nazwa sezonu...'
-                  value={seasonName}
-                  onChange={(e) => setSeasonName(e.target.value)}
-                ></input>
-              </div>
+          </div>
+          <div className="setting-row">
+            <div className="setting-content">
+              <button
+                type="button"
+                onClick={toggleEditExpanded}
+                className="btn-toggle-edit"
+              >
+                {isEditExpanded ? 'Anuluj edycję' : 'Edytuj nazwę i opis'}
+              </button>
             </div>
-
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">
-                  Opis sezonu:
-                </label>
-              </div>
-              <div className='setting-control'>
-                <input
-                  placeholder='opis zezonu...'
-                  value={seasonDesc}
-                  onChange={(e) => setSeasonDesc(e.target.value)}
-                ></input>
-              </div>
-            </div>
-
-
-
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">Data rozpoczęcia:</label>
-              </div>
-              <div className="setting-control">
-                <input
-                  type="date"
-                  value={seasonStartDate}
-                  onChange={(e) => setSeasonStartDate(e.target.value)}
-                  className="date-input"
-                  style={{ width: '100%' }}
-                />
-              </div>
-            </div>
-
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">Data zakończenia:</label>
-              </div>
-              <div className="setting-control">
-                <input
-                  type="date"
-                  value={seasonEndDate}
-                  onChange={(e) => setSeasonEndDate(e.target.value)}
-                  className="date-input"
-                  style={{ width: '100%' }}
-                />
-              </div>
-            </div>
-
-            <div className="setting-row">
-              <div className="setting-content">
-                <label className="setting-label">Kolejność wyświetlania</label>
-                <p className="setting-description">
-                  Niższa wartość oznacza wyższą pozycję na liście (1, 2, 3...).
-                </p>
-              </div>
-              <div className="setting-control">
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          </div>
+          {isEditExpanded && (
+            <div className="settings-editNameAndDesc">
+              <div className="setting-row">
+                <div className="setting-content">
+                  <label className="setting-label">Nazwa sezonu:</label>
+                </div>
+                <div className='setting-control'>
                   <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={seasonOrder}
-                    onBlur={handleUpdateSeasonOrder}
-                    onChange={(e) => setSeasonOrder(parseInt(e.target.value) || 0)}
-                    className="number-input"
-                    style={{ width: '80px' }}
+                    placeholder='nazwa sezonu...'
+                    value={seasonName}
+                    onChange={(e) => setSeasonName(e.target.value)}
                   />
+                </div>
+              </div>
+              <div className="setting-row">
+                <div className="setting-content">
+                  <label className="setting-label">Opis sezonu:</label>
+                </div>
+                <div className='setting-control'>
+                  <input
+                    placeholder='opis sezonu...'
+                    value={seasonDesc}
+                    onChange={(e) => setSeasonDesc(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="setting-row">
+                <div className="setting-content">
+                  <label className="setting-label">Kolejność wyświetlania</label>
+                  <p className="setting-description">
+                    Niższa wartość oznacza wyższą pozycję na liście (1, 2, 3...).
+                  </p>
+                </div>
+                <div className="setting-control">
+                  <div className="order-control-group">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={seasonOrder}
+                      onBlur={handleUpdateSeasonOrder}
+                      onChange={(e) => setSeasonOrder(parseInt(e.target.value) || 0)}
+                      className="number-input order-input-small"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleUpdateSeasonOrder}
+                      disabled={isUpdatingOrder}
+                      className="btn-secondary"
+                    >
+                      {isUpdatingOrder ? 'Zapisywanie...' : 'Zapisz kolejność'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          )}
+          <div className="setting-row">
+            <div className="setting-content">
+              <label className="setting-label">Data rozpoczęcia:</label>
+            </div>
+            <div className="setting-control">
+              <input
+                type="date"
+                value={seasonStartDate}
+                onChange={(e) => setSeasonStartDate(e.target.value)}
+                className="date-input season-date-input"
+              />
+            </div>
+          </div>
+          <div className="setting-row">
+            <div className="setting-content">
+              <label className="setting-label">Data zakończenia:</label>
+            </div>
+            <div className="setting-control">
+              <input
+                type="date"
+                value={seasonEndDate}
+                onChange={(e) => setSeasonEndDate(e.target.value)}
+                className="date-input season-date-input"
+              />
+            </div>
+          </div>
+          
+          <div className="setting-row">
+                <div className="setting-content"></div>
+                <div className="setting-control">
                   <button
                     type="button"
-                    onClick={handleUpdateSeasonOrder}
-                    disabled={isUpdatingOrder}
-                    className="btn-secondary"
+                    onClick={handleUpdateSeasonDates}
+                    disabled={isUpdatingSeason}
+                    className="btn-primary"
                   >
-                    {isUpdatingOrder ? 'Zapisywanie...' : 'Zapisz kolejność'}
+                    {isUpdatingSeason ? 'Zapisywanie...' : 'Zapisz dane sezonu'}
                   </button>
                 </div>
               </div>
-            </div>
-
-            <div className="setting-row">
-              <div className="setting-content"></div>
-              <div className="setting-control">
-                <button
-                  type="button"
-                  onClick={handleUpdateSeasonDates}
-                  disabled={isUpdatingSeason}
-                  className="btn-primary"
-                >
-                  {isUpdatingSeason ? 'Zapisywanie...' : 'Zapisz dane sezonu'}
-                </button>
-              </div>
-            </div>
-          </>
-        )
-      }
-
+        </>
+      )}
       <div className="card-header card-header-spaced">
         <h2 className="card-title">Doba hotelowa</h2>
       </div>
@@ -445,7 +437,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           />
         </div>
       </div>
-
       <div className="card-header card-header-spaced">
         <h2 className="card-title">Dzieci</h2>
       </div>
@@ -465,7 +456,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           />
         </div>
       </div>
-
       <div className="card-header card-header-spaced">
         <h2 className="card-title">Dostępność terminów</h2>
       </div>
@@ -497,20 +487,16 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           </div>
         </div>
       </div>
-
       <div className="form-actions">
         <button type="submit" className="btn-primary" disabled={isPending}>
           {isPending ? 'Zapisywanie...' : 'Zapisz ustawienia'}
         </button>
       </div>
-
-      {
-        showMessage && (
-          <div className={`form-message ${message.success ? 'success-message' : 'error-message'}`}>
-            {message.text}
-          </div>
-        )
-      }
-    </form >
+      {showMessage && (
+        <div className={`form-message ${message.success ? 'success-message' : 'error-message'}`}>
+          {message.text}
+        </div>
+      )}
+    </form>
   );
 }

@@ -123,6 +123,7 @@
   border-left: 1px solid transparent;
 }
 
+
 @media (min-width: 769px) {
   .setting-control {
     border-left-color: var(--color-border);
@@ -383,6 +384,13 @@
   border: 1px solid #f5c6cb;
 }
 
+.settings-editNameAndDesc{
+  background-color: #f1f1f1;
+  margin-left: 20px;
+  margin-right: 5px;
+  border-radius: 5px;;
+}
+
 @media (max-width: 480px) {
   .admin-title {
     font-size: 1.5rem;
@@ -442,4 +450,34 @@
     font-size: 0.8rem;
     padding: 6px 10px;
   }
+}
+
+.season-select-full {
+  width: 100%;
+  padding: 8px;
+}
+
+.season-date-input {
+  width: 100%;
+}
+
+.btn-toggle-edit {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  padding: 0;
+  font-weight: 500;
+}
+
+.order-control-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.order-input-small {
+  width: 80px;
 }
