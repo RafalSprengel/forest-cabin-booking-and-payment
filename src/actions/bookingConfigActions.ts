@@ -69,7 +69,7 @@ export async function updateAllowCheckinOnDepartureDay(allow: boolean) {
       { upsert: true }
     );
     revalidatePath('/admin/settings/booking');
-    return { success: true };
+    return { success: true, message: 'Zaktualizowano ustawienie' };
   } catch (error) {
     console.error(error);
     return { success: false, message: 'Błąd zapisu' };
