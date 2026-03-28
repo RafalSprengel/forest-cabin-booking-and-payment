@@ -28,7 +28,6 @@ export default function Navbar({isSmaller}: {isSmaller: boolean}) {
     const closeMobileMenu = () => setIsMenuOpen(false)
 
     useEffect(() => {
-        console.log('isMenuOpen:', isMenuOpen);
         if (isMenuOpen) {
             window.addEventListener('mousedown', handleClickOutside);
         }

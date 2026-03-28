@@ -31,40 +31,177 @@ export async function clearAllData() {
   }
 }
 
+export async function seedSeasons() {
+  try {
+    await dbConnect();
+    const currentYear = new Date().getFullYear();
+    
+    // Sezony TYLKO z datami - bez cen
+    const seasons = [
+      {
+        name: 'Sezon wysoki (wakacje letnie)',
+        description: 'Ceny obowiązuje w sezonie letnim - czerwiec, lipiec, sierpień',
+        startDate: new Date(currentYear, 5, 1),
+        endDate: new Date(currentYear, 7, 31),
+        isActive: true,
+        order: 3
+      },
+      {
+        name: 'Sezon świąteczno-noworoczny',
+        description: 'Podwyższone ceny w okresie świąt Bożego Narodzenia i Nowego Roku',
+        startDate: new Date(currentYear, 11, 20),
+        endDate: new Date(currentYear + 1, 0, 5),
+        isActive: true,
+        order: 1
+      },
+      {
+        name: 'Sezon wiosenny',
+        description: 'Sezon przejściowy wiosna',
+        startDate: new Date(currentYear, 2, 1),
+        endDate: new Date(currentYear, 4, 31),
+        isActive: true,
+        order: 2
+      }
+    ];
+
+    await Season.deleteMany({});
+    const created = await Season.insertMany(seasons);
+    const plainSeasons = created.map(doc => toPlainObject(doc));
+
+    return {
+      success: true,
+      message: `Utworzono ${plainSeasons.length} sezonów (tylko daty)`,
+      data: plainSeasons
+    };
+  } catch (error) {
+    console.error('Błąd podczas seedowania sezonów:', error);
+    return { success: false, error: 'Nie udało się utworzyć sezonów' };
+  }
+}
+
 export async function seedProperties() {
   try {
     await dbConnect();
+    
+    const seasons = await Season.find({}).lean();
+    const summerSeason = seasons.find((s: any) => s.name.includes('wakacje'));
+    const xmasSeason = seasons.find((s: any) => s.name.includes('świąteczno'));
 
     const properties = [
       {
         name: 'Chatka A (Wilcza)',
         slug: 'chatka-a',
-        description: 'Przytulny domek z kominkiem, idealny dla par i małych rodzin. Na poddaszu znajdują się dwie sypialnie: jedna z łóżkiem małżeńskim, druga z dwoma łóżkami pojedynczymi. Na parterze rozkładana kanapa. Domek wyposażony w klimatyzację, aneks kuchenny, łazienkę oraz taras z grillem.',
+        description: 'Przytulny domek z kominkiem, idealny dla par i małych rodzin.',
         baseCapacity: 6,
         maxExtraBeds: 2,
-        images: ['/gallery/wnetrze1.webp', '/gallery/wnetrze2.webp', '/gallery/wnetrze3.webp'],
+        images: ['/gallery/wnetrze1.webp', '/gallery/wnetrze2.webp'],
         isActive: true,
-        type: 'single'
+        type: 'single',
+        // Ceny podstawowe (poza sezonem)
+        basicPrices: {
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 300 },
+            { minGuests: 4, maxGuests: 5, price: 400 },
+            { minGuests: 6, maxGuests: 10, price: 500 }
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 400 },
+            { minGuests: 4, maxGuests: 5, price: 500 },
+            { minGuests: 6, maxGuests: 10, price: 600 }
+          ],
+          weekdayExtraBedPrice: 50,
+          weekendExtraBedPrice: 70
+        },
+        // Ceny sezonowe per domek
+        seasonPrices: summerSeason ? [{
+          seasonId: summerSeason._id,
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 500 },
+            { minGuests: 4, maxGuests: 5, price: 600 },
+            { minGuests: 6, maxGuests: 10, price: 700 }
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 600 },
+            { minGuests: 4, maxGuests: 5, price: 700 },
+            { minGuests: 6, maxGuests: 10, price: 800 }
+          ],
+          weekdayExtraBedPrice: 60,
+          weekendExtraBedPrice: 80
+        }] : [],
+        // Dodajemy drugi sezon jeśli istnieje
+        ...(xmasSeason ? {
+          seasonPrices: [
+            ...(summerSeason ? [{
+              seasonId: summerSeason._id,
+              weekdayPrices: [
+                { minGuests: 2, maxGuests: 3, price: 500 },
+                { minGuests: 4, maxGuests: 5, price: 600 },
+                { minGuests: 6, maxGuests: 10, price: 700 }
+              ],
+              weekendPrices: [
+                { minGuests: 2, maxGuests: 3, price: 600 },
+                { minGuests: 4, maxGuests: 5, price: 700 },
+                { minGuests: 6, maxGuests: 10, price: 800 }
+              ],
+              weekdayExtraBedPrice: 60,
+              weekendExtraBedPrice: 80
+            }] : []),
+            {
+              seasonId: xmasSeason._id,
+              weekdayPrices: [
+                { minGuests: 2, maxGuests: 3, price: 450 },
+                { minGuests: 4, maxGuests: 5, price: 550 },
+                { minGuests: 6, maxGuests: 10, price: 650 }
+              ],
+              weekendPrices: [
+                { minGuests: 2, maxGuests: 3, price: 550 },
+                { minGuests: 4, maxGuests: 5, price: 650 },
+                { minGuests: 6, maxGuests: 10, price: 750 }
+              ],
+              weekdayExtraBedPrice: 55,
+              weekendExtraBedPrice: 75
+            }
+          ]
+        } : {})
       },
       {
         name: 'Chatka B (Leśna)',
         slug: 'chatka-b',
-        description: 'Domek z widokiem na las, wyposażony w saunę i jacuzzi. Przestronny taras idealny do wypoczynku. Wnętrze: salon z aneksem kuchennym, łazienka oraz dwie sypialnie na poddaszu. Idealny dla rodzin z dziećmi.',
+        description: 'Domek z widokiem na las, wyposażony w saunę i jacuzzi.',
         baseCapacity: 6,
         maxExtraBeds: 2,
-        images: ['/gallery/wnetrze4.webp', '/gallery/wnetrze5.webp', '/gallery/wnetrze6.webp'],
+        images: ['/gallery/wnetrze4.webp', '/gallery/wnetrze5.webp'],
         isActive: true,
-        type: 'single'
-      },
-      {
-        name: 'Cała posesja',
-        slug: 'cala-posesja',
-        description: 'Wynajem całej posesji - oba domki wraz ze strefą relaksu (sauna, jacuzzi, altana biesiadna) i placem zabaw. Idealne rozwiązanie dla większych grup, rodzin z przyjaciółmi lub firmowych wyjazdów. Gwarancja pełnej prywatności.',
-        baseCapacity: 12,
-        maxExtraBeds: 4,
-        images: ['/gallery/zagroda1.webp', '/gallery/zagroda2.webp', '/gallery/zagroda3.webp'],
-        isActive: true,
-        type: 'whole'
+        type: 'single',
+        basicPrices: {
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 300 },
+            { minGuests: 4, maxGuests: 5, price: 400 },
+            { minGuests: 6, maxGuests: 10, price: 500 }
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 400 },
+            { minGuests: 4, maxGuests: 5, price: 500 },
+            { minGuests: 6, maxGuests: 10, price: 600 }
+          ],
+          weekdayExtraBedPrice: 50,
+          weekendExtraBedPrice: 70
+        },
+        seasonPrices: summerSeason ? [{
+          seasonId: summerSeason._id,
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 500 },
+            { minGuests: 4, maxGuests: 5, price: 600 },
+            { minGuests: 6, maxGuests: 10, price: 700 }
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 600 },
+            { minGuests: 4, maxGuests: 5, price: 700 },
+            { minGuests: 6, maxGuests: 10, price: 800 }
+          ],
+          weekdayExtraBedPrice: 60,
+          weekendExtraBedPrice: 80
+        }] : []
       }
     ];
 
@@ -74,7 +211,7 @@ export async function seedProperties() {
 
     return {
       success: true,
-      message: `Utworzono ${plainProperties.length} domków`,
+      message: `Utworzono ${plainProperties.length} domków z cenami`,
       data: plainProperties
     };
   } catch (error) {
@@ -116,71 +253,6 @@ export async function seedPriceConfigDefaults() {
   } catch (error) {
     console.error('Błąd podczas seedowania domyślnej konfiguracji cen:', error);
     return { success: false, error: 'Nie udało się utworzyć domyślnej konfiguracji cen' };
-  }
-}
-
-export async function seedSeasons() {
-  try {
-    await dbConnect();
-
-    const currentYear = new Date().getFullYear();
-    
-    const seasons = [
-     
-      {
-        name: 'Sezon wysoki (wakacje letnie)',
-        description: 'Ceny obowiązujące w sezonie letnim - czerwiec, lipiec, sierpień',
-        startDate: new Date(currentYear, 5, 1),   // 1 czerwca bieżącego roku
-        endDate: new Date(currentYear, 7, 31),    // 31 sierpnia bieżącego roku
-        isActive: true,
-        order: 3,
-        weekdayPrices: [
-          { minGuests: 2, maxGuests: 3, price: 500 },
-          { minGuests: 4, maxGuests: 5, price: 600 },
-          { minGuests: 6, maxGuests: 10, price: 700 }
-        ],
-        weekendPrices: [
-          { minGuests: 2, maxGuests: 3, price: 600 },
-          { minGuests: 4, maxGuests: 5, price: 700 },
-          { minGuests: 6, maxGuests: 10, price: 800 }
-        ],
-        weekdayExtraBedPrice: 60,
-        weekendExtraBedPrice: 80
-      },
-      {
-        name: 'Sezon świąteczno-noworoczny',
-        description: 'Podwyższone ceny w okresie świąt Bożego Narodzenia i Nowego Roku',
-        startDate: new Date(currentYear, 11, 20),  // 20 grudnia bieżącego roku
-        endDate: new Date(currentYear + 1, 0, 5),  // 5 stycznia następnego roku
-        isActive: true,
-        order:1,
-        weekdayPrices: [
-          { minGuests: 2, maxGuests: 3, price: 450 },
-          { minGuests: 4, maxGuests: 5, price: 550 },
-          { minGuests: 6, maxGuests: 10, price: 650 }
-        ],
-        weekendPrices: [
-          { minGuests: 2, maxGuests: 3, price: 550 },
-          { minGuests: 4, maxGuests: 5, price: 650 },
-          { minGuests: 6, maxGuests: 10, price: 750 }
-        ],
-        weekdayExtraBedPrice: 55,
-        weekendExtraBedPrice: 75
-      }
-    ];
-
-    await Season.deleteMany({});
-    const created = await Season.insertMany(seasons);
-    const plainSeasons = created.map(doc => toPlainObject(doc));
-
-    return {
-      success: true,
-      message: `Utworzono ${plainSeasons.length} sezonów`,
-      data: plainSeasons
-    };
-  } catch (error) {
-    console.error('Błąd podczas seedowania sezonów:', error);
-    return { success: false, error: 'Nie udało się utworzyć sezonów' };
   }
 }
 

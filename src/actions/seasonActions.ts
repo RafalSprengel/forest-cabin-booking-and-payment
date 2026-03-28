@@ -172,3 +172,75 @@ export async function deleteBasicPrices(propertyId: string) {
     return { success: false, message: 'Nie udało się usunąć cen podstawowych' };
   }
 }
+
+// src/actions/seasonActions.ts - DODAJ TĘ NOWĄ FUNKCJĘ
+
+export async function updateSeasonPricesForProperty(
+  previousState: { message: string; success: boolean },
+  formData: FormData
+) {
+  try {
+    const propertyId = formData.get('propertyId') as string
+    const mode = formData.get('mode') as 'basic' | 'season'
+    const weekdayTiers = JSON.parse(formData.get('weekdayTiers') as string)
+    const weekendTiers = JSON.parse(formData.get('weekendTiers') as string)
+    const weekdayExtraBedPrice = parseInt(formData.get('weekdayExtraBedPrice') as string) || 50
+    const weekendExtraBedPrice = parseInt(formData.get('weekendExtraBedPrice') as string) || 70
+
+    if (!propertyId || !Array.isArray(weekdayTiers) || !Array.isArray(weekendTiers)) {
+      return { success: false, message: 'Nieprawidłowe dane' }
+    }
+
+    await dbConnect()
+
+    if (mode === 'basic') {
+      // Update basicPrices (poza sezonem)
+      await Property.findByIdAndUpdate(propertyId, {
+        basicPrices: {
+          weekdayPrices: weekdayTiers,
+          weekendPrices: weekendTiers,
+          weekdayExtraBedPrice,
+          weekendExtraBedPrice
+        }
+      })
+      revalidatePath('/admin/prices')
+      return { success: true, message: 'Zapisano ceny podstawowe' }
+    } else {
+      // Update seasonPrices dla konkretnego sezonu
+      const seasonId = formData.get('seasonId') as string
+      if (!seasonId) return { success: false, message: 'Brak ID sezonu' }
+
+      const property = await Property.findById(propertyId)
+      if (!property) return { success: false, message: 'Nie znaleziono domku' }
+
+      // Sprawdź czy już istnieje wpis dla tego sezonu
+      const existingIndex = property.seasonPrices?.findIndex(
+        (sp: any) => sp.seasonId?.toString() === seasonId
+      )
+
+      const newSeasonPrice = {
+        seasonId,
+        weekdayPrices: weekdayTiers,
+        weekendPrices: weekendTiers,
+        weekdayExtraBedPrice,
+        weekendExtraBedPrice
+      }
+
+      if (existingIndex !== undefined && existingIndex >= 0) {
+        // Update existing
+        property.seasonPrices![existingIndex] = newSeasonPrice
+      } else {
+        // Add new
+        property.seasonPrices = property.seasonPrices || []
+        property.seasonPrices.push(newSeasonPrice)
+      }
+
+      await property.save()
+      revalidatePath('/admin/prices')
+      return { success: true, message: 'Zapisano ceny sezonowe' }
+    }
+  } catch (error) {
+    console.error('Błąd zapisu cen:', error)
+    return { success: false, message: 'Wystąpił błąd podczas zapisu' }
+  }
+}

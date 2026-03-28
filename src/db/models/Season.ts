@@ -7,10 +7,6 @@ export interface ISeason {
   endDate: Date;
   isActive: boolean;
   order: number;
-  weekdayPrices: { minGuests: number; maxGuests: number; price: number }[];
-  weekendPrices: { minGuests: number; maxGuests: number; price: number }[];
-  weekdayExtraBedPrice: number;
-  weekendExtraBedPrice: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,11 +23,7 @@ const SeasonSchema = new Schema<ISeason>({
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   isActive: { type: Boolean, default: true },
-  order: { type: Number, default: 0 },
-  weekdayPrices: { type: [PriceTierSchema], default: [] },
-  weekendPrices: { type: [PriceTierSchema], default: [] },
-  weekdayExtraBedPrice: { type: Number, default: 50 },
-  weekendExtraBedPrice: { type: Number, default: 70 }
+  order: { type: Number, default: 0 }
 }, { timestamps: true });
 
 export default mongoose.models.Season || mongoose.model<ISeason>('Season', SeasonSchema);

@@ -21,12 +21,10 @@ export interface PropertyType {
 
 export async function getAllProperties(filter?: { type?: 'single' | 'whole' }): Promise<PropertyType[]> {
   await dbConnect();
-  
   const query: any = {};
   if (filter?.type) {
     query.type = filter.type;
   }
-  
   const properties = await Property.find(query)
     .sort({ type: -1, name: 1 })
     .select('-__v')
@@ -34,7 +32,7 @@ export async function getAllProperties(filter?: { type?: 'single' | 'whole' }): 
   
   return properties.map((prop: any) => ({
     ...prop,
-    _id: prop._id.toString(),
+    _id: prop._id.toString(), // 🔥 Upewnij się że _id jest stringiem
     createdAt: prop.createdAt?.toISOString(),
     updatedAt: prop.updatedAt?.toISOString(),
   }));

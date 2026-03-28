@@ -82,7 +82,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     };
     loadSeasons();
   }, []);
-
+  
   useEffect(() => {
     if (!selectedSeasonId && seasons.length > 0) {
       setSelectedSeasonId(seasons[0]._id);
