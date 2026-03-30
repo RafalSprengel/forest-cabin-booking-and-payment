@@ -1,4 +1,3 @@
-// src/app/admin/dev/page.tsx
 'use client'
 import { useState } from 'react';
 import {
@@ -9,7 +8,9 @@ import {
   seedPriceConfigDefaults,
   seedSeasons,
   seedBookingConfig,
-  clearAllData
+  seedPropertyPrices,
+  clearAllData,
+  migrateEmbeddedPricesToCollection,
 } from '@/actions/seed';
 import styles from './page.module.css';
 
@@ -17,7 +18,7 @@ export default function DevPage() {
   const [logs, setLogs] = useState<string[]>([]);
 
   const addLog = (msg: string) => {
-    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 20));
+    setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 30));
   };
 
   const runAction = async (name: string, actionFn: () => Promise<any>) => {
@@ -45,64 +46,102 @@ export default function DevPage() {
           <section className={styles.actions}>
             <h3>Database Actions</h3>
             <div className={styles.buttonGroup}>
-              <button 
-                className={styles.btnPrimary} 
+
+              {/* ── Full reset ──────────────────────────────────────────────── */}
+              <button
+                className={styles.btnPrimary}
                 onClick={() => runAction('Seed All (Reset)', seedAllData)}
               >
                 Seed All Data (Full Reset)
               </button>
+
               <hr className={styles.divider} />
-              <button 
-                className={styles.btnSecondary} 
+
+              {/* ── MIGRACJA – uruchom jednorazowo po wdrożeniu ─────────────── */}
+              <button
+                className={styles.btnPrimary}
+                style={{ backgroundColor: '#7c3aed' }}
+                onClick={() =>
+                  runAction(
+                    'Migracja embedded prices → PropertyPrices',
+                    migrateEmbeddedPricesToCollection
+                  )
+                }
+              >
+                🔄 Migruj ceny (embedded → PropertyPrices) — JEDNORAZOWO
+              </button>
+
+              <hr className={styles.divider} />
+
+              {/* ── Jednotkowe seedy ────────────────────────────────────────── */}
+              <button
+                className={styles.btnSecondary}
                 onClick={() => runAction('Seed Properties (2 domki)', seedProperties)}
               >
-                Seed Properties Only (2 domki)
+                Seed Properties Only
               </button>
-              <button 
-                className={styles.btnSecondary} 
-                onClick={() => runAction('Seed Price Config (Default)', seedPriceConfigDefaults)}
+              <button
+                className={styles.btnSecondary}
+                onClick={() =>
+                  runAction('Seed PropertyPrices (ceny)', seedPropertyPrices)
+                }
               >
-                Seed Price Config (Default)
+                Seed PropertyPrices (ceny per domek)
               </button>
-              <button 
-                className={styles.btnSecondary} 
+              <button
+                className={styles.btnSecondary}
                 onClick={() => runAction('Seed Seasons', seedSeasons)}
               >
                 Seed Seasons (3 sezony)
               </button>
-              <button 
-                className={styles.btnSecondary} 
+              <button
+                className={styles.btnSecondary}
+                onClick={() =>
+                  runAction('Seed Price Config (Default)', seedPriceConfigDefaults)
+                }
+              >
+                Seed Price Config (Default)
+              </button>
+              <button
+                className={styles.btnSecondary}
                 onClick={() => runAction('Seed System Config', seedSystemConfig)}
               >
                 Seed System Config
               </button>
-              <button 
-                className={styles.btnSecondary} 
+              <button
+                className={styles.btnSecondary}
                 onClick={() => runAction('Seed Booking Config', seedBookingConfig)}
               >
                 Seed Booking Config
               </button>
-              <button 
-                className={styles.btnSecondary} 
+              <button
+                className={styles.btnSecondary}
                 onClick={() => runAction('Seed Bookings', seedBookings)}
               >
                 Seed Bookings Only
               </button>
+
               <hr className={styles.divider} />
-              <button 
-                className={styles.btnDanger} 
+
+              <button
+                className={styles.btnDanger}
                 onClick={() => runAction('Clear Database', clearAllData)}
               >
                 Clear All Collections
               </button>
             </div>
           </section>
+
           <section className={styles.console}>
             <h3>Output Logs</h3>
             <div className={styles.logWindow}>
-              {logs.length === 0 && <span className={styles.empty}>Waiting for actions...</span>}
+              {logs.length === 0 && (
+                <span className={styles.empty}>Waiting for actions...</span>
+              )}
               {logs.map((log, i) => (
-                <div key={i} className={styles.logEntry}>{log}</div>
+                <div key={i} className={styles.logEntry}>
+                  {log}
+                </div>
               ))}
             </div>
           </section>

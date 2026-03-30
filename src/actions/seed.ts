@@ -1,7 +1,8 @@
-// src/actions/seed.ts
 'use server'
+
 import dbConnect from '@/db/connection';
 import Property from '@/db/models/Property';
+import PropertyPrices from '@/db/models/PropertyPrices';
 import Booking from '@/db/models/Booking';
 import SystemConfig from '@/db/models/SystemConfig';
 import BookingConfig from '@/db/models/BookingConfig';
@@ -14,11 +15,104 @@ function toPlainObject(doc: any) {
   return JSON.parse(JSON.stringify(doc));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MIGRACJA: przenosi basicPrices i seasonPrices z dokumentów Property
+//           do nowej kolekcji PropertyPrices.
+//
+// Uruchom JEDNORAZOWO po wdrożeniu nowego modelu.
+// Bezpieczna: nie usuwa danych z Property (możesz usunąć pola ręcznie później).
+// ─────────────────────────────────────────────────────────────────────────────
+export async function migrateEmbeddedPricesToCollection() {
+  await dbConnect();
+
+  // Pobieramy surowe dokumenty – mongoose nie zwróci pól których nie ma w schemacie,
+  // dlatego używamy `lean()` bezpośrednio na kolekcji natywnie.
+  const mongoose = (await import('mongoose')).default;
+  const rawProperties = await mongoose.connection
+    .collection('properties')
+    .find({})
+    .toArray();
+
+  let created = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const prop of rawProperties) {
+    const propertyId = prop._id;
+
+    // ── Ceny podstawowe (basicPrices → seasonId: null) ───────────────────────
+    if (prop.basicPrices) {
+      try {
+        await PropertyPrices.findOneAndUpdate(
+          { propertyId, seasonId: null },
+          {
+            weekdayPrices: prop.basicPrices.weekdayPrices ?? [],
+            weekendPrices: prop.basicPrices.weekendPrices ?? [],
+            weekdayExtraBedPrice: prop.basicPrices.weekdayExtraBedPrice ?? 50,
+            weekendExtraBedPrice: prop.basicPrices.weekendExtraBedPrice ?? 70,
+          },
+          { upsert: true, new: true }
+        );
+        created++;
+      } catch (err: any) {
+        errors.push(`basicPrices dla ${prop.name}: ${err.message}`);
+      }
+    }
+
+    // ── Ceny sezonowe (seasonPrices[] → seasonId: <id>) ──────────────────────
+    if (Array.isArray(prop.seasonPrices) && prop.seasonPrices.length > 0) {
+      for (const sp of prop.seasonPrices) {
+        if (!sp.seasonId) continue;
+        try {
+          await PropertyPrices.findOneAndUpdate(
+            { propertyId, seasonId: sp.seasonId },
+            {
+              weekdayPrices: sp.weekdayPrices ?? [],
+              weekendPrices: sp.weekendPrices ?? [],
+              weekdayExtraBedPrice: sp.weekdayExtraBedPrice ?? 50,
+              weekendExtraBedPrice: sp.weekendExtraBedPrice ?? 70,
+            },
+            { upsert: true, new: true }
+          );
+          created++;
+        } catch (err: any) {
+          errors.push(`seasonPrices (season ${sp.seasonId}) dla ${prop.name}: ${err.message}`);
+        }
+      }
+    }
+  }
+
+  // Opcjonalnie: wyczyść stare pola z dokumentów Property
+  // Odkomentuj gdy jesteś pewien że migracja przebiegła poprawnie.
+  //
+  // await mongoose.connection.collection('properties').updateMany(
+  //   {},
+  //   { $unset: { basicPrices: '', seasonPrices: '' } }
+  // );
+
+  const message = errors.length > 0
+    ? `Migracja zakończona z błędami. Przeniesiono: ${created}, błędy: ${errors.join(' | ')}`
+    : `Migracja zakończona pomyślnie. Przeniesiono ${created} rekordów cen.`;
+
+  return {
+    success: errors.length === 0,
+    message,
+    created,
+    skipped,
+    errors,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEED
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function clearAllData() {
   try {
     await dbConnect();
     await Booking.deleteMany({});
     await Property.deleteMany({});
+    await PropertyPrices.deleteMany({});
     await SystemConfig.deleteMany({});
     await BookingConfig.deleteMany({});
     await PriceConfig.deleteMany({});
@@ -35,16 +129,15 @@ export async function seedSeasons() {
   try {
     await dbConnect();
     const currentYear = new Date().getFullYear();
-    
-    // Sezony TYLKO z datami - bez cen
+
     const seasons = [
       {
         name: 'Sezon wysoki (wakacje letnie)',
-        description: 'Ceny obowiązuje w sezonie letnim - czerwiec, lipiec, sierpień',
+        description: 'Ceny obowiązują w sezonie letnim – czerwiec, lipiec, sierpień',
         startDate: new Date(currentYear, 5, 1),
         endDate: new Date(currentYear, 7, 31),
         isActive: true,
-        order: 3
+        order: 3,
       },
       {
         name: 'Sezon świąteczno-noworoczny',
@@ -52,7 +145,7 @@ export async function seedSeasons() {
         startDate: new Date(currentYear, 11, 20),
         endDate: new Date(currentYear + 1, 0, 5),
         isActive: true,
-        order: 1
+        order: 1,
       },
       {
         name: 'Sezon wiosenny',
@@ -60,18 +153,16 @@ export async function seedSeasons() {
         startDate: new Date(currentYear, 2, 1),
         endDate: new Date(currentYear, 4, 31),
         isActive: true,
-        order: 2
-      }
+        order: 2,
+      },
     ];
 
     await Season.deleteMany({});
     const created = await Season.insertMany(seasons);
-    const plainSeasons = created.map(doc => toPlainObject(doc));
-
     return {
       success: true,
-      message: `Utworzono ${plainSeasons.length} sezonów (tylko daty)`,
-      data: plainSeasons
+      message: `Utworzono ${created.length} sezonów`,
+      data: created.map(toPlainObject),
     };
   } catch (error) {
     console.error('Błąd podczas seedowania sezonów:', error);
@@ -79,13 +170,12 @@ export async function seedSeasons() {
   }
 }
 
+/**
+ * Tworzy domki BEZ cen – ceny żyją teraz w PropertyPrices.
+ */
 export async function seedProperties() {
   try {
     await dbConnect();
-    
-    const seasons = await Season.find({}).lean();
-    const summerSeason = seasons.find((s: any) => s.name.includes('wakacje'));
-    const xmasSeason = seasons.find((s: any) => s.name.includes('świąteczno'));
 
     const properties = [
       {
@@ -97,72 +187,6 @@ export async function seedProperties() {
         images: ['/gallery/wnetrze1.webp', '/gallery/wnetrze2.webp'],
         isActive: true,
         type: 'single',
-        // Ceny podstawowe (poza sezonem)
-        basicPrices: {
-          weekdayPrices: [
-            { minGuests: 2, maxGuests: 3, price: 300 },
-            { minGuests: 4, maxGuests: 5, price: 400 },
-            { minGuests: 6, maxGuests: 10, price: 500 }
-          ],
-          weekendPrices: [
-            { minGuests: 2, maxGuests: 3, price: 400 },
-            { minGuests: 4, maxGuests: 5, price: 500 },
-            { minGuests: 6, maxGuests: 10, price: 600 }
-          ],
-          weekdayExtraBedPrice: 50,
-          weekendExtraBedPrice: 70
-        },
-        // Ceny sezonowe per domek
-        seasonPrices: summerSeason ? [{
-          seasonId: summerSeason._id,
-          weekdayPrices: [
-            { minGuests: 2, maxGuests: 3, price: 500 },
-            { minGuests: 4, maxGuests: 5, price: 600 },
-            { minGuests: 6, maxGuests: 10, price: 700 }
-          ],
-          weekendPrices: [
-            { minGuests: 2, maxGuests: 3, price: 600 },
-            { minGuests: 4, maxGuests: 5, price: 700 },
-            { minGuests: 6, maxGuests: 10, price: 800 }
-          ],
-          weekdayExtraBedPrice: 60,
-          weekendExtraBedPrice: 80
-        }] : [],
-        // Dodajemy drugi sezon jeśli istnieje
-        ...(xmasSeason ? {
-          seasonPrices: [
-            ...(summerSeason ? [{
-              seasonId: summerSeason._id,
-              weekdayPrices: [
-                { minGuests: 2, maxGuests: 3, price: 500 },
-                { minGuests: 4, maxGuests: 5, price: 600 },
-                { minGuests: 6, maxGuests: 10, price: 700 }
-              ],
-              weekendPrices: [
-                { minGuests: 2, maxGuests: 3, price: 600 },
-                { minGuests: 4, maxGuests: 5, price: 700 },
-                { minGuests: 6, maxGuests: 10, price: 800 }
-              ],
-              weekdayExtraBedPrice: 60,
-              weekendExtraBedPrice: 80
-            }] : []),
-            {
-              seasonId: xmasSeason._id,
-              weekdayPrices: [
-                { minGuests: 2, maxGuests: 3, price: 450 },
-                { minGuests: 4, maxGuests: 5, price: 550 },
-                { minGuests: 6, maxGuests: 10, price: 650 }
-              ],
-              weekendPrices: [
-                { minGuests: 2, maxGuests: 3, price: 550 },
-                { minGuests: 4, maxGuests: 5, price: 650 },
-                { minGuests: 6, maxGuests: 10, price: 750 }
-              ],
-              weekdayExtraBedPrice: 55,
-              weekendExtraBedPrice: 75
-            }
-          ]
-        } : {})
       },
       {
         name: 'Chatka B (Leśna)',
@@ -173,50 +197,140 @@ export async function seedProperties() {
         images: ['/gallery/wnetrze4.webp', '/gallery/wnetrze5.webp'],
         isActive: true,
         type: 'single',
-        basicPrices: {
-          weekdayPrices: [
-            { minGuests: 2, maxGuests: 3, price: 300 },
-            { minGuests: 4, maxGuests: 5, price: 400 },
-            { minGuests: 6, maxGuests: 10, price: 500 }
-          ],
-          weekendPrices: [
-            { minGuests: 2, maxGuests: 3, price: 400 },
-            { minGuests: 4, maxGuests: 5, price: 500 },
-            { minGuests: 6, maxGuests: 10, price: 600 }
-          ],
-          weekdayExtraBedPrice: 50,
-          weekendExtraBedPrice: 70
-        },
-        seasonPrices: summerSeason ? [{
-          seasonId: summerSeason._id,
-          weekdayPrices: [
-            { minGuests: 2, maxGuests: 3, price: 500 },
-            { minGuests: 4, maxGuests: 5, price: 600 },
-            { minGuests: 6, maxGuests: 10, price: 700 }
-          ],
-          weekendPrices: [
-            { minGuests: 2, maxGuests: 3, price: 600 },
-            { minGuests: 4, maxGuests: 5, price: 700 },
-            { minGuests: 6, maxGuests: 10, price: 800 }
-          ],
-          weekdayExtraBedPrice: 60,
-          weekendExtraBedPrice: 80
-        }] : []
-      }
+      },
     ];
 
     await Property.deleteMany({});
     const created = await Property.insertMany(properties);
-    const plainProperties = created.map(doc => toPlainObject(doc));
-
     return {
       success: true,
-      message: `Utworzono ${plainProperties.length} domków z cenami`,
-      data: plainProperties
+      message: `Utworzono ${created.length} domków`,
+      data: created.map(toPlainObject),
     };
   } catch (error) {
     console.error('Błąd podczas seedowania domków:', error);
     return { success: false, error: 'Nie udało się utworzyć domków' };
+  }
+}
+
+/**
+ * Seeduje kolekcję PropertyPrices.
+ * Musi być wywołana PO seedProperties() i seedSeasons().
+ */
+export async function seedPropertyPrices() {
+  try {
+    await dbConnect();
+
+    const properties = await Property.find({ type: 'single' }).lean();
+    const seasons = await Season.find({}).lean();
+
+    if (properties.length === 0) {
+      return { success: false, error: 'Najpierw uruchom seedProperties()' };
+    }
+
+    const summerSeason = seasons.find((s: any) =>
+      s.name.includes('wakacje')
+    );
+    const xmasSeason = seasons.find((s: any) =>
+      s.name.includes('świąteczno')
+    );
+    const springSeason = seasons.find((s: any) =>
+      s.name.includes('wiosenny')
+    );
+
+    const pricesToInsert: any[] = [];
+
+    for (const prop of properties) {
+      // ── Ceny podstawowe (poza sezonem) ─────────────────────────────────────
+      pricesToInsert.push({
+        propertyId: prop._id,
+        seasonId: null, // null = poza sezonem
+        weekdayPrices: [
+          { minGuests: 2, maxGuests: 3, price: 300 },
+          { minGuests: 4, maxGuests: 5, price: 400 },
+          { minGuests: 6, maxGuests: 10, price: 500 },
+        ],
+        weekendPrices: [
+          { minGuests: 2, maxGuests: 3, price: 400 },
+          { minGuests: 4, maxGuests: 5, price: 500 },
+          { minGuests: 6, maxGuests: 10, price: 600 },
+        ],
+        weekdayExtraBedPrice: 50,
+        weekendExtraBedPrice: 70,
+      });
+
+      // ── Ceny sezon letni ────────────────────────────────────────────────────
+      if (summerSeason) {
+        pricesToInsert.push({
+          propertyId: prop._id,
+          seasonId: summerSeason._id,
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 500 },
+            { minGuests: 4, maxGuests: 5, price: 600 },
+            { minGuests: 6, maxGuests: 10, price: 700 },
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 600 },
+            { minGuests: 4, maxGuests: 5, price: 700 },
+            { minGuests: 6, maxGuests: 10, price: 800 },
+          ],
+          weekdayExtraBedPrice: 60,
+          weekendExtraBedPrice: 80,
+        });
+      }
+
+      // ── Ceny sezon świąteczny ───────────────────────────────────────────────
+      if (xmasSeason) {
+        pricesToInsert.push({
+          propertyId: prop._id,
+          seasonId: xmasSeason._id,
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 450 },
+            { minGuests: 4, maxGuests: 5, price: 550 },
+            { minGuests: 6, maxGuests: 10, price: 650 },
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 550 },
+            { minGuests: 4, maxGuests: 5, price: 650 },
+            { minGuests: 6, maxGuests: 10, price: 750 },
+          ],
+          weekdayExtraBedPrice: 55,
+          weekendExtraBedPrice: 75,
+        });
+      }
+
+      // ── Ceny sezon wiosenny ─────────────────────────────────────────────────
+      if (springSeason) {
+        pricesToInsert.push({
+          propertyId: prop._id,
+          seasonId: springSeason._id,
+          weekdayPrices: [
+            { minGuests: 2, maxGuests: 3, price: 320 },
+            { minGuests: 4, maxGuests: 5, price: 420 },
+            { minGuests: 6, maxGuests: 10, price: 520 },
+          ],
+          weekendPrices: [
+            { minGuests: 2, maxGuests: 3, price: 420 },
+            { minGuests: 4, maxGuests: 5, price: 520 },
+            { minGuests: 6, maxGuests: 10, price: 620 },
+          ],
+          weekdayExtraBedPrice: 50,
+          weekendExtraBedPrice: 70,
+        });
+      }
+    }
+
+    await PropertyPrices.deleteMany({});
+    const created = await PropertyPrices.insertMany(pricesToInsert);
+
+    return {
+      success: true,
+      message: `Utworzono ${created.length} rekordów cen w PropertyPrices`,
+      data: created.map(toPlainObject),
+    };
+  } catch (error) {
+    console.error('Błąd podczas seedowania cen:', error);
+    return { success: false, error: 'Nie udało się utworzyć cen' };
   }
 }
 
@@ -229,50 +343,43 @@ export async function seedPriceConfigDefaults() {
       defaultWeekdayPrices: [
         { minGuests: 2, maxGuests: 3, price: 300 },
         { minGuests: 4, maxGuests: 5, price: 400 },
-        { minGuests: 6, maxGuests: 10, price: 500 }
+        { minGuests: 6, maxGuests: 10, price: 500 },
       ],
       defaultWeekendPrices: [
         { minGuests: 2, maxGuests: 3, price: 400 },
         { minGuests: 4, maxGuests: 5, price: 500 },
-        { minGuests: 6, maxGuests: 10, price: 600 }
+        { minGuests: 6, maxGuests: 10, price: 600 },
       ],
       defaultWeekdayExtraBedPrice: 50,
       defaultWeekendExtraBedPrice: 70,
-      childrenFreeAgeLimit: 13
+      childrenFreeAgeLimit: 13,
     };
 
     await PriceConfig.deleteMany({});
     const created = await PriceConfig.create(defaultPriceConfig);
-    const plainConfig = toPlainObject(created);
-
     return {
       success: true,
       message: 'Domyślna konfiguracja cen została utworzona',
-      data: plainConfig
+      data: toPlainObject(created),
     };
   } catch (error) {
-    console.error('Błąd podczas seedowania domyślnej konfiguracji cen:', error);
-    return { success: false, error: 'Nie udało się utworzyć domyślnej konfiguracji cen' };
+    console.error('Błąd podczas seedowania konfiguracji cen:', error);
+    return { success: false, error: 'Nie udało się utworzyć konfiguracji cen' };
   }
 }
 
 export async function seedSystemConfig() {
   try {
     await dbConnect();
-
-    const systemConfig = {
-      _id: 'main',
-      autoBlockOtherCabins: true
-    };
-
     await SystemConfig.deleteMany({});
-    const created = await SystemConfig.create(systemConfig);
-    const plainConfig = toPlainObject(created);
-
+    const created = await SystemConfig.create({
+      _id: 'main',
+      autoBlockOtherCabins: true,
+    });
     return {
       success: true,
       message: 'Konfiguracja systemowa została utworzona',
-      data: plainConfig
+      data: toPlainObject(created),
     };
   } catch (error) {
     console.error('Błąd podczas seedowania konfiguracji systemowej:', error);
@@ -283,25 +390,20 @@ export async function seedSystemConfig() {
 export async function seedBookingConfig() {
   try {
     await dbConnect();
-
-    const bookingConfig = {
+    await BookingConfig.deleteMany({});
+    const created = await BookingConfig.create({
       _id: 'main',
       minBookingDays: 1,
       maxBookingDays: 30,
       childrenFreeAgeLimit: 13,
       allowCheckinOnDepartureDay: true,
       checkInHour: 15,
-      checkOutHour: 12
-    };
-
-    await BookingConfig.deleteMany({});
-    const created = await BookingConfig.create(bookingConfig);
-    const plainConfig = toPlainObject(created);
-
+      checkOutHour: 12,
+    });
     return {
       success: true,
       message: 'Konfiguracja rezerwacji została utworzona',
-      data: plainConfig
+      data: toPlainObject(created),
     };
   } catch (error) {
     console.error('Błąd podczas seedowania konfiguracji rezerwacji:', error);
@@ -314,7 +416,6 @@ export async function seedBookings() {
     await dbConnect();
 
     const properties = await Property.find({ isActive: true, type: 'single' }).lean();
-
     if (properties.length < 2) {
       return { success: false, error: 'Najpierw utwórz minimum 2 domki' };
     }
@@ -357,10 +458,10 @@ export async function seedBookings() {
           nip: '1234567890',
           street: 'ul. Faktury 10',
           city: 'Warszawa',
-          postalCode: '00-002'
+          postalCode: '00-002',
         },
         customerNotes: 'Rezerwacja testowa dla chatki A',
-        source: 'customer'
+        source: 'customer',
       },
       {
         propertyId: new Types.ObjectId(properties[1]._id),
@@ -377,18 +478,16 @@ export async function seedBookings() {
         status: 'confirmed',
         invoice: false,
         customerNotes: 'Prośba o ciszę nocną',
-        source: 'customer'
-      }
+        source: 'customer',
+      },
     ];
 
     await Booking.deleteMany({});
     const created = await Booking.insertMany(bookings);
-    const plainBookings = created.map(doc => toPlainObject(doc));
-
     return {
       success: true,
-      message: `Utworzono ${plainBookings.length} rezerwacji`,
-      data: plainBookings
+      message: `Utworzono ${created.length} rezerwacji`,
+      data: created.map(toPlainObject),
     };
   } catch (error) {
     console.error('Błąd podczas seedowania rezerwacji:', error);
@@ -396,20 +495,28 @@ export async function seedBookings() {
   }
 }
 
+/**
+ * Pełny reset bazy danych.
+ * Kolejność ma znaczenie: sezony → domki → ceny (PropertyPrices) → reszta.
+ */
 export async function seedAllData() {
   try {
     await dbConnect();
 
     await clearAllData();
 
-    const properties = await seedProperties();
-    if (!properties.success) throw new Error(properties.error);
+    // Kolejność jest ważna – PropertyPrices wymaga ID z Season i Property
+    const seasons = await seedSeasons();
+    if (!seasons.success) throw new Error(seasons.error);
+
+    const props = await seedProperties();
+    if (!props.success) throw new Error(props.error);
+
+    const prices = await seedPropertyPrices(); // ← nowy krok
+    if (!prices.success) throw new Error(prices.error);
 
     const priceConfig = await seedPriceConfigDefaults();
     if (!priceConfig.success) throw new Error(priceConfig.error);
-
-    const seasons = await seedSeasons();
-    if (!seasons.success) throw new Error(seasons.error);
 
     const system = await seedSystemConfig();
     if (!system.success) throw new Error(system.error);
@@ -422,7 +529,10 @@ export async function seedAllData() {
 
     return {
       success: true,
-      message: 'Wszystkie dane zostały zresetowane do stanu początkowego z sezonami'
+      message:
+        'Wszystkie dane zostały zresetowane. ' +
+        `Sezony: ${seasons.data?.length}, Domki: ${props.data?.length}, ` +
+        `Rekordy cen: ${prices.data?.length}, Rezerwacje: ${bookings.data?.length}`,
     };
   } catch (error) {
     console.error('Błąd podczas seedowania wszystkich danych:', error);

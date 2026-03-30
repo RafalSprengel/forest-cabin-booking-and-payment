@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import '@/db/models/Booking';
 import '@/db/models/Property';
+import '@/db/models/PropertyPrices'; // ← nowy model
+import '@/db/models/Season';         // ← potrzebny dla middleware kaskadowego
 import '@/db/models/PriceConfig';
 import '@/db/models/SystemConfig';
 
@@ -20,9 +22,9 @@ async function dbConnect() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      dbName: 'wilczechatki',
-    }).then((mongoose) => mongoose);
+    cached.promise = mongoose
+      .connect(MONGODB_URI, { dbName: 'wilczechatki' })
+      .then((m) => m);
   }
   cached.conn = await cached.promise;
   return cached.conn;

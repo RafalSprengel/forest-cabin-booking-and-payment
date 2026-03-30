@@ -2,7 +2,7 @@
 
 import dbConnect from '@/db/connection';
 import Season from '@/db/models/Season';
-import Property from '@/db/models/Property';
+import PropertyPrices from '@/db/models/PropertyPrices';
 import { revalidatePath } from 'next/cache';
 
 export interface ISeasonData {
@@ -13,11 +13,9 @@ export interface ISeasonData {
   endDate: Date;
   isActive: boolean;
   order: number;
-  weekdayPrices: { minGuests: number; maxGuests: number; price: number }[];
-  weekendPrices: { minGuests: number; maxGuests: number; price: number }[];
-  weekdayExtraBedPrice: number;
-  weekendExtraBedPrice: number;
 }
+
+// ── Seasons CRUD ─────────────────────────────────────────────────────────────
 
 export async function getAllSeasons() {
   try {
@@ -42,14 +40,20 @@ export async function getSeasonById(id: string) {
   }
 }
 
-export async function updateSeasonDates(seasonName :string, seasonDesc:string, seasonId: string, startDate: string, endDate: string, ) {
+export async function updateSeasonDates(
+  seasonName: string,
+  seasonDesc: string,
+  seasonId: string,
+  startDate: string,
+  endDate: string
+) {
   try {
     await dbConnect();
     await Season.findByIdAndUpdate(seasonId, {
       name: seasonName,
       description: seasonDesc,
       startDate: new Date(startDate),
-      endDate: new Date(endDate)
+      endDate: new Date(endDate),
     });
     revalidatePath('/admin/settings/booking');
     return { success: true, message: 'Zaktualizowano daty sezonu' };
@@ -71,52 +75,44 @@ export async function updateSeasonOrder(seasonId: string, order: number) {
   }
 }
 
-export async function updateSeasonPrices(
-  previousState: { message: string; success: boolean },
-  formData: FormData
-) {
+// ── Prices per property (kolekcja PropertyPrices) ────────────────────────────
+//
+// Konwencja: seasonId === null  →  ceny poza sezonem (dawne basicPrices)
+//            seasonId === <id>  →  ceny dla konkretnego sezonu
+
+/**
+ * Pobiera wszystkie rekordy cenowe dla jednego domku.
+ * Zwraca tablicę zawierającą zarówno basicPrices (seasonId: null)
+ * jak i wszystkie wpisy sezonowe.
+ */
+export async function getPricesForProperty(propertyId: string) {
   try {
-    const seasonId = formData.get('seasonId') as string;
-    const weekdayTiersJson = formData.get('weekdayTiers') as string;
-    const weekendTiersJson = formData.get('weekendTiers') as string;
-    const weekdayExtraBedPrice = parseInt(formData.get('weekdayExtraBedPrice') as string) || 0;
-    const weekendExtraBedPrice = parseInt(formData.get('weekendExtraBedPrice') as string) || 0;
-
-    const weekdayPrices = JSON.parse(weekdayTiersJson);
-    const weekendPrices = JSON.parse(weekendTiersJson);
-
-    if (!seasonId || !Array.isArray(weekdayPrices) || !Array.isArray(weekendPrices)) {
-      return { success: false, message: 'Nieprawidłowe dane' };
-    }
-
     await dbConnect();
-    await Season.findByIdAndUpdate(seasonId, {
-      weekdayPrices,
-      weekendPrices,
-      weekdayExtraBedPrice,
-      weekendExtraBedPrice
-    });
-    revalidatePath('/admin/prices');
-    return { success: true, message: 'Zapisano ceny sezonu' };
+    const prices = await PropertyPrices.find({ propertyId }).lean();
+    return JSON.parse(JSON.stringify(prices));
   } catch (error) {
-    console.error('Błąd zapisu cen sezonu:', error);
-    return { success: false, message: 'Wystąpił błąd podczas zapisu' };
+    console.error('Błąd pobierania cen domku:', error);
+    return [];
   }
 }
 
-// Basic Prices Management (Default prices outside seasons)
-
+/**
+ * Pobiera ceny poza sezonem dla domku.
+ */
 export async function getBasicPrices(propertyId: string) {
   try {
     await dbConnect();
-    const property = await Property.findById(propertyId).lean();
-    if (!property) {
-      return { success: false, message: 'Nieruchomość nie znaleziona' };
-    }
+    const prices = await PropertyPrices.findOne({
+      propertyId,
+      seasonId: null,
+    }).lean();
+
     return {
       success: true,
-      data: property.basicPrices || null,
-      message: property.basicPrices ? 'Ceny podstawowe znalezione' : 'Brak skonfigurowanych cen podstawowych'
+      data: prices ?? null,
+      message: prices
+        ? 'Ceny podstawowe znalezione'
+        : 'Brak skonfigurowanych cen podstawowych',
     };
   } catch (error) {
     console.error('Błąd pobierania cen podstawowych:', error);
@@ -124,33 +120,39 @@ export async function getBasicPrices(propertyId: string) {
   }
 }
 
+/**
+ * Zapisuje/aktualizuje ceny poza sezonem dla domku.
+ * Używa upsert – bezpieczne przy pierwszym zapisie.
+ */
 export async function updateBasicPrices(
-  previousState: { message: string; success: boolean },
+  previousState: { message: string; success: boolean } | null,
   formData: FormData
 ) {
   try {
     const propertyId = formData.get('propertyId') as string;
-    const weekdayTiersJson = formData.get('weekdayTiers') as string;
-    const weekendTiersJson = formData.get('weekendTiers') as string;
-    const weekdayExtraBedPrice = parseInt(formData.get('weekdayExtraBedPrice') as string) || 50;
-    const weekendExtraBedPrice = parseInt(formData.get('weekendExtraBedPrice') as string) || 70;
+    const weekdayPrices = JSON.parse(formData.get('weekdayTiers') as string);
+    const weekendPrices = JSON.parse(formData.get('weekendTiers') as string);
+    const weekdayExtraBedPrice =
+      parseInt(formData.get('weekdayExtraBedPrice') as string) || 50;
+    const weekendExtraBedPrice =
+      parseInt(formData.get('weekendExtraBedPrice') as string) || 70;
 
-    const weekdayPrices = JSON.parse(weekdayTiersJson);
-    const weekendPrices = JSON.parse(weekendTiersJson);
-
-    if (!propertyId || !Array.isArray(weekdayPrices) || !Array.isArray(weekendPrices)) {
+    if (
+      !propertyId ||
+      !Array.isArray(weekdayPrices) ||
+      !Array.isArray(weekendPrices)
+    ) {
       return { success: false, message: 'Nieprawidłowe dane' };
     }
 
     await dbConnect();
-    await Property.findByIdAndUpdate(propertyId, {
-      basicPrices: {
-        weekdayPrices,
-        weekendPrices,
-        weekdayExtraBedPrice,
-        weekendExtraBedPrice
-      }
-    });
+
+    await PropertyPrices.findOneAndUpdate(
+      { propertyId, seasonId: null },
+      { weekdayPrices, weekendPrices, weekdayExtraBedPrice, weekendExtraBedPrice },
+      { upsert: true, new: true }
+    );
+
     revalidatePath('/admin/prices');
     return { success: true, message: 'Zapisano ceny podstawowe' };
   } catch (error) {
@@ -159,12 +161,13 @@ export async function updateBasicPrices(
   }
 }
 
+/**
+ * Usuwa ceny poza sezonem dla domku.
+ */
 export async function deleteBasicPrices(propertyId: string) {
   try {
     await dbConnect();
-    await Property.findByIdAndUpdate(propertyId, {
-      basicPrices: undefined
-    });
+    await PropertyPrices.deleteOne({ propertyId, seasonId: null });
     revalidatePath('/admin/prices');
     return { success: true, message: 'Usunięto ceny podstawowe' };
   } catch (error) {
@@ -173,74 +176,68 @@ export async function deleteBasicPrices(propertyId: string) {
   }
 }
 
-// src/actions/seasonActions.ts - DODAJ TĘ NOWĄ FUNKCJĘ
-
+/**
+ * Zapisuje ceny sezonowe lub podstawowe dla domku.
+ * mode === 'basic'  →  seasonId: null
+ * mode === 'season' →  seasonId: <id>
+ *
+ * Używa upsert – jedno zapytanie, żadnej logiki merge.
+ */
 export async function updateSeasonPricesForProperty(
-  previousState: { message: string; success: boolean },
+  previousState: { message: string; success: boolean } | null,
   formData: FormData
 ) {
   try {
-    const propertyId = formData.get('propertyId') as string
-    const mode = formData.get('mode') as 'basic' | 'season'
-    const weekdayTiers = JSON.parse(formData.get('weekdayTiers') as string)
-    const weekendTiers = JSON.parse(formData.get('weekendTiers') as string)
-    const weekdayExtraBedPrice = parseInt(formData.get('weekdayExtraBedPrice') as string) || 50
-    const weekendExtraBedPrice = parseInt(formData.get('weekendExtraBedPrice') as string) || 70
+    const propertyId = formData.get('propertyId') as string;
+    const mode = formData.get('mode') as 'basic' | 'season';
+    const weekdayPrices = JSON.parse(formData.get('weekdayTiers') as string);
+    const weekendPrices = JSON.parse(formData.get('weekendTiers') as string);
+    const weekdayExtraBedPrice =
+      parseInt(formData.get('weekdayExtraBedPrice') as string) || 50;
+    const weekendExtraBedPrice =
+      parseInt(formData.get('weekendExtraBedPrice') as string) || 70;
 
-    if (!propertyId || !Array.isArray(weekdayTiers) || !Array.isArray(weekendTiers)) {
-      return { success: false, message: 'Nieprawidłowe dane' }
+    if (
+      !propertyId ||
+      !Array.isArray(weekdayPrices) ||
+      !Array.isArray(weekendPrices)
+    ) {
+      return { success: false, message: 'Nieprawidłowe dane' };
     }
 
-    await dbConnect()
+    await dbConnect();
 
-    if (mode === 'basic') {
-      // Update basicPrices (poza sezonem)
-      await Property.findByIdAndUpdate(propertyId, {
-        basicPrices: {
-          weekdayPrices: weekdayTiers,
-          weekendPrices: weekendTiers,
-          weekdayExtraBedPrice,
-          weekendExtraBedPrice
-        }
-      })
-      revalidatePath('/admin/prices')
-      return { success: true, message: 'Zapisano ceny podstawowe' }
-    } else {
-      // Update seasonPrices dla konkretnego sezonu
-      const seasonId = formData.get('seasonId') as string
-      if (!seasonId) return { success: false, message: 'Brak ID sezonu' }
+    const seasonId = mode === 'season'
+      ? (formData.get('seasonId') as string | null)
+      : null;
 
-      const property = await Property.findById(propertyId)
-      if (!property) return { success: false, message: 'Nie znaleziono domku' }
-
-      // Sprawdź czy już istnieje wpis dla tego sezonu
-      const existingIndex = property.seasonPrices?.findIndex(
-        (sp: any) => sp.seasonId?.toString() === seasonId
-      )
-
-      const newSeasonPrice = {
-        seasonId,
-        weekdayPrices: weekdayTiers,
-        weekendPrices: weekendTiers,
-        weekdayExtraBedPrice,
-        weekendExtraBedPrice
-      }
-
-      if (existingIndex !== undefined && existingIndex >= 0) {
-        // Update existing
-        property.seasonPrices![existingIndex] = newSeasonPrice
-      } else {
-        // Add new
-        property.seasonPrices = property.seasonPrices || []
-        property.seasonPrices.push(newSeasonPrice)
-      }
-
-      await property.save()
-      revalidatePath('/admin/prices')
-      return { success: true, message: 'Zapisano ceny sezonowe' }
+    if (mode === 'season' && !seasonId) {
+      return { success: false, message: 'Brak ID sezonu' };
     }
+
+    await PropertyPrices.findOneAndUpdate(
+      { propertyId, seasonId: seasonId ?? null },
+      { weekdayPrices, weekendPrices, weekdayExtraBedPrice, weekendExtraBedPrice },
+      { upsert: true, new: true }
+    );
+
+    revalidatePath('/admin/prices');
+    return {
+      success: true,
+      message: mode === 'basic'
+        ? 'Zapisano ceny podstawowe'
+        : 'Zapisano ceny sezonowe',
+    };
   } catch (error) {
-    console.error('Błąd zapisu cen:', error)
-    return { success: false, message: 'Wystąpił błąd podczas zapisu' }
+    console.error('Błąd zapisu cen:', error);
+    return { success: false, message: 'Wystąpił błąd podczas zapisu' };
   }
+}
+
+// Zostawione dla kompatybilności wstecznej (BookingSettingsForm używa updateSeasonPrices)
+export async function updateSeasonPrices(
+  previousState: { message: string; success: boolean },
+  formData: FormData
+) {
+  return updateSeasonPricesForProperty(previousState, formData);
 }

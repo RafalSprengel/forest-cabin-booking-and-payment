@@ -361,7 +361,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
           <h2 className="card-title">Dzieci</h2>
         </div>
         <div className="setting-row">
-          <div className="setting-content"><label htmlFor="childrenFreeAgeLimit" className="setting-label">Wiek dzieci bezpłatnych (do lat):</label></div>
+          <div className="setting-content"><label htmlFor="childrenFreeAgeLimit" className="setting-label">Bezpłatny pobyt dzieci do lat:</label></div>
           <div className="setting-control">
             <input type="number" id="childrenFreeAgeLimit" value={localChildrenFreeAge} onChange={(e) => setLocalChildrenFreeAge(parseInt(e.target.value) || 0)} onBlur={handleBlurChildrenFreeAge} className="number-input" />
           </div>

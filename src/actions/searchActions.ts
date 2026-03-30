@@ -1,6 +1,8 @@
 'use server'
+
 import dbConnect from '@/db/connection';
 import Property from '@/db/models/Property';
+import PropertyPrices from '@/db/models/PropertyPrices';
 import Booking from '@/db/models/Booking';
 import PriceConfig from '@/db/models/PriceConfig';
 import Season, { ISeason } from '@/db/models/Season';
@@ -33,76 +35,79 @@ interface SearchParams {
   extraBeds?: number;
 }
 
+// ─── Pomocnicza funkcja kalkulacji ceny za jedną noc ─────────────────────────
+
 async function getDailyPrice({
   date,
-  config,
-  systemConfig,
   guests,
   extraBeds,
   propertyBaseCapacity,
   customPrices,
   activeSeasons,
-  property
+  basicPrices,
+  seasonPricesMap,
 }: {
   date: dayjs.Dayjs;
-  config: any;
-  systemConfig: any;
   guests: number;
   extraBeds: number;
   propertyBaseCapacity: number;
   customPrices: Map<string, any>;
   activeSeasons: ISeason[];
-  property?: any;
+  basicPrices: any | null;       // rekord PropertyPrices z seasonId: null
+  seasonPricesMap: Map<string, any>; // seasonId (string) → rekord PropertyPrices
 }): Promise<number> {
-  // 1. Check for Individual Price (CustomPrice) - Highest Priority
   const dateKey = date.format('YYYY-MM-DD');
   const customPrice = customPrices.get(dateKey);
 
   const day = date.day();
-  const isWeekend = day === 5 || day === 6;
+  const isWeekend = day === 5 || day === 6; // piątek i sobota
 
+  // 1. CustomPrice
   if (customPrice) {
-    const extraBedPrice = isWeekend ? customPrice.weekendExtraBedPrice : customPrice.weekdayExtraBedPrice;
-    return customPrice.price + (extraBeds * (extraBedPrice ?? 0));
+    const bedPrice = isWeekend
+      ? customPrice.weekendExtraBedPrice
+      : customPrice.weekdayExtraBedPrice;
+    return customPrice.price + extraBeds * (bedPrice ?? 0);
   }
 
-  // 2. Check for Active Season
-  // Find a season that covers this date
-  const activeSeason = activeSeasons.find(s => 
-    date.isSameOrAfter(dayjs(s.startDate), 'day') && 
-    date.isSameOrBefore(dayjs(s.endDate), 'day')
+  // 2. Aktywny sezon
+  const activeSeason = activeSeasons.find(
+    (s) =>
+      date.isSameOrAfter(dayjs(s.startDate), 'day') &&
+      date.isSameOrBefore(dayjs(s.endDate), 'day')
   );
-  
-  let ratesSource;
-  let bedPrice;
+
+  let ratesSource: any[];
+  let bedPrice: number;
 
   if (activeSeason) {
-    ratesSource = isWeekend ? activeSeason.weekendPrices : activeSeason.weekdayPrices;
-    bedPrice = isWeekend ? activeSeason.weekendExtraBedPrice : activeSeason.weekdayExtraBedPrice;
+    const seasonPrices = seasonPricesMap.get(activeSeason._id.toString());
+    if (!seasonPrices) return 0; // brak konfiguracji cen dla tego sezonu → 0
+    ratesSource = isWeekend ? seasonPrices.weekendPrices : seasonPrices.weekdayPrices;
+    bedPrice = isWeekend
+      ? seasonPrices.weekendExtraBedPrice
+      : seasonPrices.weekdayExtraBedPrice;
   } else {
-    // 3. Use Property basicPrices if available, otherwise fallback to config defaults
-    if (property?.basicPrices) {
-      ratesSource = isWeekend ? property.basicPrices.weekendPrices : property.basicPrices.weekdayPrices;
-      bedPrice = isWeekend ? property.basicPrices.weekendExtraBedPrice : property.basicPrices.weekdayExtraBedPrice;
-    } else {
-      // Fallback to global default prices
-      ratesSource = isWeekend ? config.defaultWeekendPrices : config.defaultWeekdayPrices;
-      bedPrice = isWeekend ? config.defaultWeekendExtraBedPrice : config.defaultWeekdayExtraBedPrice;
-    }
+    // 3. Ceny podstawowe
+    if (!basicPrices) return 0;
+    ratesSource = isWeekend ? basicPrices.weekendPrices : basicPrices.weekdayPrices;
+    bedPrice = isWeekend
+      ? basicPrices.weekendExtraBedPrice
+      : basicPrices.weekdayExtraBedPrice;
   }
 
   const guestsForPricing = Math.min(guests, propertyBaseCapacity);
 
-  if (!ratesSource) return 0;
-
-  const tier = ratesSource.find((r: any) =>
-    guestsForPricing >= r.minGuests && guestsForPricing <= r.maxGuests
-  ) || ratesSource[ratesSource.length - 1];
+  const tier =
+    ratesSource.find(
+      (r: any) => guestsForPricing >= r.minGuests && guestsForPricing <= r.maxGuests
+    ) ?? ratesSource[ratesSource.length - 1];
 
   if (!tier) return 0;
-
-  return tier.price + (extraBeds * bedPrice);
+  return tier.price + extraBeds * bedPrice;
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export async function getMaxTotalGuests() {
   try {
@@ -115,12 +120,14 @@ export async function getMaxTotalGuests() {
   }
 }
 
+// ─── Kalkulacja ceny dla pojedynczego domku ───────────────────────────────────
+
 export async function calculateTotalPrice({
   startDate,
   endDate,
   guests,
   extraBeds = 0,
-  propertySelection
+  propertySelection,
 }: {
   startDate: string;
   endDate: string;
@@ -131,28 +138,42 @@ export async function calculateTotalPrice({
   if (!startDate || !endDate || !guests) return 0;
 
   await dbConnect();
-  const [config, property, systemConfig, customPricesDocs, activeSeasons] = await Promise.all([
-    PriceConfig.findById('main'),
-    Property.findById(propertySelection),
-    SystemConfig.findById('main'),
-    CustomPrice.find({
-      propertyId: propertySelection,
-      date: { $gte: dayjs(startDate).toDate(), $lt: dayjs(endDate).toDate() }
-    }),
-    Season.find({
-      isActive: true,
-      startDate: { $lte: dayjs(endDate).toDate() },
-      endDate: { $gte: dayjs(startDate).toDate() }
-    }).sort({ startDate: 1 })
-  ]);
 
-  if (!config || !property) return 0;
+  const [property, customPricesDocs, activeSeasons, allPropertyPrices] =
+    await Promise.all([
+      Property.findById(propertySelection),
+      CustomPrice.find({
+        propertyId: propertySelection,
+        date: {
+          $gte: dayjs(startDate).toDate(),
+          $lt: dayjs(endDate).toDate(),
+        },
+      }),
+      Season.find({
+        isActive: true,
+        startDate: { $lte: dayjs(endDate).toDate() },
+        endDate: { $gte: dayjs(startDate).toDate() },
+      }).sort({ startDate: 1 }),
+      // Jedno zapytanie zamiast embedded lookup w Property
+      PropertyPrices.find({ propertyId: propertySelection }).lean(),
+    ]);
 
-  // Create map for O(1) lookup
-  const customPricesMap = new Map();
-  customPricesDocs.forEach((cp: any) => {
-    customPricesMap.set(dayjs(cp.date).format('YYYY-MM-DD'), cp);
-  });
+  if (!property) return 0;
+
+  // Rozdziel na basicPrices i mapę sezonową
+  const basicPrices =
+    allPropertyPrices.find((p) => p.seasonId === null || p.seasonId === undefined) ??
+    null;
+
+  const seasonPricesMap = new Map<string, any>(
+    allPropertyPrices
+      .filter((p) => p.seasonId != null)
+      .map((p) => [p.seasonId!.toString(), p])
+  );
+
+  const customPricesMap = new Map<string, any>(
+    customPricesDocs.map((cp: any) => [dayjs(cp.date).format('YYYY-MM-DD'), cp])
+  );
 
   let total = 0;
   let currentDate = dayjs(startDate);
@@ -161,14 +182,13 @@ export async function calculateTotalPrice({
   while (currentDate.isBefore(end, 'day')) {
     total += await getDailyPrice({
       date: currentDate,
-      config,
-      systemConfig,
       guests,
       extraBeds,
       propertyBaseCapacity: property.baseCapacity,
       customPrices: customPricesMap,
       activeSeasons: activeSeasons as ISeason[],
-      property
+      basicPrices,
+      seasonPricesMap,
     });
     currentDate = currentDate.add(1, 'day');
   }
@@ -176,11 +196,13 @@ export async function calculateTotalPrice({
   return total;
 }
 
+// ─── Kalkulacja ceny dla całej posesji (wszystkie domki) ─────────────────────
+
 export async function calculateTotalPriceForWhole({
   startDate,
   endDate,
   guests,
-  extraBeds = 0
+  extraBeds = 0,
 }: {
   startDate: string;
   endDate: string;
@@ -190,38 +212,72 @@ export async function calculateTotalPriceForWhole({
   if (!startDate || !endDate || !guests) return 0;
 
   await dbConnect();
-  const [properties, config, systemConfig, allCustomPrices, activeSeasons] = await Promise.all([
-    Property.find({ isActive: true, type: 'single' }).sort({ name: 1 }),
-    PriceConfig.findById('main'),
-    SystemConfig.findById('main'),
+
+  const properties = await Property.find({ isActive: true, type: 'single' }).sort({
+    name: 1,
+  });
+  if (properties.length === 0) return 0;
+
+  const propertyIds = properties.map((p) => p._id);
+
+  const [allCustomPrices, activeSeasons, allPropertyPrices] = await Promise.all([
     CustomPrice.find({
-      date: { $gte: dayjs(startDate).toDate(), $lt: dayjs(endDate).toDate() }
+      propertyId: { $in: propertyIds },
+      date: {
+        $gte: dayjs(startDate).toDate(),
+        $lt: dayjs(endDate).toDate(),
+      },
     }),
     Season.find({
       isActive: true,
       startDate: { $lte: dayjs(endDate).toDate() },
-      endDate: { $gte: dayjs(startDate).toDate() }
-    }).sort({ startDate: 1 })
+      endDate: { $gte: dayjs(startDate).toDate() },
+    }).sort({ startDate: 1 }),
+    // Wszystkie ceny dla wszystkich domków jednym zapytaniem
+    PropertyPrices.find({ propertyId: { $in: propertyIds } }).lean(),
   ]);
 
-  if (properties.length === 0 || !config) return 0;
-
-  // Group custom prices by propertyId -> date -> price
+  // Grupuj custom ceny: propertyId → (date → rekord)
   const propertyCustomPrices = new Map<string, Map<string, any>>();
-  allCustomPrices.forEach((cp: any) => {
+  for (const cp of allCustomPrices as any[]) {
     const pId = cp.propertyId.toString();
     if (!propertyCustomPrices.has(pId)) propertyCustomPrices.set(pId, new Map());
-    propertyCustomPrices.get(pId)?.set(dayjs(cp.date).format('YYYY-MM-DD'), cp);
-  });
+    propertyCustomPrices.get(pId)!.set(dayjs(cp.date).format('YYYY-MM-DD'), cp);
+  }
+
+  // Grupuj PropertyPrices: propertyId → { basicPrices, seasonPricesMap }
+  const propertyPricesIndex = new Map<
+    string,
+    { basicPrices: any | null; seasonPricesMap: Map<string, any> }
+  >();
+  for (const pp of allPropertyPrices) {
+    const pId = pp.propertyId.toString();
+    if (!propertyPricesIndex.has(pId)) {
+      propertyPricesIndex.set(pId, { basicPrices: null, seasonPricesMap: new Map() });
+    }
+    const entry = propertyPricesIndex.get(pId)!;
+    if (pp.seasonId === null || pp.seasonId === undefined) {
+      entry.basicPrices = pp;
+    } else {
+      entry.seasonPricesMap.set(pp.seasonId.toString(), pp);
+    }
+  }
 
   let total = 0;
   let remainingGuests = guests;
   let remainingExtraBeds = extraBeds;
 
   for (const property of properties) {
+    const pId = property._id.toString();
     const guestsForThisCabin = Math.min(remainingGuests, property.baseCapacity);
     const extraBedsForThisCabin = Math.min(remainingExtraBeds, property.maxExtraBeds);
-    const customPricesMap = propertyCustomPrices.get(property._id.toString()) || new Map();
+
+    const priceEntry = propertyPricesIndex.get(pId) ?? {
+      basicPrices: null,
+      seasonPricesMap: new Map(),
+    };
+    const customPricesMap =
+      propertyCustomPrices.get(pId) ?? new Map<string, any>();
 
     let currentDate = dayjs(startDate);
     const end = dayjs(endDate);
@@ -229,14 +285,13 @@ export async function calculateTotalPriceForWhole({
     while (currentDate.isBefore(end, 'day')) {
       total += await getDailyPrice({
         date: currentDate,
-        config,
-        systemConfig,
         guests: guestsForThisCabin,
         extraBeds: extraBedsForThisCabin,
         propertyBaseCapacity: property.baseCapacity,
         customPrices: customPricesMap,
         activeSeasons: activeSeasons as ISeason[],
-        property
+        basicPrices: priceEntry.basicPrices,
+        seasonPricesMap: priceEntry.seasonPricesMap,
       });
       currentDate = currentDate.add(1, 'day');
     }
@@ -248,11 +303,13 @@ export async function calculateTotalPriceForWhole({
   return total;
 }
 
+// ─── Wyszukiwanie dostępności ─────────────────────────────────────────────────
+
 export async function searchAction({
   startDate,
   endDate,
   guests,
-  extraBeds = 0
+  extraBeds = 0,
 }: SearchParams): Promise<SearchOption[]> {
   try {
     await dbConnect();
@@ -263,31 +320,35 @@ export async function searchAction({
     const systemConfig = await SystemConfig.findById('main');
     const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? true;
 
-    const properties = await Property.find({ isActive: true, type: 'single' }).sort({ name: 1 });
+    const properties = await Property.find({ isActive: true, type: 'single' }).sort({
+      name: 1,
+    });
     if (properties.length === 0) return [];
 
     const options: SearchOption[] = [];
 
     const allConflictingBookings = await Booking.find({
-      propertyId: { $in: properties.map(p => p._id) },
+      propertyId: { $in: properties.map((p) => p._id) },
       status: { $in: ['confirmed', 'blocked'] },
       startDate: { $lt: end.toDate() },
-      endDate: { $gt: start.toDate() }
+      endDate: { $gt: start.toDate() },
     });
 
     for (const prop of properties) {
       if (guests > prop.baseCapacity + prop.maxExtraBeds) continue;
 
-      const isAvailable = autoBlockOtherCabins 
-        ? allConflictingBookings.length === 0 
-        : !allConflictingBookings.some(b => b.propertyId.toString() === prop._id.toString());
+      const isAvailable = autoBlockOtherCabins
+        ? allConflictingBookings.length === 0
+        : !allConflictingBookings.some(
+            (b) => b.propertyId.toString() === prop._id.toString()
+          );
 
       const price = await calculateTotalPrice({
         startDate,
         endDate,
         guests,
         extraBeds,
-        propertySelection: prop._id.toString()
+        propertySelection: prop._id.toString(),
       });
 
       options.push({
@@ -296,11 +357,12 @@ export async function searchAction({
         totalPrice: price,
         maxGuests: prop.baseCapacity,
         maxExtraBeds: prop.maxExtraBeds,
-        description: prop.description || "Wynajem pojedynczego domku.",
-        available: isAvailable
+        description: prop.description || 'Wynajem pojedynczego domku.',
+        available: isAvailable,
       });
     }
 
+    // Opcja całej posesji
     const totalGuestsCapacity = properties.reduce((sum, p) => sum + p.baseCapacity, 0);
     const totalExtraCapacity = properties.reduce((sum, p) => sum + p.maxExtraBeds, 0);
 
@@ -312,7 +374,7 @@ export async function searchAction({
           startDate,
           endDate,
           guests,
-          extraBeds
+          extraBeds,
         });
 
         options.push({
@@ -322,7 +384,7 @@ export async function searchAction({
           maxGuests: totalGuestsCapacity,
           maxExtraBeds: totalExtraCapacity,
           description: 'Wynajem całej posesji - wszystkie domki.',
-          available: true
+          available: true,
         });
       }
     }
@@ -333,8 +395,7 @@ export async function searchAction({
       return a.displayName.localeCompare(b.displayName);
     });
   } catch (error) {
-    console.error("Błąd wyszukiwania dostępności:", error);
-    throw new Error("Nie udało się pobrać dostępnych terminów.");
+    console.error('Błąd wyszukiwania dostępności:', error);
+    throw new Error('Nie udało się pobrać dostępnych terminów.');
   }
 }
-
