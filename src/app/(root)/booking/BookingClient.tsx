@@ -304,8 +304,7 @@ export default function BookingClient({
         {!isSearching && searchResults !== null && adults + children === initialAdults + initialChildren && bookingDates.start === initialStart && bookingDates.end === initialEnd && (
           <>
             {(() => {
-              const availableOptions = searchResults.filter(opt => opt.available)
-              if (availableOptions.length === 0) {
+              if (searchResults.length === 0) {
                 return (
                   <div className={styles.emptyState}>
                     <FontAwesomeIcon icon={faExclamationCircle} className={styles.emptyIcon} />
@@ -318,9 +317,9 @@ export default function BookingClient({
               return (
                 <div className={styles.resultsGrid}>
                   <h3 className={styles.resultsTitle}>
-                    Dostępne opcje ({availableOptions.length})
+                    Dostępne opcje ({searchResults.length})
                   </h3>
-                  {availableOptions.map((option) => (
+                  {searchResults.map((option) => (
                     <ResultCard
                       key={option.displayName}
                       option={option}

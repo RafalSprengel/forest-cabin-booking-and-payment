@@ -25,7 +25,6 @@ export interface SearchOption {
   maxGuests: number;
   maxExtraBeds: number;
   description: string;
-  available: boolean;
 }
 
 interface SearchParams {
@@ -310,81 +309,87 @@ export async function searchAction({
   endDate,
   guests,
   extraBeds = 0,
-}: SearchParams): Promise<SearchOption[]> {
+}: SearchParams) {
   try {
     await dbConnect();
-
     const start = dayjs(startDate);
     const end = dayjs(endDate);
 
     const systemConfig = await SystemConfig.findById('main');
     const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? true;
 
-    const properties = await Property.find({ isActive: true, type: 'single' }).sort({
-      name: 1,
+    const occupiedIds = await Booking.distinct('propertyId', {
+      status: { $in: ['confirmed', 'blocked'] },
+      startDate: { $lt: end },
+      endDate: { $gt: start },
     });
-    if (properties.length === 0) return [];
+
+    const isWholeAvailable = occupiedIds.length === 0;
+
+    const availableProperties = await Property.find({
+      isActive: true,
+      type: 'single',
+      _id: { $nin: occupiedIds },
+      baseCapacity: { $gte: guests - extraBeds }
+    }).select('-createdAt -updatedAt').sort({ name: 1 });
+
+    if (availableProperties.length === 0) return [];
+    // console.table(availableProperties.map(e=>e.name))
 
     const options: SearchOption[] = [];
 
-    const allConflictingBookings = await Booking.find({
-      propertyId: { $in: properties.map((p) => p._id) },
-      status: { $in: ['confirmed', 'blocked'] },
-      startDate: { $lt: end.toDate() },
-      endDate: { $gt: start.toDate() },
-    });
+    // const allConflictingBookings = await Booking.find({
+    //   propertyId: { $in: availableProperties.map((p) => p._id) },
+    //   status: { $in: ['confirmed', 'blocked'] },
+    //   startDate: { $lt: end.toDate() },
+    //   endDate: { $gt: start.toDate() },
+    // });
 
-    for (const prop of properties) {
+    for (const prop of availableProperties) {
       if (guests > prop.baseCapacity + prop.maxExtraBeds) continue;
 
-      const isAvailable = autoBlockOtherCabins
-        ? allConflictingBookings.length === 0
-        : !allConflictingBookings.some(
-            (b) => b.propertyId.toString() === prop._id.toString()
-          );
 
-      const price = await calculateTotalPrice({
-        startDate,
-        endDate,
-        guests,
-        extraBeds,
-        propertySelection: prop._id.toString(),
-      });
+
+      //   const price = await calculateTotalPrice({
+      //     startDate,
+      //     endDate,
+      //     guests,
+      //     extraBeds,
+      //     propertySelection: prop._id.toString(),
+      //   });
 
       options.push({
         type: 'single',
         displayName: prop.name,
-        totalPrice: price,
+        totalPrice: 999,
         maxGuests: prop.baseCapacity,
         maxExtraBeds: prop.maxExtraBeds,
         description: prop.description || 'Wynajem pojedynczego domku.',
-        available: isAvailable,
       });
     }
 
     // Opcja całej posesji
-    const totalGuestsCapacity = properties.reduce((sum, p) => sum + p.baseCapacity, 0);
-    const totalExtraCapacity = properties.reduce((sum, p) => sum + p.maxExtraBeds, 0);
+    const totalGuestsCapacity = availableProperties.reduce((sum, p) => sum + p.baseCapacity, 0);
+    const totalExtraCapacity = availableProperties.reduce((sum, p) => sum + p.maxExtraBeds, 0);
 
     if (guests <= totalGuestsCapacity + totalExtraCapacity) {
-      const isWholeAvailable = allConflictingBookings.length === 0;
 
       if (isWholeAvailable) {
-        const price = await calculateTotalPriceForWhole({
-          startDate,
-          endDate,
-          guests,
-          extraBeds,
-        });
+        //     const price = await calculateTotalPriceForWhole({
+        //       startDate,
+        //       endDate,
+        //       guests,
+        //       extraBeds,
+        //     });
+        const wholeProperty = await Property.findOne({ type: 'whole' })
 
         options.push({
           type: 'whole',
-          displayName: 'Cała posesja',
-          totalPrice: price,
+          displayName: wholeProperty.name,
+          totalPrice: 999,
           maxGuests: totalGuestsCapacity,
           maxExtraBeds: totalExtraCapacity,
-          description: 'Wynajem całej posesji - wszystkie domki.',
-          available: true,
+          description: wholeProperty.description
         });
       }
     }
