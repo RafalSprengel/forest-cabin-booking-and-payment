@@ -1,7 +1,7 @@
 'use server'
 
 import dbConnect from '@/db/connection';
-import SystemConfig from '@/db/models/SystemConfig';
+import SystemConfig, { ISystemConfig } from '@/db/models/SystemConfig';
 import { revalidatePath } from 'next/cache';
 
 async function ensureSystemConfigExists() {
@@ -10,6 +10,7 @@ async function ensureSystemConfigExists() {
   const defaultConfig = {
     _id: 'main',
     autoBlockOtherCabins: true,
+    onlyOnePropertyInSearchResult: false,
   };
 
   try {
@@ -25,6 +26,10 @@ async function ensureSystemConfigExists() {
 
     if (typeof existingConfig.autoBlockOtherCabins !== 'boolean') {
       updates.autoBlockOtherCabins = defaultConfig.autoBlockOtherCabins;
+      needsUpdate = true;
+    }
+    if (typeof existingConfig.onlyOnePropertyInSearchResult !== 'boolean') {
+      updates.onlyOnePropertyInSearchResult = defaultConfig.onlyOnePropertyInSearchResult;
       needsUpdate = true;
     }
 
@@ -58,24 +63,32 @@ export async function getSystemConfig() {
   } catch (error) {
     console.error(error);
     return {
-      autoBlockOtherCabins: true
+      autoBlockOtherCabins: true,
+      onlyOnePropertyInSearchResult: false
     };
   }
 }
 
-export async function updateAutoBlockSetting(enabled: boolean): Promise<{ success: boolean; currentValue?: boolean; message: string }> {
+export async function updateSystemConfigSetting(
+  settingKey: keyof ISystemConfig,
+  value: boolean,
+  pathsToRevalidate: string[] = ['/admin/settings', '/booking']
+): Promise<{ success: boolean; currentValue?: boolean; message: string }> {
   try {
     await dbConnect();
     const config = await SystemConfig.findByIdAndUpdate(
       'main',
-      { autoBlockOtherCabins: enabled },
+      { [settingKey]: value },
       { upsert: true, new: true, runValidators: true }
     );
-    revalidatePath('/admin/settings');
+    
+    // Revalidate specified paths
+    pathsToRevalidate.forEach(path => revalidatePath(path));
+    
     return { 
       success: true, 
-      currentValue: config.autoBlockOtherCabins,
-      message: enabled ? "Włączono blokadę." : "Wyłączono blokadę."
+      currentValue: config[settingKey as keyof typeof config],
+      message: value ? "Włączono." : "Wyłączono."
     };
   } catch (error) {
     console.error(error);

@@ -1,5 +1,5 @@
 import { getSystemConfig } from '@/actions/adminConfigActions';
-import ConfigToggle from './ConfigToggleClient';
+import ToggleSwitch from './ToggleSwitchClient';
 import './settings.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 
@@ -23,16 +23,22 @@ export default async function SettingsPage() {
             <p className="setting-description">Gdy ta opcja jest <strong>włączona</strong>, rezerwacja jednego domku automatycznie blokuje wszystkie pozostałe na te same daty (zasada &quot;jedna grupa na terenie&quot;).<br />Gdy <strong>wyłączona</strong>, klienci mogą rezerwować domek niezależnie, mimo że drugi jest już zarezerwowany przez innego klienta.</p>
           </div>
           <div className="setting-control">
-            <ConfigToggle initialEnabled={config.autoBlockOtherCabins} />
+            <ToggleSwitch 
+              initialState={config.autoBlockOtherCabins}
+              settingKey="autoBlockOtherCabins"
+            />
           </div>
         </div>
-         <div className="setting-row">
+        <div className="setting-row">
           <div className="setting-content">
-            <label className="setting-label" htmlFor="auto-block-toggle">Pokaż w wynikach tylko jeden domek na raz</label>
+            <label className="setting-label" htmlFor="only-one-property-toggle">Pokaż w wynikach tylko jeden domek na raz</label>
             <p className="setting-description">Gdy ta opcja jest <strong>włączona</strong>, w wynikach wyszukiwania widoczny jest tylko jeden domek mimo że obydwa mogą być w tym momencie dostępne</p>
           </div>
           <div className="setting-control">
-            <ConfigToggle initialEnabled={config.onlyOnePropertyInSearchResult} />
+            <ToggleSwitch 
+              initialState={config.onlyOnePropertyInSearchResult}
+              settingKey="onlyOnePropertyInSearchResult"
+            />
           </div>
         </div>
       </section>
