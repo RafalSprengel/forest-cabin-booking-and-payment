@@ -156,7 +156,6 @@ export default function BookingClient({
 
   const handleSelectOption = (option: SearchOption, totalPriceWithExtraBeds: number) => {
 
-    //console.log(option, totalPriceWithExtraBeds);
     const extraBeds = extraBedsMap[option.displayName] || 0
     
     const maxCapacity = option.maxGuests + extraBeds;
@@ -189,7 +188,7 @@ export default function BookingClient({
   }
 
   const isSearchDisabled = totalGuests === 0 || !bookingDates.start || !bookingDates.end
-
+console.log(searchResults)
   return (
     <div className={styles.container}>
       {hasDraft && (

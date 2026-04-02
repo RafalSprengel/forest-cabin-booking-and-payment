@@ -34,6 +34,32 @@ interface SearchParams {
   extraBeds?: number;
 }
 
+interface CalculateTotalPriceParams {
+  startDate: string;
+  endDate: string;
+  guests: number;
+  extraBeds?: number;
+  propertySelection: string;
+}
+
+interface CalculateTotalPriceForWholeParams {
+  startDate: string;
+  endDate: string;
+  guests: number;
+  extraBeds?: number;
+}
+
+interface GetDailyPriceParams {
+  date: dayjs.Dayjs;
+  guests: number;
+  extraBeds: number;
+  propertyBaseCapacity: number;
+  customPrices: Map<string, any>;
+  activeSeasons: ISeason[];
+  basicPrices: any | null;
+  seasonPricesMap: Map<string, any>;
+}
+
 // ─── Pomocnicza funkcja kalkulacji ceny za jedną noc ─────────────────────────
 
 async function getDailyPrice({
@@ -45,16 +71,7 @@ async function getDailyPrice({
   activeSeasons,
   basicPrices,
   seasonPricesMap,
-}: {
-  date: dayjs.Dayjs;
-  guests: number;
-  extraBeds: number;
-  propertyBaseCapacity: number;
-  customPrices: Map<string, any>;
-  activeSeasons: ISeason[];
-  basicPrices: any | null;       // rekord PropertyPrices z seasonId: null
-  seasonPricesMap: Map<string, any>; // seasonId (string) → rekord PropertyPrices
-}): Promise<number> {
+}: GetDailyPriceParams): Promise<number> {
   const dateKey = date.format('YYYY-MM-DD');
   const customPrice = customPrices.get(dateKey);
 
@@ -121,19 +138,10 @@ export async function getMaxTotalGuests() {
 
 // ─── Kalkulacja ceny dla pojedynczego domku ───────────────────────────────────
 
-export async function calculateTotalPrice({
-  startDate,
-  endDate,
-  guests,
-  extraBeds = 0,
-  propertySelection,
-}: {
-  startDate: string;
-  endDate: string;
-  guests: number;
-  extraBeds?: number;
-  propertySelection: string;
-}): Promise<number> {
+export async function calculateTotalPrice(
+  params: CalculateTotalPriceParams
+): Promise<number> {
+  const { startDate, endDate, guests, extraBeds = 0, propertySelection } = params;
   if (!startDate || !endDate || !guests) return 0;
 
   await dbConnect();
@@ -197,17 +205,10 @@ export async function calculateTotalPrice({
 
 // ─── Kalkulacja ceny dla całej posesji (wszystkie domki) ─────────────────────
 
-export async function calculateTotalPriceForWhole({
-  startDate,
-  endDate,
-  guests,
-  extraBeds = 0,
-}: {
-  startDate: string;
-  endDate: string;
-  guests: number;
-  extraBeds?: number;
-}): Promise<number> {
+export async function calculateTotalPriceForWhole(
+  params: CalculateTotalPriceForWholeParams
+): Promise<number> {
+  const { startDate, endDate, guests, extraBeds = 0 } = params;
   if (!startDate || !endDate || !guests) return 0;
 
   await dbConnect();
@@ -304,12 +305,8 @@ export async function calculateTotalPriceForWhole({
 
 // ─── Wyszukiwanie dostępności ─────────────────────────────────────────────────
 
-export async function searchAction({
-  startDate,
-  endDate,
-  guests,
-  extraBeds = 0,
-}: SearchParams) {
+export async function searchAction(params: SearchParams) {
+  const { startDate, endDate, guests, extraBeds = 0 } = params;
   try {
     await dbConnect();
     const start = dayjs(startDate);
@@ -348,15 +345,22 @@ export async function searchAction({
     for (const prop of availableProperties) {
       if (guests > prop.baseCapacity + prop.maxExtraBeds) continue;
 
+      console.log('Zmienne wyszukiwania:', {
+        startDate,
+        endDate,
+        guests,
+        extraBeds,
+        propertyName: prop.name,
+        propertyId: prop._id.toString(),
+      });
 
-
-      //   const price = await calculateTotalPrice({
-      //     startDate,
-      //     endDate,
-      //     guests,
-      //     extraBeds,
-      //     propertySelection: prop._id.toString(),
-      //   });
+        const price = await calculateTotalPrice({
+          startDate,
+          endDate,
+          guests,
+          extraBeds,
+          propertySelection: prop._id.toString(),
+        });
 
       options.push({
         type: 'single',
