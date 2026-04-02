@@ -42,3 +42,5 @@ yarn-error.log*
 # --- SYSTEMOWE I TESTY ---
 .DS_Store
 /coverage/
+
+.windsurfrules

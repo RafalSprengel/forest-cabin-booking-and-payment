@@ -345,14 +345,14 @@ export async function searchAction(params: SearchParams) {
     for (const prop of availableProperties) {
       if (guests > prop.baseCapacity + prop.maxExtraBeds) continue;
 
-      console.log('Zmienne wyszukiwania:', {
-        startDate,
-        endDate,
-        guests,
-        extraBeds,
-        propertyName: prop.name,
-        propertyId: prop._id.toString(),
-      });
+      // console.log('Zmienne wyszukiwania:', {
+      //   startDate,
+      //   endDate,
+      //   guests,
+      //   extraBeds,
+      //   propertyName: prop.name,
+      //   propertyId: prop._id.toString(),
+      // });
 
         const price = await calculateTotalPrice({
           startDate,
