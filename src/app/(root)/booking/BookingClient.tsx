@@ -188,7 +188,6 @@ export default function BookingClient({
   }
 
   const isSearchDisabled = totalGuests === 0 || !bookingDates.start || !bookingDates.end
-console.log(searchResults)
   return (
     <div className={styles.container}>
       {hasDraft && (

@@ -157,7 +157,7 @@ export async function getMaxTotalGuests() {
 export async function calculateTotalPrice(
   params: CalculateTotalPriceParams
 ): Promise<number> {
-  const { startDate, endDate, guests, extraBeds = 0, propertySelection } = params;
+  const { startDate, endDate, guests, extraBeds, propertySelection } = params;
   if (!startDate || !endDate || !guests) return 0;
 
   await dbConnect();
@@ -328,8 +328,8 @@ export async function searchAction(params: SearchParams) {
     const start = dayjs(startDate);
     const end = dayjs(endDate);
 
-    const systemConfig = await SystemConfig.findById('main');
-    const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? true;
+    const systemConfig = await SystemConfig.findById('main'); // autoBlockOtherCabins - onlyOnePropertyInSearchResult
+    const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? false;
 
     const occupiedIds = await Booking.distinct('propertyId', {
       status: { $in: ['confirmed', 'blocked'] },
@@ -343,48 +343,40 @@ export async function searchAction(params: SearchParams) {
       isActive: true,
       type: 'single',
       _id: { $nin: occupiedIds },
-      baseCapacity: { $gte: guests - extraBeds }
+      baseCapacity: { $gte: guests - extraBeds } // for now extraBeds is always 0
     }).select('-createdAt -updatedAt').sort({ name: 1 });
 
     if (availableProperties.length === 0) return [];
-    // console.table(availableProperties.map(e=>e.name))
 
     const options: SearchOption[] = [];
 
-    // const allConflictingBookings = await Booking.find({
-    //   propertyId: { $in: availableProperties.map((p) => p._id) },
-    //   status: { $in: ['confirmed', 'blocked'] },
-    //   startDate: { $lt: end.toDate() },
-    //   endDate: { $gt: start.toDate() },
-    // });
-
-    for (const prop of availableProperties) {
-      if (guests > prop.baseCapacity + prop.maxExtraBeds) continue;
+    for (const property of availableProperties) { //loop for each available property
+      if (guests > property.baseCapacity + property.maxExtraBeds) continue;
 
       // console.log('Zmienne wyszukiwania:', {
       //   startDate,
       //   endDate,
       //   guests,
       //   extraBeds,
-      //   propertyName: prop.name,
-      //   propertyId: prop._id.toString(),
+      //   propertyName: property.name,
+      //   propertyId: property._id.toString(),
       // });
 
-        const price = await calculateTotalPrice({
+        const price = await calculateTotalPrice({ //calculate price for single property
           startDate,
           endDate,
           guests,
           extraBeds,
-          propertySelection: prop._id.toString(),
+          propertySelection: property._id.toString(),
         });
 
       options.push({
         type: 'single',
-        displayName: prop.name,
+        displayName: property.name ?? '',
         totalPrice: price,
-        maxGuests: prop.baseCapacity,
-        maxExtraBeds: prop.maxExtraBeds,
-        description: prop.description || 'Wynajem pojedynczego domku.',
+        maxGuests: property.baseCapacity,
+        maxExtraBeds: property.maxExtraBeds,
+        description: property.description ?? '',
       });
     }
 
@@ -395,7 +387,7 @@ export async function searchAction(params: SearchParams) {
     if (guests <= totalGuestsCapacity + totalExtraCapacity) {
 
       if (isWholeAvailable) {
-        const wholeProperty = await Property.findOne({ type: 'whole' });
+        const wholeProperty = await Property.findOne({ type: 'whole' }); //find type of property 'whole' should be only one
         if (wholeProperty) {
           const wholePrice = await calculateTotalPriceForWhole({
             startDate,
@@ -405,7 +397,7 @@ export async function searchAction(params: SearchParams) {
           });
           options.push({
             type: 'whole',
-            displayName: wholeProperty.name,
+            displayName: wholeProperty.name ?? '',
             totalPrice: wholePrice,
             maxGuests: totalGuestsCapacity,
             maxExtraBeds: totalExtraCapacity,
@@ -416,8 +408,8 @@ export async function searchAction(params: SearchParams) {
     }
 
     return options.sort((a, b) => {
-      if (a.type === 'whole') return -1;
-      if (b.type === 'whole') return 1;
+      if (a.type === 'whole') return 1;
+      if (b.type === 'whole') return -1;
       return a.displayName.localeCompare(b.displayName);
     });
   } catch (error) {
