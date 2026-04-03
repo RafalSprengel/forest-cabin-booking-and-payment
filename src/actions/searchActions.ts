@@ -60,6 +60,17 @@ interface GetDailyPriceParams {
   seasonPricesMap: Map<string, any>;
 }
 
+function findPriceTier(
+  tiers: { minGuests: number; maxGuests: number; price: number }[] | undefined,
+  guestCount: number
+): { minGuests: number; maxGuests: number; price: number } | null {
+  if (!tiers?.length) return null;
+  return (
+    tiers.find((r) => guestCount >= r.minGuests && guestCount <= r.maxGuests) ??
+    tiers[tiers.length - 1]
+  );
+}
+
 // ─── Pomocnicza funkcja kalkulacji ceny za jedną noc ─────────────────────────
 
 async function getDailyPrice({
@@ -77,42 +88,47 @@ async function getDailyPrice({
 
   const day = date.day();
   const isWeekend = day === 5 || day === 6; // piątek i sobota
+  const guestsForPricing = Math.min(guests, propertyBaseCapacity);
 
-  // 1. CustomPrice
+  // 1. CustomPrice (schema: tiery weekday/weekend — bez pola `price`)
   if (customPrice) {
-    const bedPrice = isWeekend
-      ? customPrice.weekendExtraBedPrice
-      : customPrice.weekdayExtraBedPrice;
-    return customPrice.price + extraBeds * (bedPrice ?? 0);
+    const tiers = isWeekend ? customPrice.weekendPrices : customPrice.weekdayPrices;
+    const tier = findPriceTier(tiers, guestsForPricing);
+    if (tier) {
+      const bedPrice = isWeekend
+        ? customPrice.weekendExtraBedPrice
+        : customPrice.weekdayExtraBedPrice;
+      return tier.price + extraBeds * (bedPrice ?? 0);
+    }
   }
 
-  // 2. Aktywny sezon
+  // 2. Sezon — tylko gdy data wpada w zakres sezonu I jest wpis PropertyPrices dla tego seasonId
+  // 3. W przeciwnym razie (brak sezonu dla daty albo brak cen sezonowych dla property) → cennik podstawowy
   const activeSeason = activeSeasons.find(
     (s) =>
       date.isSameOrAfter(dayjs(s.startDate), 'day') &&
       date.isSameOrBefore(dayjs(s.endDate), 'day')
   );
 
+  const seasonPrices =
+    activeSeason &&
+    seasonPricesMap.get(String((activeSeason as { _id?: unknown })._id));
+
   let ratesSource: any[];
   let bedPrice: number;
 
-  if (activeSeason) {
-    const seasonPrices = seasonPricesMap.get(activeSeason._id.toString());
-    if (!seasonPrices) return 0; // brak konfiguracji cen dla tego sezonu → 0
+  if (seasonPrices) {
     ratesSource = isWeekend ? seasonPrices.weekendPrices : seasonPrices.weekdayPrices;
     bedPrice = isWeekend
       ? seasonPrices.weekendExtraBedPrice
       : seasonPrices.weekdayExtraBedPrice;
   } else {
-    // 3. Ceny podstawowe
     if (!basicPrices) return 0;
     ratesSource = isWeekend ? basicPrices.weekendPrices : basicPrices.weekdayPrices;
     bedPrice = isWeekend
       ? basicPrices.weekendExtraBedPrice
       : basicPrices.weekdayExtraBedPrice;
   }
-
-  const guestsForPricing = Math.min(guests, propertyBaseCapacity);
 
   const tier =
     ratesSource.find(
@@ -365,7 +381,7 @@ export async function searchAction(params: SearchParams) {
       options.push({
         type: 'single',
         displayName: prop.name,
-        totalPrice: 999,
+        totalPrice: price,
         maxGuests: prop.baseCapacity,
         maxExtraBeds: prop.maxExtraBeds,
         description: prop.description || 'Wynajem pojedynczego domku.',
@@ -379,22 +395,23 @@ export async function searchAction(params: SearchParams) {
     if (guests <= totalGuestsCapacity + totalExtraCapacity) {
 
       if (isWholeAvailable) {
-        //     const price = await calculateTotalPriceForWhole({
-        //       startDate,
-        //       endDate,
-        //       guests,
-        //       extraBeds,
-        //     });
-        const wholeProperty = await Property.findOne({ type: 'whole' })
-
-        options.push({
-          type: 'whole',
-          displayName: wholeProperty.name,
-          totalPrice: 999,
-          maxGuests: totalGuestsCapacity,
-          maxExtraBeds: totalExtraCapacity,
-          description: wholeProperty.description
-        });
+        const wholeProperty = await Property.findOne({ type: 'whole' });
+        if (wholeProperty) {
+          const wholePrice = await calculateTotalPriceForWhole({
+            startDate,
+            endDate,
+            guests,
+            extraBeds,
+          });
+          options.push({
+            type: 'whole',
+            displayName: wholeProperty.name,
+            totalPrice: wholePrice,
+            maxGuests: totalGuestsCapacity,
+            maxExtraBeds: totalExtraCapacity,
+            description: wholeProperty.description ?? '',
+          });
+        }
       }
     }
 
