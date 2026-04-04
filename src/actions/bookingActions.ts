@@ -5,6 +5,7 @@ import Booking from '@/db/models/Booking';
 import Property from '@/db/models/Property';
 import SystemConfig from '@/db/models/SystemConfig';
 import BookingConfig from '@/db/models/BookingConfig';
+import { calculateTotalPrice, calculateTotalPriceForWhole } from '@/actions/searchActions';
 import { Types } from 'mongoose';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -75,9 +76,19 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         return { success: false, error: 'Brak dostępnych domków' };
       }
 
+      const recalculatedWholePrice = await calculateTotalPriceForWhole({
+        startDate,
+        endDate,
+        guests: numberOfGuests,
+        extraBeds,
+      });
+      if (recalculatedWholePrice <= 0) {
+        return { success: false, error: 'Nie udało się poprawnie wyliczyć ceny rezerwacji.' };
+      }
+
       let remainingGuests = numberOfGuests;
       let remainingExtraBeds = extraBeds;
-      const totalPricePerBooking = Number((selectedOption.totalPrice / properties.length).toFixed(2));
+      const totalPricePerBooking = Number((recalculatedWholePrice / properties.length).toFixed(2));
 
       for (let i = 0; i < properties.length; i++) {
         const property = properties[i];
@@ -115,6 +126,17 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         return { success: false, error: 'Nie można znaleźć domku w bazie' };
       }
 
+      const recalculatedSinglePrice = await calculateTotalPrice({
+        startDate,
+        endDate,
+        guests: numberOfGuests,
+        extraBeds,
+        propertySelection: property._id.toString(),
+      });
+      if (recalculatedSinglePrice <= 0) {
+        return { success: false, error: 'Nie udało się poprawnie wyliczyć ceny rezerwacji.' };
+      }
+
       bookings.push({
         propertyId: new Types.ObjectId(property._id.toString()),
         startDate: new Date(startDate),
@@ -125,7 +147,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         guestAddress: guestData.address,
         numberOfGuests,
         extraBedsCount: extraBeds,
-        totalPrice: selectedOption.totalPrice,
+        totalPrice: recalculatedSinglePrice,
         status: 'confirmed',
         invoice: guestData.invoice,
         invoiceData: guestData.invoiceData,

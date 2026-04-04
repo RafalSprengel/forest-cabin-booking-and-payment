@@ -157,8 +157,20 @@ export async function getMaxTotalGuests() {
 export async function calculateTotalPrice(
   params: CalculateTotalPriceParams
 ): Promise<number> {
-  const { startDate, endDate, guests, extraBeds, propertySelection } = params;
-  if (!startDate || !endDate || !guests) return 0;
+  const { startDate, endDate, guests, extraBeds = 0, propertySelection } = params;
+  if (!startDate || !endDate || !propertySelection || guests <= 0) {
+    throw new Error('Nieprawidłowe parametry kalkulacji ceny.');
+  }
+
+  const startValidation = dayjs(startDate);
+  const endValidation = dayjs(endDate);
+  if (
+    !startValidation.isValid() ||
+    !endValidation.isValid() ||
+    !startValidation.isBefore(endValidation, 'day')
+  ) {
+    throw new Error('Nieprawidłowy zakres dat kalkulacji ceny.');
+  }
 
   await dbConnect();
 
@@ -177,22 +189,29 @@ export async function calculateTotalPrice(
         startDate: { $lte: dayjs(endDate).toDate() },
         endDate: { $gte: dayjs(startDate).toDate() },
       }).sort({ startDate: 1 }),
-      // Jedno zapytanie zamiast embedded lookup w Property
+
       PropertyPrices.find({ propertyId: propertySelection }).lean(),
     ]);
 
   if (!property) return 0;
 
   // Rozdziel na basicPrices i mapę sezonową
-  const basicPrices =
-    allPropertyPrices.find((p) => p.seasonId === null || p.seasonId === undefined) ??
-    null;
+  const basicPrices = allPropertyPrices.find(
+    (p) => p.seasonId === null || p.seasonId === undefined
+  );
+
+  if (!basicPrices) {
+    console.error(`Błąd: Brak cennika podstawowego dla domku: ${propertySelection}`);
+    throw new Error('Błąd konfiguracji cen. Prosimy o kontakt z obsługą.');
+  }
 
   const seasonPricesMap = new Map<string, any>(
     allPropertyPrices
       .filter((p) => p.seasonId != null)
       .map((p) => [p.seasonId!.toString(), p])
   );
+
+  console.log(seasonPricesMap);
 
   const customPricesMap = new Map<string, any>(
     customPricesDocs.map((cp: any) => [dayjs(cp.date).format('YYYY-MM-DD'), cp])
@@ -225,7 +244,19 @@ export async function calculateTotalPriceForWhole(
   params: CalculateTotalPriceForWholeParams
 ): Promise<number> {
   const { startDate, endDate, guests, extraBeds = 0 } = params;
-  if (!startDate || !endDate || !guests) return 0;
+  if (!startDate || !endDate || guests <= 0) {
+    throw new Error('Nieprawidłowe parametry kalkulacji ceny dla całej posesji.');
+  }
+
+  const startValidation = dayjs(startDate);
+  const endValidation = dayjs(endDate);
+  if (
+    !startValidation.isValid() ||
+    !endValidation.isValid() ||
+    !startValidation.isBefore(endValidation, 'day')
+  ) {
+    throw new Error('Nieprawidłowy zakres dat kalkulacji ceny dla całej posesji.');
+  }
 
   await dbConnect();
 
@@ -362,13 +393,13 @@ export async function searchAction(params: SearchParams) {
       //   propertyId: property._id.toString(),
       // });
 
-        const price = await calculateTotalPrice({ //calculate price for single property
-          startDate,
-          endDate,
-          guests,
-          extraBeds,
-          propertySelection: property._id.toString(),
-        });
+      const price = await calculateTotalPrice({ //calculate price for single property
+        startDate,
+        endDate,
+        guests,
+        extraBeds,
+        propertySelection: property._id.toString(),
+      });
 
       options.push({
         type: 'single',
