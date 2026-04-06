@@ -844,7 +844,7 @@ export default function PriceSettingsForm({
                   <div key={index} className={styles.tierRowWrapper}>
                   <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
                     <label className={styles.tierField}>
-                      <span className={styles.tierFieldLabel}>Od</span>
+                      <span className={styles.tierFieldLabel}>Osób od</span>
                       <input
                         type="number"
                         min="1"
@@ -863,7 +863,7 @@ export default function PriceSettingsForm({
                       />
                     </label>
                     <label className={styles.tierField}>
-                      <span className={styles.tierFieldLabel}>Do</span>
+                      <span className={styles.tierFieldLabel}>Osób do</span>
                       <input
                         type="number"
                         min="1"
@@ -945,7 +945,7 @@ export default function PriceSettingsForm({
                   <div key={index} className={styles.tierRowWrapper}>
                   <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
                     <label className={styles.tierField}>
-                      <span className={styles.tierFieldLabel}>Od</span>
+                      <span className={styles.tierFieldLabel}>Osób od</span>
                       <input
                         type="number"
                         min="1"
@@ -964,7 +964,7 @@ export default function PriceSettingsForm({
                       />
                     </label>
                     <label className={styles.tierField}>
-                      <span className={styles.tierFieldLabel}>Do</span>
+                      <span className={styles.tierFieldLabel}>Osób do</span>
                       <input
                         type="number"
                         min="1"
@@ -1153,7 +1153,7 @@ export default function PriceSettingsForm({
                         <div key={index} className={styles.tierRowWrapper}>
                           <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
                             <label className={styles.tierField}>
-                              <span className={styles.tierFieldLabel}>Od</span>
+                              <span className={styles.tierFieldLabel}>Osób od</span>
                               <input
                                 type="number"
                                 min="1"
@@ -1171,7 +1171,7 @@ export default function PriceSettingsForm({
                               />
                             </label>
                             <label className={styles.tierField}>
-                              <span className={styles.tierFieldLabel}>Do</span>
+                              <span className={styles.tierFieldLabel}>Osób do</span>
                               <input
                                 type="number"
                                 min="1"
@@ -1246,7 +1246,7 @@ export default function PriceSettingsForm({
                         <div key={index} className={styles.tierRowWrapper}>
                           <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
                             <label className={styles.tierField}>
-                              <span className={styles.tierFieldLabel}>Od</span>
+                              <span className={styles.tierFieldLabel}>Osób od</span>
                               <input
                                 type="number"
                                 min="1"
@@ -1264,7 +1264,7 @@ export default function PriceSettingsForm({
                               />
                             </label>
                             <label className={styles.tierField}>
-                              <span className={styles.tierFieldLabel}>Do</span>
+                              <span className={styles.tierFieldLabel}>Osób do</span>
                               <input
                                 type="number"
                                 min="1"
