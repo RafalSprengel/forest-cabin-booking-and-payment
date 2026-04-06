@@ -223,6 +223,7 @@ export default function PriceSettingsForm({
   const [customWeekendExtraBedPrice, setCustomWeekendExtraBedPrice] = useState<number>(70)
   const [calendarPrices, setCalendarPrices] = useState<Record<string, number>>({})
   const [selectedDateForPrice, setSelectedDateForPrice] = useState<string | null>(null)
+  const [isCustomRangeMode, setIsCustomRangeMode] = useState(true)
   const [customTierErrors, setCustomTierErrors] = useState<{
     weekday: TierValidationError[]
     weekend: TierValidationError[]
@@ -504,6 +505,12 @@ export default function PriceSettingsForm({
     },
     [customPrices]
   )
+
+  useEffect(() => {
+    if (!isCustomRangeMode && bookingDates.start && bookingDates.end) {
+      handleDateSelect({ start: bookingDates.start, end: null, count: 0 })
+    }
+  }, [isCustomRangeMode, bookingDates.start, bookingDates.end, handleDateSelect])
 
   const refreshCustomPrices = async () => {
     const prices = await getCustomPrices(selectedPropertyId)
@@ -1091,6 +1098,14 @@ export default function PriceSettingsForm({
                 Kliknij na dzień w kalendarzu, aby ustawić cenę. Możesz wybrać
                 pojedynczy dzień lub zakres.
               </p>
+              <label className={styles.selectionModeToggle}>
+                <input
+                  type="checkbox"
+                  checked={isCustomRangeMode}
+                  onChange={(e) => setIsCustomRangeMode(e.target.checked)}
+                />
+                Zaznaczaj zakres dat (odznacz = jeden dzień)
+              </label>
             </div>
             <div className="setting-control">
               <div className={styles.calendarWrapper}>
@@ -1099,6 +1114,7 @@ export default function PriceSettingsForm({
                   onDateChange={handleDateSelect}
                   minBookingDays={0}
                   maxBookingDays={365}
+                  isRange={isCustomRangeMode}
                 />
               </div>
               {bookingDates.start && (

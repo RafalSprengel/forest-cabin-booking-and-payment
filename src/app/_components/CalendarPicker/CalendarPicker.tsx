@@ -86,13 +86,15 @@ interface CalendarPickerProps {
   onDateChange: (dates: BookingDates) => void;
   minBookingDays?: number;
   maxBookingDays?: number;
+  isRange?: boolean;
 }
 
 export default function CalendarPicker({
   dates,
   onDateChange,
   minBookingDays = 0,
-  maxBookingDays = 999
+  maxBookingDays = 999,
+  isRange = true,
 }: CalendarPickerProps) {
   const [viewDate, setViewDate] = useState(dayjs());
   const [selectedStart, setSelectedStart] = useState<string | null>(null);
@@ -139,6 +141,13 @@ export default function CalendarPicker({
   const handleDayClick = (date: string, isPast: boolean, available: boolean) => {
     if (isPast || !available) return;
 
+    if (!isRange) {
+      setSelectedStart(date);
+      setSelectedEnd(null);
+      setError(null);
+      return;
+    }
+
     if (!selectedStart || (selectedStart && selectedEnd)) {
       setSelectedStart(date);
       setSelectedEnd(null);
@@ -178,6 +187,13 @@ export default function CalendarPicker({
       }
     }
   };
+
+  useEffect(() => {
+    if (!isRange && selectedEnd) {
+      setSelectedEnd(null);
+    }
+  }, [isRange, selectedEnd]);
+
   useEffect(() => {
     const start = selectedStart;
     const end = selectedEnd;
@@ -210,12 +226,12 @@ export default function CalendarPicker({
           if (day.isBlank) return <div key={day.key} className="day__blank" />;
 
           const isSelectedAsStart = selectedStart === day.dateStr;
-          const isSelectedAsEnd = selectedEnd === day.dateStr;
-          const isSelectedBetween = selectedStart && selectedEnd && 
+          const isSelectedAsEnd = isRange && selectedEnd === day.dateStr;
+          const isSelectedBetween = isRange && selectedStart && selectedEnd && 
                                     dayjs(day.dateStr).isAfter(selectedStart) && 
                                     dayjs(day.dateStr).isBefore(selectedEnd);
           
-          const isHovered = selectedStart && !selectedEnd && hoveredDate &&
+          const isHovered = isRange && selectedStart && !selectedEnd && hoveredDate &&
                             dayjs(day.dateStr).isAfter(selectedStart) && 
                             dayjs(day.dateStr).isBefore(dayjs(hoveredDate).add(1, 'day'));
 
