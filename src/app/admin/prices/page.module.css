@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: 280px;
+  max-width: 560px;
 }
 
 .tierRow {
@@ -11,20 +11,58 @@
   align-items: center;
   gap: 8px;
   background: #f8f9fa;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid #e0e0e0;
 }
 
-.tierRange {
-  font-size: 0.85rem;
+.tierRowWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tierRowError {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.tierField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tierFieldLabel {
+  font-size: 0.72rem;
+  color: #475569;
   font-weight: 600;
-  color: #444;
-  min-width: 70px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tierInput {
+  width: 78px;
+  padding: 6px 8px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.tierInputError {
+  border-color: #ef4444 !important;
+  background: #fff7f7;
+}
+
+.tierErrorText {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.25;
 }
 
 .priceInput {
-  width: 80px;
+  width: 92px;
   padding: 6px 10px;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
@@ -180,13 +218,24 @@
 
 @media (max-width: 768px) {
   .tierRow {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .tierRange {
-    min-width: auto;
+  .tierInput,
+  .priceInput {
     width: 100%;
-    margin-bottom: 4px;
+  }
+
+  .currency {
+    align-self: end;
+    font-size: 0.82rem;
+  }
+
+  .removeTierBtn {
+    justify-self: end;
+    align-self: end;
   }
 
   .priceControl {

@@ -63,6 +63,130 @@ interface Props {
 
 const OFF_SEASON_ID = 'off-season'
 
+type TierField = keyof PriceTier
+
+interface TierValidationError {
+  index: number
+  fields: TierField[]
+  message: string
+}
+
+function normalizeAndValidateTiers(
+  tiers: PriceTier[],
+  label: 'weekday' | 'weekend'
+): {
+  isValid: boolean
+  sorted: PriceTier[]
+  message?: string
+  errors?: TierValidationError[]
+} {
+  if (tiers.length === 0) {
+    return {
+      isValid: false,
+      sorted: [],
+      message:
+        label === 'weekday'
+          ? 'Dodaj przynajmniej jeden przedzial dla dni powszednich.'
+          : 'Dodaj przynajmniej jeden przedzial dla weekendu.',
+    }
+  }
+
+  const sorted = [...tiers].sort((a, b) => a.minGuests - b.minGuests)
+
+  for (let i = 0; i < sorted.length; i += 1) {
+    const tier = sorted[i]
+
+    if (
+      !Number.isInteger(tier.minGuests) ||
+      !Number.isInteger(tier.maxGuests) ||
+      !Number.isInteger(tier.price)
+    ) {
+      return {
+        isValid: false,
+        sorted,
+        message: 'Wszystkie pola przedzialow musza byc liczbami calkowitymi.',
+        errors: [
+          {
+            index: i,
+            fields: ['minGuests', 'maxGuests', 'price'],
+            message: 'Wszystkie pola musza byc liczbami calkowitymi.',
+          },
+        ],
+      }
+    }
+
+    if (tier.minGuests < 1 || tier.maxGuests < 1) {
+      return {
+        isValid: false,
+        sorted,
+        message: 'Zakres gosci musi zaczynac sie od co najmniej 1 osoby.',
+        errors: [
+          {
+            index: i,
+            fields: ['minGuests', 'maxGuests'],
+            message: 'Pole Od i Do musi miec wartosc co najmniej 1.',
+          },
+        ],
+      }
+    }
+
+    if (tier.minGuests > tier.maxGuests) {
+      return {
+        isValid: false,
+        sorted,
+        message: `Nieprawidlowy przedzial: od ${tier.minGuests} do ${tier.maxGuests}.`,
+        errors: [
+          {
+            index: i,
+            fields: ['minGuests', 'maxGuests'],
+            message: 'Wartosc Od nie moze byc wieksza niz Do.',
+          },
+        ],
+      }
+    }
+
+    if (tier.price < 0) {
+      return {
+        isValid: false,
+        sorted,
+        message: 'Cena nie moze byc ujemna.',
+        errors: [
+          {
+            index: i,
+            fields: ['price'],
+            message: 'Cena nie moze byc ujemna.',
+          },
+        ],
+      }
+    }
+
+    if (i > 0) {
+      const prev = sorted[i - 1]
+      if (tier.minGuests <= prev.maxGuests) {
+        return {
+          isValid: false,
+          sorted,
+          message: `Przedzialy nakladaja sie: ${prev.minGuests}-${prev.maxGuests} i ${tier.minGuests}-${tier.maxGuests}.`,
+          errors: [
+            {
+              index: i - 1,
+              fields: ['maxGuests'],
+              message: 'Ten zakres nachodzi na kolejny przedzial.',
+            },
+            {
+              index: i,
+              fields: ['minGuests'],
+              message: 'Ten zakres nachodzi na poprzedni przedzial.',
+            },
+          ],
+        }
+      }
+    }
+  }
+
+  return { isValid: true, sorted }
+}
+
 export default function PriceSettingsForm({
   properties,
   childrenFreeAgeLimit,
@@ -101,6 +225,10 @@ export default function PriceSettingsForm({
     type: 'weekday' | 'weekend' | null
     index: number | null
   }>({ isOpen: false, type: null, index: null })
+  const [tierErrors, setTierErrors] = useState<{
+    weekday: TierValidationError[]
+    weekend: TierValidationError[]
+  }>({ weekday: [], weekend: [] })
 
   // ── Ładuj ceny z PropertyPrices gdy zmieni się domek lub sezon ───────────────
   useEffect(() => {
@@ -150,6 +278,7 @@ export default function PriceSettingsForm({
             setWeekendExtraBedPrice(70)
           }
         }
+        setTierErrors({ weekday: [], weekend: [] })
       } catch (err) {
         console.error('Błąd ładowania cen:', err)
         toast.error('Nie udało się załadować cen')
@@ -194,6 +323,7 @@ export default function PriceSettingsForm({
     value: number
   ) => {
     const setter = type === 'weekend' ? setWeekendTiers : setWeekdayTiers
+    setTierErrors((prev) => ({ ...prev, [type]: [] }))
     setter((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], [field]: value }
@@ -206,11 +336,13 @@ export default function PriceSettingsForm({
     const setter = type === 'weekend' ? setWeekendTiers : setWeekdayTiers
 
     if (tiers.length === 0) {
+      setTierErrors((prev) => ({ ...prev, [type]: [] }))
       setter([{ minGuests: 1, maxGuests: 3, price: type === 'weekend' ? 400 : 300 }])
       return
     }
 
     const last = tiers[tiers.length - 1]
+    setTierErrors((prev) => ({ ...prev, [type]: [] }))
     setter((prev) => [
       ...prev,
       { minGuests: last.maxGuests + 1, maxGuests: last.maxGuests + 2, price: last.price + 100 },
@@ -224,10 +356,14 @@ export default function PriceSettingsForm({
   const confirmRemoveTier = () => {
     if (deleteModal.type && deleteModal.index !== null) {
       const setter = deleteModal.type === 'weekend' ? setWeekendTiers : setWeekdayTiers
+      setTierErrors((prev) => ({ ...prev, [deleteModal.type!]: [] }))
       setter((prev) => prev.filter((_, i) => i !== deleteModal.index))
       setDeleteModal({ isOpen: false, type: null, index: null })
     }
   }
+
+  const getTierError = (type: 'weekday' | 'weekend', index: number) =>
+    tierErrors[type].find((error) => error.index === index)
 
   // ── Zapis cen sezonowych/basic ───────────────────────────────────────────────
 
@@ -237,12 +373,40 @@ export default function PriceSettingsForm({
       return
     }
 
+    const weekdayValidation = normalizeAndValidateTiers(weekdayTiers, 'weekday')
+    if (!weekdayValidation.isValid) {
+      setWeekdayTiers(weekdayValidation.sorted)
+      setTierErrors((prev) => ({
+        ...prev,
+        weekday: weekdayValidation.errors ?? [],
+      }))
+      toast.error(weekdayValidation.message ?? 'Nieprawidlowe przedzialy dla dni powszednich.')
+      return
+    }
+    setTierErrors((prev) => ({ ...prev, weekday: [] }))
+
+    const weekendValidation = normalizeAndValidateTiers(weekendTiers, 'weekend')
+    if (!weekendValidation.isValid) {
+      setWeekendTiers(weekendValidation.sorted)
+      setTierErrors((prev) => ({
+        ...prev,
+        weekend: weekendValidation.errors ?? [],
+      }))
+      toast.error(weekendValidation.message ?? 'Nieprawidlowe przedzialy dla weekendu.')
+      return
+    }
+    setTierErrors((prev) => ({ ...prev, weekend: [] }))
+
+    // Keep UI consistent with what is persisted.
+    setWeekdayTiers(weekdayValidation.sorted)
+    setWeekendTiers(weekendValidation.sorted)
+
     setIsSaving(true)
     try {
       const formData = new FormData()
       formData.append('propertyId', selectedPropertyId)
-      formData.append('weekdayTiers', JSON.stringify(weekdayTiers))
-      formData.append('weekendTiers', JSON.stringify(weekendTiers))
+      formData.append('weekdayTiers', JSON.stringify(weekdayValidation.sorted))
+      formData.append('weekendTiers', JSON.stringify(weekendValidation.sorted))
       formData.append('weekdayExtraBedPrice', weekdayExtraBedPrice.toString())
       formData.append('weekendExtraBedPrice', weekendExtraBedPrice.toString())
 
@@ -468,16 +632,56 @@ export default function PriceSettingsForm({
                 Cena za dobę – Dzień powszedni (nd–czw)
               </label>
               <p className="setting-description">
-                Standardowa stawka obowiązująca od niedzieli do czwartku.
+                Ustaw przedziały: od ilu osób do ilu osób i za jaką cenę.
               </p>
             </div>
             <div className="setting-control">
               <div className={styles.tiersContainer}>
-                {weekdayTiers.map((tier, index) => (
-                  <div key={index} className={styles.tierRow}>
-                    <span className={styles.tierRange}>
-                      {tier.minGuests}–{tier.maxGuests} os.
-                    </span>
+                {weekdayTiers.map((tier, index) => {
+                  const tierError = getTierError('weekday', index)
+                  return (
+                  <div key={index} className={styles.tierRowWrapper}>
+                  <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Od</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={tier.minGuests}
+                        onChange={(e) =>
+                          handleBaseRateChange(
+                            'weekday',
+                            index,
+                            'minGuests',
+                            parseInt(e.target.value, 10) || 1
+                          )
+                        }
+                        className={`${styles.tierInput} ${tierError?.fields.includes('minGuests') ? styles.tierInputError : ''}`}
+                        disabled={isLoadingPrices}
+                      />
+                    </label>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Do</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={tier.maxGuests}
+                        onChange={(e) =>
+                          handleBaseRateChange(
+                            'weekday',
+                            index,
+                            'maxGuests',
+                            parseInt(e.target.value, 10) || 1
+                          )
+                        }
+                        className={`${styles.tierInput} ${tierError?.fields.includes('maxGuests') ? styles.tierInputError : ''}`}
+                        disabled={isLoadingPrices}
+                      />
+                    </label>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Cena</span>
                     <input
                       type="number"
                       min="0"
@@ -491,9 +695,10 @@ export default function PriceSettingsForm({
                           parseInt(e.target.value) || 0
                         )
                       }
-                      className={styles.priceInput}
+                      className={`${styles.priceInput} ${tierError?.fields.includes('price') ? styles.tierInputError : ''}`}
                       disabled={isLoadingPrices}
                     />
+                    </label>
                     <span className={styles.currency}>zł</span>
                     {weekdayTiers.length > 1 && (
                       <button
@@ -506,7 +711,9 @@ export default function PriceSettingsForm({
                       </button>
                     )}
                   </div>
-                ))}
+                  {tierError && <p className={styles.tierErrorText}>{tierError.message}</p>}
+                  </div>
+                )})}
                 <button
                   type="button"
                   onClick={() => addTier('weekday')}
@@ -526,16 +733,56 @@ export default function PriceSettingsForm({
                 Cena za dobę – Weekend (pt–sob)
               </label>
               <p className="setting-description">
-                Podwyższona stawka obowiązująca w piątki i soboty.
+                Ustaw przedziały: od ilu osób do ilu osób i za jaką cenę.
               </p>
             </div>
             <div className="setting-control">
               <div className={styles.tiersContainer}>
-                {weekendTiers.map((tier, index) => (
-                  <div key={index} className={styles.tierRow}>
-                    <span className={styles.tierRange}>
-                      {tier.minGuests}–{tier.maxGuests} os.
-                    </span>
+                {weekendTiers.map((tier, index) => {
+                  const tierError = getTierError('weekend', index)
+                  return (
+                  <div key={index} className={styles.tierRowWrapper}>
+                  <div className={`${styles.tierRow} ${tierError ? styles.tierRowError : ''}`}>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Od</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={tier.minGuests}
+                        onChange={(e) =>
+                          handleBaseRateChange(
+                            'weekend',
+                            index,
+                            'minGuests',
+                            parseInt(e.target.value, 10) || 1
+                          )
+                        }
+                        className={`${styles.tierInput} ${tierError?.fields.includes('minGuests') ? styles.tierInputError : ''}`}
+                        disabled={isLoadingPrices}
+                      />
+                    </label>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Do</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={tier.maxGuests}
+                        onChange={(e) =>
+                          handleBaseRateChange(
+                            'weekend',
+                            index,
+                            'maxGuests',
+                            parseInt(e.target.value, 10) || 1
+                          )
+                        }
+                        className={`${styles.tierInput} ${tierError?.fields.includes('maxGuests') ? styles.tierInputError : ''}`}
+                        disabled={isLoadingPrices}
+                      />
+                    </label>
+                    <label className={styles.tierField}>
+                      <span className={styles.tierFieldLabel}>Cena</span>
                     <input
                       type="number"
                       min="0"
@@ -549,9 +796,10 @@ export default function PriceSettingsForm({
                           parseInt(e.target.value) || 0
                         )
                       }
-                      className={styles.priceInput}
+                      className={`${styles.priceInput} ${tierError?.fields.includes('price') ? styles.tierInputError : ''}`}
                       disabled={isLoadingPrices}
                     />
+                    </label>
                     <span className={styles.currency}>zł</span>
                     {weekendTiers.length > 1 && (
                       <button
@@ -564,7 +812,9 @@ export default function PriceSettingsForm({
                       </button>
                     )}
                   </div>
-                ))}
+                  {tierError && <p className={styles.tierErrorText}>{tierError.message}</p>}
+                  </div>
+                )})}
                 <button
                   type="button"
                   onClick={() => addTier('weekend')}

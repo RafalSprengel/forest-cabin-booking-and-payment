@@ -269,7 +269,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
         <div className="setting-row">
           <div className="setting-content">
             <label className="setting-label">Wybierz sezon:</label>
-            <p className="setting-description">Zmiana sezonu automatycznie zapisuje edytowane dane.</p>
+            <p className="setting-description">Zmiana sezonu automatycznie zapisuje edytowane dane. Daty sezonu działają cyklicznie co roku.</p>
           </div>
           <div className="setting-control">
             <select
@@ -324,12 +324,14 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
               <div className="setting-content"><label className="setting-label">Data rozpoczęcia:</label></div>
               <div className="setting-control">
                 <input type="date" value={seasonStartDate} onChange={(e) => setSeasonStartDate(e.target.value)} className="date-input" />
+                <p className="setting-description">Rok jest ignorowany przy wyliczaniu cen. Liczy się dzień i miesiąc.</p>
               </div>
             </div>
             <div className="setting-row">
               <div className="setting-content"><label className="setting-label">Data zakończenia:</label></div>
               <div className="setting-control">
                 <input type="date" value={seasonEndDate} onChange={(e) => setSeasonEndDate(e.target.value)} className="date-input" />
+                <p className="setting-description">Przykład: 01.07-31.08 będzie aktywne każdego roku.</p>
               </div>
             </div>
           </div>

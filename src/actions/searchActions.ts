@@ -78,6 +78,36 @@ function findPriceTier(
   );
 }
 
+function isDateInRecurringSeason(date: dayjs.Dayjs, season: ISeason): boolean {
+
+  const normalize = (dateInput: Date | string | number): number => {
+
+    console.log(season)
+    const d = new Date(dateInput);
+    if (Number.isNaN(d.getTime())) {
+      throw new Error('Nieprawidlowy format daty');
+    }
+
+    d.setHours(0, 0, 0, 0);
+    d.setFullYear(2000);
+
+    return d.getTime();
+  };
+
+  const check = normalize(date.toDate());
+  const start = normalize(season.startDate);
+  const end = normalize(season.endDate);
+
+  if (start <= end) {
+    const result = check >= start && check <= end;
+    console.log(`Sprawdzanie daty ${date.format('YYYY-MM-DD')} w sezonie ${season.name}: ${result}`);
+    return result;
+  }
+const result = check >= start || check <= end;
+console.log(`Sprawdzanie daty ${date.format('YYYY-MM-DD')} w sezonie ${season.name} (zakres przechodzący przez rok): ${result}`);
+return result;
+}
+
 // ─── Pomocnicza funkcja kalkulacji ceny za jedną noc ─────────────────────────
 
 async function getDailyPrice({
@@ -110,11 +140,7 @@ async function getDailyPrice({
   // 2. Sezon — tylko gdy data wpada w zakres sezonu I jest wpis PropertyPrices dla tego seasonId
   // 3. W przeciwnym razie (brak sezonu dla daty albo brak cen sezonowych dla property) → cennik podstawowy
 
-  const activeSeason = activeSeasons.find(
-    (s) =>
-      date.isSameOrAfter(dayjs(s.startDate), 'day') &&
-      date.isSameOrBefore(dayjs(s.endDate), 'day')
-  );
+  const activeSeason = activeSeasons.find((s) => isDateInRecurringSeason(date, s));
 
   const seasonPrices =
     activeSeason &&
@@ -186,11 +212,7 @@ export async function calculateTotalPrice(
           $lt: dayjs(endDate).toDate(),
         },
       }),
-      Season.find({
-        isActive: true,
-        startDate: { $lte: dayjs(endDate).toDate() },
-        endDate: { $gte: dayjs(startDate).toDate() },
-      }).sort({ startDate: 1 }),
+      Season.find({ isActive: true }).sort({ order: 1, startDate: 1 }),
 
       PropertyPrices.find({ propertyId: propertySelection }).lean(),
     ]);
@@ -278,11 +300,7 @@ export async function calculateTotalPriceForWhole(
         $lt: dayjs(endDate).toDate(),
       },
     }),
-    Season.find({
-      isActive: true,
-      startDate: { $lte: dayjs(endDate).toDate() },
-      endDate: { $gte: dayjs(startDate).toDate() },
-    }).sort({ startDate: 1 }),
+    Season.find({ isActive: true }).sort({ order: 1, startDate: 1 }),
     // Wszystkie ceny dla wszystkich domków jednym zapytaniem
     PropertyPrices.find({ propertyId: { $in: propertyIds } }).lean(),
   ]);

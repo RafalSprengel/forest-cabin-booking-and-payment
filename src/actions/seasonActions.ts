@@ -49,11 +49,29 @@ export async function updateSeasonDates(
 ) {
   try {
     await dbConnect();
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return { success: false, message: 'Nieprawidłowe daty sezonu' };
+    }
+
+    const startMonth = start.getMonth();
+    const startDay = start.getDate();
+    const endMonth = end.getMonth();
+    const endDay = end.getDate();
+
+    // Canonical yearly range: year is ignored in pricing logic.
+    const normalizedStartDate = new Date(2000, startMonth, startDay);
+    const isCrossYear = (endMonth + 1) * 100 + endDay < (startMonth + 1) * 100 + startDay;
+    const normalizedEndDate = new Date(isCrossYear ? 2001 : 2000, endMonth, endDay);
+
     await Season.findByIdAndUpdate(seasonId, {
       name: seasonName,
       description: seasonDesc,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: normalizedStartDate,
+      endDate: normalizedEndDate,
     });
     revalidatePath('/admin/settings/booking');
     return { success: true, message: 'Zaktualizowano daty sezonu' };
