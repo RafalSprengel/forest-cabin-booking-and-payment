@@ -311,7 +311,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
 
   return (
     <>
-      <Toaster position="top-right" />
+      <Toaster position="bottom-center" />
       <form action={formAction} className={styles.settingsCard}>
         <input type="hidden" name="minBookingDays" value={localMinDays} />
         <input type="hidden" name="maxBookingDays" value={localMaxDays} />

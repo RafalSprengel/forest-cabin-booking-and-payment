@@ -753,7 +753,7 @@ export default function PriceSettingsForm({
 
   return (
     <>
-      <Toaster position="bottom-right" />
+      <Toaster position="bottom-center" />
 
       {/* ── Wybór domku ──────────────────────────────────────────────────────── */}
       <form className="settings-card" onSubmit={(e) => e.preventDefault()}>

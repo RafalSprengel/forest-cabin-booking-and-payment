@@ -212,6 +212,7 @@
 .formActionsRow {
   display: flex;
   gap: 10px;
+  justify-content: center;
 }
 
 .dangerButton {
@@ -264,6 +265,10 @@
 }
 
 @media (min-width: 769px) {
+  .formActionsRow {
+    justify-content: flex-start;
+  }
+
   .priceControl {
     flex-direction: row;
     align-items: center;
