@@ -25,14 +25,17 @@ interface SeasonUpdate {
 interface CustomPriceUpdate {
   propertyId: string;
   dates: string[];
-  price: number;
+  weekdayPrices: PriceTier[];
+  weekendPrices: PriceTier[];
   weekdayExtraBedPrice: number;
   weekendExtraBedPrice: number;
 }
 
 export interface CustomPriceEntry {
   date: string;
-  price: number;
+  weekdayPrices: PriceTier[];
+  weekendPrices: PriceTier[];
+  previewPrice: number;
   propertyId: string;
   weekdayExtraBedPrice?: number;
   weekendExtraBedPrice?: number;
@@ -83,7 +86,8 @@ export async function updateCustompriceForDate(data: CustomPriceUpdate) {
         },
         update: {
           $set: {
-            price: data.price,
+            weekdayPrices: data.weekdayPrices,
+            weekendPrices: data.weekendPrices,
             weekdayExtraBedPrice: data.weekdayExtraBedPrice,
             weekendExtraBedPrice: data.weekendExtraBedPrice,
             updatedAt: new Date()
@@ -129,7 +133,13 @@ export async function getCustomPrices(propertyId: string): Promise<CustomPriceEn
 
     return prices.map((p: any) => ({
       date: dayjs(p.date).format('YYYY-MM-DD'),
-      price: p.price,
+      weekdayPrices: p.weekdayPrices ?? [],
+      weekendPrices: p.weekendPrices ?? [],
+      previewPrice:
+        p.weekdayPrices?.[0]?.price ??
+        p.weekendPrices?.[0]?.price ??
+        p.price ??
+        0,
       propertyId: p.propertyId.toString(),
       weekdayExtraBedPrice: p.weekdayExtraBedPrice,
       weekendExtraBedPrice: p.weekendExtraBedPrice

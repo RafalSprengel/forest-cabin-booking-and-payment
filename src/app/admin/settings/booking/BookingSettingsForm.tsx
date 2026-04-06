@@ -46,6 +46,10 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
   const [seasonEndDate, setSeasonEndDate] = useState('');
   const [seasonOrder, setSeasonOrder] = useState<number>(0);
   const [isEditExpanded, setIsEditExpanded] = useState(false);
+  const [seasonDateErrors, setSeasonDateErrors] = useState<{
+    startDate?: string;
+    endDate?: string;
+  }>({});
 
   const isConfigDirty = useMemo(() => {
     return (
@@ -91,6 +95,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     const season = seasons.find(s => s._id === selectedSeasonId);
     setSelectedSeason(season || null);
     if (season) {
+      setSeasonDateErrors({});
       setSeasonName(season.name);
       setSeasonDesc(season.description || '');
       setSeasonStartDate(dayjs(season.startDate).format('YYYY-MM-DD'));
@@ -117,6 +122,8 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     if (!seasonName || !selectedSeasonId || !seasonStartDate || !seasonEndDate) return false;
     if (!isSeasonDirty) return true;
 
+    setSeasonDateErrors({});
+
     setIsUpdatingSeason(true);
     try {
       if (seasonOrder !== selectedSeason?.order) {
@@ -127,10 +134,18 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
       if (result.success) {
         const updatedSeasons = await getAllSeasons();
         setSeasons(updatedSeasons);
+        setSeasonDateErrors({});
         toast.success(`Zapisano zmiany w sezonie: ${seasonName}`);
         setIsEditExpanded(false);
         return true;
       } else {
+        const isDateRangeConflict = result.message.toLowerCase().includes('nakłada');
+        if (isDateRangeConflict) {
+          setSeasonDateErrors({
+            startDate: result.message,
+            endDate: result.message,
+          });
+        }
         toast.error(result.message);
         return false;
       }
@@ -209,6 +224,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
     setLocalCheckInHour(initialConfig.checkInHour);
     setLocalCheckOutHour(initialConfig.checkOutHour);
     if (selectedSeason) {
+      setSeasonDateErrors({});
       setSeasonName(selectedSeason.name);
       setSeasonDesc(selectedSeason.description || '');
       setSeasonStartDate(dayjs(selectedSeason.startDate).format('YYYY-MM-DD'));
@@ -323,14 +339,40 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
             <div className="setting-row">
               <div className="setting-content"><label className="setting-label">Data rozpoczęcia:</label></div>
               <div className="setting-control">
-                <input type="date" value={seasonStartDate} onChange={(e) => setSeasonStartDate(e.target.value)} className="date-input" />
+                <input
+                  type="date"
+                  value={seasonStartDate}
+                  onChange={(e) => {
+                    setSeasonStartDate(e.target.value);
+                    if (seasonDateErrors.startDate || seasonDateErrors.endDate) {
+                      setSeasonDateErrors({});
+                    }
+                  }}
+                  className={`date-input ${seasonDateErrors.startDate ? 'input-error' : ''}`}
+                />
+                {seasonDateErrors.startDate && (
+                  <span className="error-text">{seasonDateErrors.startDate}</span>
+                )}
                 <p className="setting-description">Rok jest ignorowany przy wyliczaniu cen. Liczy się dzień i miesiąc.</p>
               </div>
             </div>
             <div className="setting-row">
               <div className="setting-content"><label className="setting-label">Data zakończenia:</label></div>
               <div className="setting-control">
-                <input type="date" value={seasonEndDate} onChange={(e) => setSeasonEndDate(e.target.value)} className="date-input" />
+                <input
+                  type="date"
+                  value={seasonEndDate}
+                  onChange={(e) => {
+                    setSeasonEndDate(e.target.value);
+                    if (seasonDateErrors.startDate || seasonDateErrors.endDate) {
+                      setSeasonDateErrors({});
+                    }
+                  }}
+                  className={`date-input ${seasonDateErrors.endDate ? 'input-error' : ''}`}
+                />
+                {seasonDateErrors.endDate && (
+                  <span className="error-text">{seasonDateErrors.endDate}</span>
+                )}
                 <p className="setting-description">Przykład: 01.07-31.08 będzie aktywne każdego roku.</p>
               </div>
             </div>

@@ -15,6 +15,41 @@ export interface ISeasonData {
   order: number;
 }
 
+type MonthDaySegment = { start: number; end: number };
+
+function toMonthDayValue(dateLike: Date | string): number {
+  const date = new Date(dateLike);
+  return (date.getMonth() + 1) * 100 + date.getDate();
+}
+
+function formatMonthDay(dateLike: Date | string): string {
+  const date = new Date(dateLike);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}.${month}`;
+}
+
+function toSegments(start: number, end: number): MonthDaySegment[] {
+  if (start <= end) {
+    return [{ start, end }];
+  }
+
+  // Cross-year range (e.g. 12-20 to 01-05).
+  return [
+    { start, end: 1231 },
+    { start: 101, end },
+  ];
+}
+
+function rangesOverlap(
+  rangeA: MonthDaySegment[],
+  rangeB: MonthDaySegment[]
+): boolean {
+  return rangeA.some((a) =>
+    rangeB.some((b) => a.start <= b.end && b.start <= a.end)
+  );
+}
+
 // ── Seasons CRUD ─────────────────────────────────────────────────────────────
 
 export async function getAllSeasons() {
@@ -66,6 +101,30 @@ export async function updateSeasonDates(
     const normalizedStartDate = new Date(2000, startMonth, startDay);
     const isCrossYear = (endMonth + 1) * 100 + endDay < (startMonth + 1) * 100 + startDay;
     const normalizedEndDate = new Date(isCrossYear ? 2001 : 2000, endMonth, endDay);
+
+    const candidateStart = toMonthDayValue(normalizedStartDate);
+    const candidateEnd = toMonthDayValue(normalizedEndDate);
+    const candidateSegments = toSegments(candidateStart, candidateEnd);
+
+    const otherSeasons = await Season.find({ _id: { $ne: seasonId } })
+      .select('name startDate endDate')
+      .lean();
+
+    const overlappingSeason = otherSeasons.find((other) => {
+      const otherStart = toMonthDayValue(other.startDate as Date);
+      const otherEnd = toMonthDayValue(other.endDate as Date);
+      const otherSegments = toSegments(otherStart, otherEnd);
+      return rangesOverlap(candidateSegments, otherSegments);
+    });
+
+    if (overlappingSeason) {
+      const overlapStart = formatMonthDay(overlappingSeason.startDate as Date);
+      const overlapEnd = formatMonthDay(overlappingSeason.endDate as Date);
+      return {
+        success: false,
+        message: `Zakres dat nakłada się na sezon "${overlappingSeason.name}", który jest ustawiony od ${overlapStart} do ${overlapEnd}.`,
+      };
+    }
 
     await Season.findByIdAndUpdate(seasonId, {
       name: seasonName,
