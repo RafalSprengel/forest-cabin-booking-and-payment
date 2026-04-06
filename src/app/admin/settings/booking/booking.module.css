@@ -1,0 +1,407 @@
+:global(:root) {
+    --color-primary: #2c3e50;
+    --color-secondary: #7f8c8d;
+    --color-accent: #3498db;
+    --color-success: #2ecc71;
+    --color-danger: #e74c3c;
+    --color-bg-light: #f8f9fa;
+    --color-border: #eee;
+    --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.adminSettingsContainer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.adminHeader {
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 20px;
+}
+
+.adminTitle {
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin: 0 0 10px 0;
+    line-height: 1.2;
+}
+
+.adminSubtitle {
+    font-size: 1rem;
+    color: var(--color-secondary);
+    margin: 0;
+}
+
+.settingsCard {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 25px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px 20px;
+    background-color: var(--color-bg-light);
+    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.cardTitle {
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.cardHeaderSpaced {
+    margin-top: 20px;
+}
+
+.settingRow {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.settingContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.settingLabel {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--color-primary);
+    word-wrap: break-word;
+    min-width: 200px;
+}
+
+.settingDescription {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+    margin: 0 0 15px 0;
+}
+
+.settingsDateDescription {
+    display: inline-block;
+    width: 100px;
+}
+
+.settingControl {
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    padding-top: 20px;
+}
+
+@media (min-width: 768px) {
+    .adminSettingsContainer {
+        padding: 40px 20px;
+    }
+
+    .adminTitle {
+        font-size: 2rem;
+    }
+
+    .cardHeader {
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+        padding: 20px 25px;
+    }
+
+    .settingRow {
+        padding: 25px;
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .settingControl {
+        width: auto;
+        min-width: 180px;
+        margin-left: auto;
+        padding-left: 20px;
+        padding-top: 0;
+        border-top: none;
+        border-left-color: var(--color-border);
+        align-items: flex-end;
+    }
+}
+
+.numberInput,
+.dateInput {
+    padding: 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 150px;
+}
+
+.seasonSelectFull {
+    width: 100%;
+    padding: 8px;
+}
+
+.seasonDetailsBox {
+    padding: 4px 0 12px;
+}
+
+.seasonDateGrid {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.seasonDateCol {
+    flex: 1;
+}
+
+.settingsEditNameAndDesc {
+    background-color: #f1f1f1;
+    margin-left: 20px;
+    margin-right: 5px;
+    border-radius: 5px;
+}
+
+.settingsEditNameAndDesc input {
+    padding: 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    width: 100%;
+    max-width: 240px;
+}
+
+.btnToggleEdit {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    padding: 0;
+    font-weight: 500;
+}
+
+.toggleWrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .toggleWrapper {
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .seasonDateGrid {
+        flex-direction: row;
+    }
+
+    .seasonDateCol {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+    }
+}
+
+.toggleSwitch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    border: none;
+    border-radius: 34px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s;
+    padding: 0;
+    outline: none;
+    flex-shrink: 0;
+}
+
+.toggleOn {
+    background-color: var(--color-success);
+}
+
+.toggleOff {
+    background-color: #bdc3c7;
+}
+
+.toggleDisabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.toggleKnob {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 26px;
+    height: 26px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.toggleOn .toggleKnob {
+    transform: translateX(26px);
+}
+
+.toggleStatusLabel {
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-height: 1.2em;
+}
+
+.statusActive {
+    color: var(--color-success);
+}
+
+.statusInactive {
+    color: var(--color-secondary);
+}
+
+.btnPrimary {
+    background-color: var(--color-accent, #3498db);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btnPrimary:hover {
+    background-color: #2980b9;
+}
+
+.btnSecondary {
+    background-color: #ecf0f1;
+    color: var(--color-primary);
+    border: 1px solid #bdc3c7;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    margin-top: 10px;
+    width: auto;
+}
+
+.btnSecondary:hover:not(:disabled) {
+    background-color: #bdc3c7;
+}
+
+.btnSecondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.floatingSaveBar {
+    position: fixed;
+    bottom: -100px;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    padding: 15px 20px;
+    z-index: 1000;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 1px solid var(--color-border);
+}
+
+.visible {
+    bottom: 0;
+}
+
+.floatingSaveContent {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+}
+
+.floatingSaveText {
+    margin: 0;
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.floatingSaveActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+}
+
+.floatingSaveActions .btnSecondary {
+    margin-top: 0;
+}
+
+.inputError {
+    border-color: var(--color-danger) !important;
+    background-color: #fff5f5;
+}
+
+.errorText {
+    display: block;
+    color: var(--color-danger);
+    font-size: 0.8rem;
+    margin-top: 4px;
+    font-weight: 500;
+    max-width: 300px;
+}
+
+@media (min-width: 601px) {
+    .floatingSaveContent {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        gap: 20px;
+    }
+
+    .floatingSaveActions {
+        width: auto;
+        justify-content: center;
+    }
+}
