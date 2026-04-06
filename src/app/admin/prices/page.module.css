@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
   max-width: 560px;
 }
 
@@ -71,13 +70,13 @@
 }
 
 .priceInputLarge {
-  width: 100px;
   padding: 8px 12px;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
   font-size: 1.1rem;
   text-align: right;
   font-weight: 600;
+  width: 120px;
 }
 
 .currency {
@@ -130,8 +129,8 @@
 
 .priceControl {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .calendarWrapper {
@@ -141,8 +140,9 @@
 
 .selectedDateInfo {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-top: 10px;
   font-size: 0.9rem;
   color: #444;
@@ -216,41 +216,49 @@
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  .tierRow {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
+.dateInputSelect {
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  background-color: #fff;
+  width: 100%;
+}
 
-  .tierInput,
-  .priceInput {
-    width: 100%;
-  }
+.dateInputSelectWide {
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  background-color: #fff;
+  min-width: 100%;
+}
 
-  .currency {
-    align-self: end;
-    font-size: 0.82rem;
-  }
+.headerSelectControl {
+  margin-left: auto;
+}
 
-  .removeTierBtn {
-    justify-self: end;
-    align-self: end;
+@media (min-width: 900px) {
+  .headerSelectControl {
+    margin-left: 0;
   }
+}
 
+.contextRow {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+@media (min-width: 769px) {
   .priceControl {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .priceInputLarge {
-    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
 
   .selectedDateInfo {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 }

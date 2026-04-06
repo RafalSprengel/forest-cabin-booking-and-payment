@@ -12,7 +12,7 @@
 .admin-settings-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 20px 15px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   width: 100%;
@@ -26,23 +26,23 @@
 }
 
 .admin-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--color-primary);
   margin: 0 0 10px 0;
   line-height: 1.2;
 }
 
 .admin-subtitle {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--color-secondary);
   margin: 0;
 }
 
 .settings-card {
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: var(--shadow-card);
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   border: 1px solid var(--color-border);
   overflow: hidden;
   transition: transform 0.2s ease;
@@ -51,8 +51,9 @@
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 20px 25px;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 15px;
   background-color: var(--color-bg-light);
   border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
@@ -60,7 +61,7 @@
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   margin: 0;
   color: var(--color-primary);
   font-weight: 700;
@@ -75,13 +76,15 @@
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
+  align-self: flex-start;
 }
 
 .setting-row {
-  padding: 25px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-direction: column;
   gap: 20px;
 }
 
@@ -92,16 +95,16 @@
 
 .setting-label {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 10px;
   color: var(--color-primary);
   word-wrap: break-word;
-  min-width: 200px;
+  min-width: 0;
 }
 
 .setting-description {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.6;
   color: #555;
   margin: 0 0 15px 0;
@@ -114,29 +117,25 @@
 }
 
 .setting-control {
+  width: 100%;
   flex-shrink: 0;
   display: flex;
   gap: 10px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 180px;
-  padding-left: 20px;
-  border-left: 1px solid transparent;
-}
-
-
-@media (min-width: 768px) {
-  .setting-control {
-    border-left-color: var(--color-border);
-  }
+  min-width: 0;
+  padding-left: 0;
+  border-left: none;
+  border-top: 1px solid var(--color-border);
+  padding-top: 15px;
 }
 
 .toggle-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
 }
 
@@ -210,9 +209,9 @@
 }
 
 .status-message {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin-top: 8px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 4px;
   text-align: center;
   animation: fadeIn 0.3s ease-in-out;
@@ -250,7 +249,8 @@
   font-size: 0.9rem;
   transition: all 0.2s;
   margin-top: 10px;
-  width: auto;
+  width: 100%;
+  text-align: center;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -316,52 +316,108 @@
   }
 }
 
-@media (min-width: 768px) {
-  .setting-control {
-    border-left-color: var(--color-border);
-    align-items: end;
-  }
-}
-@media (max-width: 768px) {
-  .admin-settings-container {
-    padding: 20px 15px;
-  }
-
+@media (min-width: 481px) {
   .admin-title {
     font-size: 1.75rem;
   }
 
-  .card-header {
-    padding: 15px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+  .admin-subtitle {
+    font-size: 1rem;
   }
 
-  .card-badge {
-    align-self: flex-start;
+  .settings-card {
+    border-radius: 8px;
+    margin-bottom: 25px;
+  }
+
+  .card-header {
+    padding: 15px 20px;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
   }
 
   .setting-row {
     padding: 20px;
-    flex-direction: column;
     gap: 25px;
   }
 
+  .setting-label {
+    font-size: 1.1rem;
+  }
+
+  .setting-description {
+    font-size: 0.95rem;
+  }
+
   .setting-control {
-    width: 100%;
-    padding-left: 0;
-    border-left: none;
-    border-top: 1px solid var(--color-border);
-    padding-top: 20px;
     align-items: flex-start;
+    padding-top: 20px;
   }
 
   .toggle-wrapper {
     align-items: flex-start;
     flex-direction: row;
     justify-content: space-between;
-    width: 100%;
+    gap: 12px;
+  }
+
+  .toggle-status-label {
+    font-size: 0.85rem;
+  }
+
+  .btn-secondary {
+    width: auto;
+    text-align: initial;
+  }
+
+  .status-message {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+}
+
+
+
+@media (min-width: 982px) {
+  .setting-row {
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 769px) {
+  .admin-settings-container {
+    padding: 40px 20px;
+  }
+
+  .admin-title {
+    font-size: 2rem;
+  }
+
+  .card-header {
+    padding: 20px 25px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .setting-row {
+    padding: 25px;
+    gap: 20px;
+  }
+
+  .setting-control {
+    width: auto;
+    min-width: 300px;
+    padding-left: 20px;
+    border-left: 1px solid var(--color-border);
+    border-top: none;
+    padding-top: 0;
+    align-items: end;
+  }
+
+  .setting-label {
+    min-width: 200px;
   }
 }
 
@@ -392,48 +448,6 @@
   border: 1px solid #f5c6cb;
 }
 
-.floating-save-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  border-top: 1px solid var(--color-border);
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.floating-save-bar.visible {
-  max-height: 100px;
-}
-
-.floating-save-content {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  max-width: 900px;
-  justify-content: space-between;
-}
-
-.floating-save-text {
-  margin: 0;
-  color: var(--color-secondary);
-  font-size: 0.95rem;
-  flex: 1;
-}
-
-.floating-save-actions {
-  display: flex;
-  gap: 10px;
-}
-
 .input-error {
   border-color: var(--color-danger) !important;
   background-color: #fff5f5;
@@ -452,69 +466,6 @@
   margin-left: 20px;
   margin-right: 5px;
   border-radius: 5px;
-  ;
-}
-
-@media (max-width: 480px) {
-
-  .admin-title {
-    font-size: 1.5rem;
-  }
-
-  .admin-subtitle {
-    font-size: 0.9rem;
-  }
-
-  .settings-card {
-    border-radius: 6px;
-    margin-bottom: 20px;
-  }
-
-  .card-header {
-    padding: 15px;
-  }
-
-  .card-title {
-    font-size: 1.1rem;
-  }
-
-  .setting-row {
-    padding: 15px;
-    gap: 20px;
-  }
-
-  .setting-label {
-    font-size: 1rem;
-  }
-
-  .setting-description {
-    font-size: 0.9rem;
-  }
-
-  .setting-control {
-    align-items: center;
-    padding-top: 15px;
-  }
-
-  .toggle-wrapper {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .toggle-status-label {
-    font-size: 0.75rem;
-  }
-
-  .btn-secondary {
-    width: 100%;
-    text-align: center;
-  }
-
-  .status-message {
-    font-size: 0.8rem;
-    padding: 6px 10px;
-  }
 }
 
 .season-select-full {
@@ -568,9 +519,11 @@
   max-width: 900px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  text-align: center;
+  gap: 10px;
 }
 
 .floating-save-text {
@@ -583,21 +536,24 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 100%;
+  justify-content: center;
 }
 
 .floating-save-actions .btn-secondary {
   margin-top: 0;
 }
 
-@media (max-width: 600px) {
+@media (min-width: 601px) {
   .floating-save-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    gap: 20px;
   }
 
   .floating-save-actions {
-    width: 100%;
+    width: auto;
     justify-content: center;
   }
 }

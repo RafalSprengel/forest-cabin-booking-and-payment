@@ -769,8 +769,7 @@ export default function PriceSettingsForm({
                 setIsSeasonDirty(false)
                 setIsCustomDirty(false)
               }}
-              className="date-input"
-              style={{ padding: '8px', fontSize: '1rem', minWidth: '200px' }}
+              className={styles.dateInputSelectWide}
             >
               <option value="">-- Wybierz domek --</option>
               {properties.map((prop) => (
@@ -788,12 +787,11 @@ export default function PriceSettingsForm({
         <form className="settings-card" onSubmit={(e) => e.preventDefault()}>
           <div className="card-header">
             <h2 className="card-title">Konfiguracja cen sezonów</h2>
-            <div className="setting-control" style={{ marginLeft: 'auto' }}>
+            <div className={`setting-control ${styles.headerSelectControl}`}>
               <select
                 value={selectedSeasonId}
                 onChange={(e) => setSelectedSeasonId(e.target.value)}
-                className="date-input"
-                style={{ padding: '8px', fontSize: '1rem' }}
+                className={styles.dateInputSelect}
                 disabled={isLoadingPrices}
               >
                 <option value={OFF_SEASON_ID}>🌿 Poza sezonem (ceny bazowe)</option>
@@ -808,8 +806,7 @@ export default function PriceSettingsForm({
 
           {/* Nagłówek kontekstu */}
           <div
-            className="setting-row"
-            style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}
+            className={`setting-row ${styles.contextRow}`}
           >
             <div className="setting-content">
               <strong>
@@ -1362,11 +1359,10 @@ export default function PriceSettingsForm({
                 </div>
               </div>
 
-              <div className="form-actions" style={{ display: 'flex', gap: '10px' }}>
+              <div className={`form-actions ${styles.formActionsRow}`}>
                 <button
                   type="button"
-                  className="btn-primary"
-                  style={{ backgroundColor: '#ef4444', borderColor: '#ef4444' }}
+                  className={`btn-primary ${styles.dangerButton}`}
                   onClick={handleRemoveCustomPrice}
                   disabled={isSaving || isDeletingCustom}
                 >
@@ -1379,7 +1375,7 @@ export default function PriceSettingsForm({
           {/* Lista ustawionych cen indywidualnych */}
           {customPrices.length > 0 && (
             <div className="setting-row">
-              <div className="setting-content" style={{ width: '100%' }}>
+              <div className={`setting-content ${styles.fullWidth}`}>
                 <label className="setting-label">
                   Ustawione ceny indywidualne dla: {selectedProperty?.name}
                 </label>
@@ -1396,14 +1392,8 @@ export default function PriceSettingsForm({
                   {customPrices.length > 10 && (
                     <button
                       type="button"
-                      className={styles.moreItems}
+                      className={`${styles.moreItems} ${styles.moreItemsButton}`}
                       onClick={() => setIsCustomPricesExpanded(!isCustomPricesExpanded)}
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                      }}
                     >
                       {isCustomPricesExpanded
                         ? 'Zwiń'
