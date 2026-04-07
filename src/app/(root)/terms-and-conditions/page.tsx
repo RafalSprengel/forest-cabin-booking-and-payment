@@ -24,6 +24,9 @@ export default async function TermsAndConditionsPage() {
             <strong>Doba trwa</strong> od <span className={styles.highlight}>{checkInHour}:00</span> w dniu przyjazdu do{' '}
             <span className={styles.highlight}>{checkOutHour}:00</span> w dniu wyjazdu.
           </li>
+           <li>
+            W domkach i w chacie biesiadnej <strong> nie palimy </strong>(papierosów ani e-papierosów). Na zewnątrz - jak najbardziej.
+          </li>
           <li>
             W godzinach <span className={styles.highlight}>22:00 – 6:00</span> obowiązuje cisza nocna – las też chce spać{' '}
             <span className={styles.emoji}>🌙.</span>

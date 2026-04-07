@@ -125,14 +125,12 @@ async function getDailyPrice({
   const day = date.day();
   const isWeekend = day === 5 || day === 6; // piątek i sobota
 
-  // 1. CustomPrice (schema: tiery weekday/weekend — bez pola `price`)
+  // 1. CustomPrice (schema: stałe tiery per konkretny dzień)
   if (customPrice) {
-    const tiers = isWeekend ? customPrice.weekendPrices : customPrice.weekdayPrices;
+    const tiers = customPrice.prices;
     const tier = findPriceTier(tiers, baseGuests);
     if (tier) {
-      const bedPrice = isWeekend
-        ? customPrice.weekendExtraBedPrice
-        : customPrice.weekdayExtraBedPrice;
+      const bedPrice = customPrice.extraBedPrice;
       return tier.price + extraBeds * (bedPrice ?? 0);
     }
   }

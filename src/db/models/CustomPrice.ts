@@ -27,10 +27,8 @@ const CustomPriceSchema = new Schema({
     required: true,
     index: true,
   },
-  weekdayPrices: { type: [PriceTierSchema], required: true, default: [] },
-  weekendPrices: { type: [PriceTierSchema], required: true, default: [] },
-  weekdayExtraBedPrice: { type: Number, required: true, min: 0, default: 50 },
-  weekendExtraBedPrice: { type: Number, required: true, min: 0, default: 70 },
+  prices: { type: [PriceTierSchema], required: true, default: [] },
+  extraBedPrice: { type: Number, required: true, min: 0, default: 50 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

@@ -7,7 +7,7 @@ export default function BackButton() {
   const router = useRouter();
   return (
     <button onClick={() => router.back()} className={styles.backButton}>
-      ← Powrót
+      &laquo; Powrót
     </button>
   );
 }

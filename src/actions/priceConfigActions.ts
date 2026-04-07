@@ -25,20 +25,58 @@ interface SeasonUpdate {
 interface CustomPriceUpdate {
   propertyId: string;
   dates: string[];
-  weekdayPrices: PriceTier[];
-  weekendPrices: PriceTier[];
-  weekdayExtraBedPrice: number;
-  weekendExtraBedPrice: number;
+  prices: PriceTier[];
+  extraBedPrice: number;
 }
 
 export interface CustomPriceEntry {
   date: string;
-  weekdayPrices: PriceTier[];
-  weekendPrices: PriceTier[];
+  prices: PriceTier[];
   previewPrice: number;
   propertyId: string;
-  weekdayExtraBedPrice?: number;
-  weekendExtraBedPrice?: number;
+  extraBedPrice?: number;
+}
+
+async function migrateLegacyCustomPrices(propertyId: string) {
+  const docs = await CustomPrice.find({ propertyId }).lean();
+
+  const operations = docs
+    .filter((doc: any) => {
+      const hasNewFields = Array.isArray(doc.prices);
+      const hasLegacyFields = Array.isArray(doc.weekendPrices) || Array.isArray(doc.weekdayPrices);
+      return !hasNewFields && hasLegacyFields;
+    })
+    .map((doc: any) => {
+      const migratedPrices =
+        (Array.isArray(doc.weekendPrices) && doc.weekendPrices.length > 0
+          ? doc.weekendPrices
+          : doc.weekdayPrices) ?? [];
+      const migratedExtraBedPrice =
+        doc.weekendExtraBedPrice ?? doc.weekdayExtraBedPrice ?? 50;
+
+      return {
+        updateOne: {
+          filter: { _id: doc._id },
+          update: {
+            $set: {
+              prices: migratedPrices,
+              extraBedPrice: migratedExtraBedPrice,
+              updatedAt: new Date(),
+            },
+            $unset: {
+              weekdayPrices: '',
+              weekendPrices: '',
+              weekdayExtraBedPrice: '',
+              weekendExtraBedPrice: '',
+            },
+          },
+        },
+      };
+    });
+
+  if (operations.length > 0) {
+    await CustomPrice.bulkWrite(operations);
+  }
 }
 
 export async function updatePriceConfig(prevState: any, formData: FormData) {
@@ -86,12 +124,16 @@ export async function updateCustompriceForDate(data: CustomPriceUpdate) {
         },
         update: {
           $set: {
-            weekdayPrices: data.weekdayPrices,
-            weekendPrices: data.weekendPrices,
-            weekdayExtraBedPrice: data.weekdayExtraBedPrice,
-            weekendExtraBedPrice: data.weekendExtraBedPrice,
+            prices: data.prices,
+            extraBedPrice: data.extraBedPrice,
             updatedAt: new Date()
-          }
+          },
+          $unset: {
+            weekdayPrices: '',
+            weekendPrices: '',
+            weekdayExtraBedPrice: '',
+            weekendExtraBedPrice: '',
+          },
         },
         upsert: true
       }
@@ -129,20 +171,18 @@ export async function deleteCustomPricesForDate(data: { propertyId: string; date
 export async function getCustomPrices(propertyId: string): Promise<CustomPriceEntry[]> {
   try {
     await dbConnect();
+    await migrateLegacyCustomPrices(propertyId);
     const prices = await CustomPrice.find({ propertyId }).sort({ date: 1 }).lean();
 
     return prices.map((p: any) => ({
       date: dayjs(p.date).format('YYYY-MM-DD'),
-      weekdayPrices: p.weekdayPrices ?? [],
-      weekendPrices: p.weekendPrices ?? [],
+      prices: p.prices ?? [],
       previewPrice:
-        p.weekdayPrices?.[0]?.price ??
-        p.weekendPrices?.[0]?.price ??
+        p.prices?.[0]?.price ??
         p.price ??
         0,
       propertyId: p.propertyId.toString(),
-      weekdayExtraBedPrice: p.weekdayExtraBedPrice,
-      weekendExtraBedPrice: p.weekendExtraBedPrice
+      extraBedPrice: p.extraBedPrice,
     }));
   } catch (error) {
     return [];

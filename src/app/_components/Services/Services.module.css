@@ -13,7 +13,8 @@
     color: var(--text-main);
     margin-bottom: 30px;
 }
-.title:after{
+
+.title:after {
     content: '';
     display: block;
     width: 60px;
@@ -106,6 +107,21 @@
     color: #777;
 }
 
+.link {
+    color: var(--accent-color);
+    text-align: center;
+    width: 100%;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .3s;
+    display: block;
+}
+
+.link:hover {
+    color: #1e8449;
+    text-decoration: underline;
+}
+
 .features {
     list-style: none;
     padding: 0;
@@ -122,7 +138,7 @@
         margin-bottom: 50px;
     }
 
-    .introText p{
+    .introText p {
         text-align: justify;
     }
 

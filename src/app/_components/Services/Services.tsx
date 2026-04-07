@@ -152,7 +152,12 @@ export default async function Services() {
                         {childrenFreeAge &&
                             <div className={styles.note}>* Dzieci do {childrenFreeAge} roku życia bezpłatnie.</div>
                         }
-                        <div className={styles.note}>* Cennik obowiązuje poza sezonem wysokim.</div>
+                        <div className={styles.note}>** Cennik obowiązuje poza sezonem wysokim.</div>
+                        <div className={styles.note}>
+                            <a href="/terms-and-conditions" className={styles.link}>
+                                Regulamin obiektu &raquo;
+                            </a>
+                        </div>
                     </div>
 
                     <div className={styles.card}>
