@@ -2,6 +2,7 @@
 import dbConnect from '@/db/connection'
 import Booking from '@/db/models/Booking'
 import SystemConfig from '@/db/models/SystemConfig'
+import Property from '@/db/models/Property'
 import { revalidatePath } from 'next/cache'
 import { calculateTotalPrice, calculateTotalPriceForWhole } from './searchActions'
 import { Types } from 'mongoose'
@@ -13,13 +14,22 @@ interface UnavailableDate {
 export async function getUnavailableDatesForProperty(propertyId: string): Promise<UnavailableDate[]> {
   await dbConnect()
   const config = await SystemConfig.findById('main')
+  const selectedProperty = await Property.findById(propertyId).select('type').lean()
+  const isWholeProperty = selectedProperty?.type === 'whole'
   const autoBlockOtherCabins = config?.autoBlockOtherCabins ?? true
   const query: any = {
     status: { $in: ['confirmed', 'blocked'] }
   }
-  if (!autoBlockOtherCabins) {
+
+  if (isWholeProperty) {
+    const singleProperties = await Property.find({ type: 'single' }).select('_id').lean()
+    const propertyIds = singleProperties.map((property) => property._id)
+    propertyIds.push(new Types.ObjectId(propertyId))
+    query.propertyId = { $in: propertyIds }
+  } else if (!autoBlockOtherCabins) {
     query.propertyId = new Types.ObjectId(propertyId)
   }
+
   const bookings = await Booking.find(query)
     .select('startDate endDate')
     .lean()

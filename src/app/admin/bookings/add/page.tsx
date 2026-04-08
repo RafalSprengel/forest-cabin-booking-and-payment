@@ -4,10 +4,10 @@ import React, { useEffect, useRef, useState, useTransition } from 'react'
 import { useActionState } from 'react'
 import styles from './page.module.css'
 import { createBookingByAdmin, calculatePriceAction, getUnavailableDatesForProperty } from '@/actions/adminBookingActions'
-import { getAllProperties } from '@/actions/adminPropertyActions'
+import { getAllProperties, getWholePropertyCapacity } from '@/actions/adminPropertyActions'
 import { getBookingConfig } from '@/actions/bookingConfigActions'
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
-import CalendarPicker from '@/app/_components/CalendarPicker/CalendarPicker'
+import CalendarPicker, { DatesData } from '@/app/_components/CalendarPicker/CalendarPicker'
 import QuantityPicker from '@/app/_components/QuantityPicker/QuantityPicker'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
@@ -20,12 +20,9 @@ interface BookingDates {
 interface PropertyOption {
   _id: string
   name: string
+  type: 'single' | 'whole'
   baseCapacity: number
   maxExtraBeds: number
-}
-
-interface UnavailableDate {
-  date: string | null
 }
 
 interface InvoiceData {
@@ -53,7 +50,7 @@ export default function AddBookingPage() {
   const [totalPrice, setTotalPrice] = useState(0)
   const [bookingDates, setBookingDates] = useState<BookingDates>({ start: null, end: null, count: 0 })
   const [isCalendarOpen, setCalendarOpen] = useState(false)
-  const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([])
+  const [calendarDates, setCalendarDates] = useState<DatesData>({})
   const calendarRef = useRef<HTMLDivElement>(null)
   const [isCalculating, startPriceCalculation] = useTransition()
   const [wantsInvoice, setWantsInvoice] = useState(false)
@@ -67,21 +64,32 @@ export default function AddBookingPage() {
   const [invoiceErrors, setInvoiceErrors] = useState<Record<string, string>>({})
   const [minBookingDays, setMinBookingDays] = useState(1)
   const [maxBookingDays, setMaxBookingDays] = useState(30)
+  const [wholePropertyCapacity, setWholePropertyCapacity] = useState({ baseCapacity: 0, maxExtraBeds: 0 })
 
   const isDateRangeSelected = !!(bookingDates.start && bookingDates.end)
 
   useEffect(() => {
     const loadInitialData = async () => {
-      const [props, config] = await Promise.all([
+      const [props, config, wholeCapacity] = await Promise.all([
         getAllProperties(),
-        getBookingConfig()
+        getBookingConfig(),
+        getWholePropertyCapacity()
       ]);
       setProperties(props);
       setMinBookingDays(config.minBookingDays);
       setMaxBookingDays(config.maxBookingDays);
+      setWholePropertyCapacity(wholeCapacity);
     };
     loadInitialData();
   }, [])
+
+  const selectedPropertyMaxGuests = selectedProperty?.type === 'whole'
+    ? wholePropertyCapacity.baseCapacity
+    : (selectedProperty?.baseCapacity ?? 12)
+
+  const selectedPropertyMaxExtraBeds = selectedProperty?.type === 'whole'
+    ? wholePropertyCapacity.maxExtraBeds
+    : (selectedProperty?.maxExtraBeds ?? 4)
 
   useEffect(() => {
     if (propertySelection) {
@@ -96,28 +104,32 @@ export default function AddBookingPage() {
 
   useEffect(() => {
     if (selectedProperty) {
-      const maxGuests = selectedProperty.baseCapacity
-      const maxExtraBedsValue = selectedProperty.maxExtraBeds
-      if (numGuests > maxGuests) {
-        setNumGuests(Math.min(2, maxGuests))
+      if (numGuests > selectedPropertyMaxGuests) {
+        setNumGuests(Math.min(2, selectedPropertyMaxGuests))
       }
-      if (extraBeds > maxExtraBedsValue) {
+      if (extraBeds > selectedPropertyMaxExtraBeds) {
         setExtraBeds(0)
       }
     }
-  }, [selectedProperty])
+  }, [selectedProperty, selectedPropertyMaxGuests, selectedPropertyMaxExtraBeds, numGuests, extraBeds])
 
   useEffect(() => {
     const fetchUnavailableDates = async () => {
       if (propertySelection) {
         try {
           const dates = await getUnavailableDatesForProperty(propertySelection)
-          setUnavailableDates(dates)
+          const mappedDates: DatesData = {}
+          dates.forEach((entry) => {
+            if (entry.date) {
+              mappedDates[entry.date] = { available: false }
+            }
+          })
+          setCalendarDates(mappedDates)
         } catch (error) {
           console.error('Failed to fetch unavailable dates:', error)
         }
       } else {
-        setUnavailableDates([])
+        setCalendarDates({})
       }
     }
     fetchUnavailableDates()
@@ -228,8 +240,8 @@ export default function AddBookingPage() {
     return { text: 'Nieopłacone', class: styles.paymentUnpaid }
   }
   const paymentBadge = getPaymentBadge()
-  const maxGuests = selectedProperty ? selectedProperty.baseCapacity : 12
-  const maxExtraBedsValue = selectedProperty ? selectedProperty.maxExtraBeds : 4
+  const maxGuests = selectedPropertyMaxGuests
+  const maxExtraBedsValue = selectedPropertyMaxExtraBeds
 
   return (
     <div className={styles.container}>
@@ -287,7 +299,7 @@ export default function AddBookingPage() {
             {isCalendarOpen && (
               <div ref={calendarRef} className={`${styles.setDate} ${isCalendarOpen ? styles.expandedDate : ''}`}>
                 <CalendarPicker
-                  unavailableDates={unavailableDates}
+                  dates={calendarDates}
                   onDateChange={setBookingDates}
                   minBookingDays={minBookingDays}
                   maxBookingDays={maxBookingDays}

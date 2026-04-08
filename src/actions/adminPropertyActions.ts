@@ -49,6 +49,19 @@ export async function getWholeProperties() {
   return getAllProperties({ type: 'whole' });
 }
 
+export async function getWholePropertyCapacity(): Promise<{ baseCapacity: number; maxExtraBeds: number }> {
+  await dbConnect();
+
+  const singleProperties = await Property.find({ isActive: true, type: 'single' })
+    .select('baseCapacity maxExtraBeds')
+    .lean();
+
+  const baseCapacity = singleProperties.reduce((sum, property: any) => sum + (property.baseCapacity || 0), 0);
+  const maxExtraBeds = singleProperties.reduce((sum, property: any) => sum + (property.maxExtraBeds || 0), 0);
+
+  return { baseCapacity, maxExtraBeds };
+}
+
 export async function getPropertyById(id: string): Promise<PropertyType | null> {
   await dbConnect();
   
