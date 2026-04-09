@@ -36,7 +36,6 @@ interface GuestData {
 }
 
 interface SelectedOption {
-  type: 'cabin';
   displayName: string;
   totalPrice: number;
 }

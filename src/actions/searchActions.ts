@@ -19,7 +19,6 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export interface SearchOption {
-  type: 'cabin';
   displayName: string;
   totalPrice: number;
   maxGuests: number;
@@ -321,7 +320,6 @@ export async function searchAction(params: SearchParams) {
       });
 
       options.push({
-        type: 'cabin',
         displayName: property.name ?? '',
         totalPrice: price,
         maxGuests: property.baseCapacity,

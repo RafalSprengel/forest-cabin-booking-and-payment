@@ -7,7 +7,6 @@ import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBac
 import { createBookingFromDraft } from '@/actions/bookingActions';
 
 interface SelectedOption {
-  type: 'cabin';
   displayName: string;
   totalPrice: number;
   maxGuests: number;

@@ -31,7 +31,6 @@ interface BookingData {
   children: number;
   extraBeds: number;
   selectedOption: {
-    type: 'cabin';
     displayName: string;
     totalPrice: number;
     maxGuests: number;
