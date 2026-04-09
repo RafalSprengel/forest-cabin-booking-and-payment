@@ -6,10 +6,12 @@ import '@/db/models/Season';         // ← potrzebny dla middleware kaskadowego
 import '@/db/models/PriceConfig';
 import '@/db/models/SystemConfig';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  throw new Error(
+    'Please define MONGODB_URI in .env.local (Atlas: mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority, Local: mongodb://127.0.0.1:27017/<db>)'
+  );
 }
 
 let cached = (global as any).mongoose;

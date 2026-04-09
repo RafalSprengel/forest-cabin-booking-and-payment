@@ -72,3 +72,11 @@ What this seed does:
 - Creates missing base and seasonal PropertyPrices records for each cabin.
 
 This command does not clear existing collections.
+
+If you need a full destructive reset (development only):
+
+```bash
+npm run seed:reset
+```
+
+This command clears core collections and seeds sample data from scratch.

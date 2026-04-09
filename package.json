@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "seed:initial": "tsx src/scripts/seedInitialData.ts",
+    "seed:reset": "tsx src/scripts/seedResetData.ts",
     "lint": "biome check",
     "format": "biome format --write"
   },
