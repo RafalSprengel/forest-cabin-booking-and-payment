@@ -7,8 +7,6 @@ import styles from './page.module.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBed } from '@fortawesome/free-solid-svg-icons'
 
-const EXTRA_BED_PRICE = 50
-
 interface ResultCardProps {
   option: SearchOption
   extraBeds: number
@@ -22,7 +20,7 @@ export default function ResultCard({
   onExtraBedsChange,
   onSelect
 }: ResultCardProps) {
-  const totalPriceWithExtraBeds = option.totalPrice + (extraBeds * EXTRA_BED_PRICE)
+  const totalPriceWithExtraBeds = option.totalPrice + (extraBeds * option.extraBedPrice)
 
   return (
     <div className={styles.resultCard}>
@@ -55,7 +53,7 @@ export default function ResultCard({
             min={0}
             max={option.maxExtraBeds}
           />
-          <span className={styles.extraBedsPrice}>+{extraBeds * EXTRA_BED_PRICE} zł</span>
+          <span className={styles.extraBedsPrice}>+{extraBeds * option.extraBedPrice} zł</span>
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
+import { SITE_CONFIG } from '@/config/site';
 
 export default function BookingFailPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function BookingFailPage() {
             💳 Sprawdź czy dane karty są poprawne
           </p>
           <p className={styles.infoText}>
-            📞 W razie problemów: <a href="tel:+48503420551" className={styles.phoneLink}>+48 503 420 551</a>
+            📞 W razie problemów: <a href={`tel:${SITE_CONFIG.phoneHref}`} className={styles.phoneLink}>{SITE_CONFIG.phoneDisplay}</a>
           </p>
         </div>
         

@@ -4,7 +4,8 @@ import { useForm } from '@formspree/react';
 import styles from './ContactForm.module.css';
 
 export default function ContactForm() {
-  const [state, handleSubmit] = useForm("mgokvlpj");
+  const formId = process.env.NEXT_PUBLIC_FORMSPREE_ID || '';
+  const [state, handleSubmit] = useForm(formId);
   
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [touched, setTouched] = useState({ name: false, email: false, message: false });
@@ -36,6 +37,14 @@ export default function ContactForm() {
         <button onClick={() => window.location.reload()} className={styles.submitBtn}>
           Wyślij kolejną wiadomość
         </button>
+      </div>
+    );
+  }
+
+  if (!formId) {
+    return (
+      <div className={styles.formContainer}>
+        <p className={styles.errorMessage}>Formularz kontaktowy jest chwilowo niedostepny.</p>
       </div>
     );
   }

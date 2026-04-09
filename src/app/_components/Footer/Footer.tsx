@@ -1,9 +1,9 @@
 import styles from './Footer.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook } from '@fortawesome/free-brands-svg-icons';   
 import Image from 'next/image';
-import Link from 'next/link';
+import { SITE_CONFIG } from '@/config/site';
 
 export default function Footer() {
   return (
@@ -23,7 +23,7 @@ export default function Footer() {
           <div className={styles.contact}>
             <p>
               <FontAwesomeIcon icon={faPhone} color={'#c9b363'}/> 
-              <a href="tel:+48503420551" className={styles.footerContactLink}>+48 503 420 551</a>
+              <a href={`tel:${SITE_CONFIG.phoneHref}`} className={styles.footerContactLink}>{SITE_CONFIG.phoneDisplay}</a>
             </p>
             {/* <p>
               <FontAwesomeIcon icon={faEnvelope} /> kontakt@wilczechatki.pl
@@ -34,7 +34,7 @@ export default function Footer() {
 
         <div className={styles.social}>
           <a
-            href="https://facebook.com/profile.php?id=61584455637648"
+            href={SITE_CONFIG.facebookUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Facebook"

@@ -56,3 +56,19 @@ The application serves as an information hub for two rental cabins. It provides 
 1. Clone the repository:
    ```bash
    git clone https://github.com/username/repository-name.git
+
+## Initial Database Seed
+
+After setting MONGODB_URI in your environment, run a non-destructive initial seed:
+
+```bash
+npm run seed:initial
+```
+
+What this seed does:
+- Creates missing system and booking configuration documents.
+- Creates default seasons if they do not exist.
+- Creates default cabins if they do not exist.
+- Creates missing base and seasonal PropertyPrices records for each cabin.
+
+This command does not clear existing collections.

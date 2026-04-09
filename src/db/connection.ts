@@ -23,7 +23,7 @@ async function dbConnect() {
 
   if (!cached.promise) {
     cached.promise = mongoose
-      .connect(MONGODB_URI, { dbName: 'wilczechatki' })
+      .connect(MONGODB_URI)
       .then((m) => m);
   }
   cached.conn = await cached.promise;

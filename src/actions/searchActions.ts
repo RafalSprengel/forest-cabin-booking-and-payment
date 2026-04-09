@@ -21,6 +21,7 @@ dayjs.extend(isSameOrAfter);
 export interface SearchOption {
   displayName: string;
   totalPrice: number;
+  extraBedPrice: number;
   maxGuests: number;
   maxExtraBeds: number;
   description: string;
@@ -319,9 +320,23 @@ export async function searchAction(params: SearchParams) {
         propertySelection: property._id.toString(),
       });
 
+      const extraBedPrice = property.maxExtraBeds > extraBeds
+        ? Math.max(
+            0,
+            (await calculateTotalPrice({
+              startDate,
+              endDate,
+              baseGuests,
+              extraBeds: extraBeds + 1,
+              propertySelection: property._id.toString(),
+            })) - price
+          )
+        : 0;
+
       options.push({
         displayName: property.name ?? '',
         totalPrice: price,
+        extraBedPrice,
         maxGuests: property.baseCapacity,
         maxExtraBeds: property.maxExtraBeds,
         description: property.description ?? '',

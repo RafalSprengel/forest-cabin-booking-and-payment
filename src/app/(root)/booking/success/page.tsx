@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
+import { SITE_CONFIG } from '@/config/site';
 
 export default function BookingSuccessPage() {
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function BookingSuccessPage() {
             Sprawdź skrzynkę odbiorczą (oraz folder SPAM)
           </p>
           <p className={styles.infoText}>
-            W razie pytań: <a href="tel:+48503420551" className={styles.phoneLink}>+48 503 420 551</a>
+            W razie pytań: <a href={`tel:${SITE_CONFIG.phoneHref}`} className={styles.phoneLink}>{SITE_CONFIG.phoneDisplay}</a>
           </p>
         </div>
         
