@@ -288,7 +288,7 @@ export default function BookingClient({
           </div>
         )}
 
-        {(adults + children !== initialAdults + initialChildren || bookingDates.start !== initialStart || bookingDates.end !== initialEnd) && searchResults.propertiesAvailable !== null && (
+        {(adults + children !== initialAdults + initialChildren || bookingDates.start !== initialStart || bookingDates.end !== initialEnd) && searchResults && searchResults.propertiesAvailable !== null && (
           <div className={styles.emptyState}>
             {adults + children !== initialAdults + initialChildren && (
               <p>Zmieniłeś liczbę osób z {initialAdults + initialChildren} na {adults + children}.</p>
@@ -300,10 +300,10 @@ export default function BookingClient({
           </div>
         )}
 
-        {!isSearching && searchResults.propertiesAvailable !== null && adults + children === initialAdults + initialChildren && bookingDates.start === initialStart && bookingDates.end === initialEnd && (
+        {!isSearching && searchResults && searchResults.propertiesAvailable !== null && adults + children === initialAdults + initialChildren && bookingDates.start === initialStart && bookingDates.end === initialEnd && (
           <>
             {(() => {
-              if (searchResults.propertiesAvailable.length === 0) {
+              if (searchResults?.propertiesAvailable.length === 0) {
                 return (
                   <div className={styles.emptyState}>
                     <FontAwesomeIcon icon={faExclamationCircle} className={styles.emptyIcon} />
