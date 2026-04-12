@@ -1,6 +1,7 @@
 'use server'
 import dbConnect from '@/db/connection'
 import Booking from '@/db/models/Booking'
+import Property from '@/db/models/Property'
 import SystemConfig from '@/db/models/SystemConfig'
 import { revalidatePath } from 'next/cache'
 import { calculateTotalPrice } from './searchActions'
@@ -9,6 +10,25 @@ import { Types } from 'mongoose'
 interface UnavailableDate {
   date: string | null
 }
+
+interface BlockCreateInput {
+  propertyId: string
+  startDate: string
+  endDate: string
+  adminNotes?: string
+}
+
+interface BlockedBookingListItem {
+  _id: string
+  propertyId: string
+  propertyName: string
+  startDate: string
+  endDate: string
+  adminNotes: string
+  createdAt: string
+}
+
+const ALL_PROPERTIES_ID = 'ALL_PROPERTIES'
 
 export async function getUnavailableDatesForProperty(propertyId: string): Promise<UnavailableDate[]> {
   await dbConnect()
@@ -240,4 +260,182 @@ export async function calculatePriceAction(
     console.error('Błąd podczas obliczania ceny:', error)
     return { price: 0 }
   }
+}
+
+export async function getUnavailableDatesForBlocking(propertyId: string): Promise<UnavailableDate[]> {
+  await dbConnect()
+
+  if (!propertyId) return []
+
+  const query: any = {
+    status: { $in: ['confirmed', 'blocked'] }
+  }
+
+  if (propertyId !== ALL_PROPERTIES_ID) {
+    if (!Types.ObjectId.isValid(propertyId)) return []
+    query.propertyId = new Types.ObjectId(propertyId)
+  }
+
+  const bookings = await Booking.find(query)
+    .select('startDate endDate')
+    .lean()
+
+  const unavailableDates = new Set<string>()
+
+  for (const booking of bookings) {
+    const start = new Date(booking.startDate)
+    const end = new Date(booking.endDate)
+    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+      unavailableDates.add(d.toISOString().split('T')[0])
+    }
+  }
+
+  return Array.from(unavailableDates)
+    .map(date => ({ date }))
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+}
+
+export async function getBlockedBookings(propertyId?: string): Promise<BlockedBookingListItem[]> {
+  await dbConnect()
+
+  const query: any = { status: 'blocked' }
+  if (propertyId && propertyId !== ALL_PROPERTIES_ID && Types.ObjectId.isValid(propertyId)) {
+    query.propertyId = new Types.ObjectId(propertyId)
+  }
+
+  const bookings = await Booking.find(query)
+    .sort({ startDate: 1, createdAt: -1 })
+    .populate('propertyId', 'name')
+    .lean()
+
+  return bookings.map((booking: any) => ({
+    _id: String(booking._id),
+    propertyId: booking.propertyId?._id ? String(booking.propertyId._id) : String(booking.propertyId || ''),
+    propertyName: booking.propertyId?.name || 'Domek',
+    startDate: new Date(booking.startDate).toISOString(),
+    endDate: new Date(booking.endDate).toISOString(),
+    adminNotes: booking.adminNotes || '',
+    createdAt: booking.createdAt ? new Date(booking.createdAt).toISOString() : new Date().toISOString(),
+  }))
+}
+
+export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
+  await dbConnect()
+
+  if (!data.propertyId || !data.startDate || !data.endDate) {
+    return { success: false, message: 'Wybierz domek oraz zakres dat.' }
+  }
+
+  const startDate = new Date(data.startDate)
+  const endDate = new Date(data.endDate)
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return { success: false, message: 'Nieprawidłowy zakres dat.' }
+  }
+
+  if (endDate <= startDate) {
+    return { success: false, message: 'Data końca blokady musi być późniejsza niż data początku.' }
+  }
+
+  let targetProperties: Array<{ _id: Types.ObjectId; name: string }> = []
+
+  if (data.propertyId === ALL_PROPERTIES_ID) {
+    const properties = await Property
+      .find({ isActive: true })
+      .select('name')
+      .lean()
+
+    targetProperties = properties.map((p: any) => ({ _id: p._id, name: p.name || 'Domek' }))
+  } else {
+    if (!Types.ObjectId.isValid(data.propertyId)) {
+      return { success: false, message: 'Nieprawidłowy domek.' }
+    }
+
+    const property = await Property
+      .findById(data.propertyId)
+      .select('name')
+      .lean()
+
+    if (!property) {
+      return { success: false, message: 'Nie znaleziono wybranego domku.' }
+    }
+
+    targetProperties = [{ _id: property._id, name: property.name || 'Domek' }]
+  }
+
+  if (targetProperties.length === 0) {
+    return { success: false, message: 'Brak domków do zablokowania.' }
+  }
+
+  const conflictedProperties: string[] = []
+
+  for (const property of targetProperties) {
+    const conflict = await Booking.findOne({
+      propertyId: property._id,
+      status: { $in: ['confirmed', 'blocked'] },
+      startDate: { $lt: endDate },
+      endDate: { $gt: startDate },
+    }).select('_id').lean()
+
+    if (conflict) conflictedProperties.push(property.name)
+  }
+
+  if (conflictedProperties.length > 0) {
+    return {
+      success: false,
+      message: `Zakres koliduje z istniejącą rezerwacją/blokadą: ${conflictedProperties.join(', ')}`,
+    }
+  }
+
+  const docs = targetProperties.map((property) => ({
+    propertyId: property._id,
+    startDate,
+    endDate,
+    guestName: 'Zabl. przez admina',
+    guestEmail: 'blokada@admin.local',
+    guestPhone: '-',
+    numberOfGuests: 0,
+    extraBedsCount: 0,
+    totalPrice: 0,
+    paidAmount: 0,
+    status: 'blocked',
+    adminNotes: data.adminNotes?.trim() || 'Blokada terminu',
+    source: 'admin',
+  }))
+
+  await Booking.insertMany(docs)
+
+  revalidatePath('/admin/bookings/block')
+  revalidatePath('/admin/bookings/calendar')
+  revalidatePath('/admin/bookings/list')
+
+  return {
+    success: true,
+    message: targetProperties.length === 1
+      ? 'Termin został zablokowany.'
+      : `Terminy zostały zablokowane dla ${targetProperties.length} domków.`,
+  }
+}
+
+export async function deleteBlockedBookingByAdmin(bookingId: string) {
+  await dbConnect()
+
+  if (!Types.ObjectId.isValid(bookingId)) {
+    return { success: false, message: 'Nieprawidłowe ID blokady.' }
+  }
+
+  const deleted = await Booking.findOneAndDelete({
+    _id: new Types.ObjectId(bookingId),
+    status: 'blocked',
+  })
+
+  if (!deleted) {
+    return { success: false, message: 'Nie znaleziono blokady do usunięcia.' }
+  }
+
+  revalidatePath('/admin/bookings/block')
+  revalidatePath('/admin/bookings/calendar')
+  revalidatePath('/admin/bookings/list')
+
+  return { success: true, message: 'Blokada została usunięta.' }
 }

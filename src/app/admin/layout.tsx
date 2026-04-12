@@ -105,6 +105,13 @@ export default function AdminLayout({
                 >
                   📋 Lista Rezerwacji
                 </Link>
+                <Link
+                  href="/admin/bookings/block"
+                  className={`${styles.subLink} ${pathname === '/admin/bookings/block' ? styles.active : ''}`}
+                  onClick={handleMenuLinkClick}
+                >
+                  🚫 Blokuj terminy
+                </Link>
               </div>
             </div>
 

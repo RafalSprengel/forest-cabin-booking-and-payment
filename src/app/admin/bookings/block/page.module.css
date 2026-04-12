@@ -1,0 +1,126 @@
+.selectInput {
+  width: 100%;
+  max-width: 520px;
+  padding: 10px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.loadingHint {
+  width: 100%;
+  color: #64748b;
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.rangePreview {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.notesInput {
+  width: 100%;
+  max-width: 520px;
+  min-height: 90px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.actionsRow {
+  padding: 0 15px 15px;
+}
+
+.successMsg,
+.errorMsg {
+  margin: 0 15px 15px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+
+.successMsg {
+  color: #14532d;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.errorMsg {
+  color: #7f1d1d;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+.emptyState {
+  padding: 18px 15px;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.blockList {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+}
+
+.blockItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+}
+
+.blockMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #1f2937;
+}
+
+.blockMeta span {
+  font-size: 0.9rem;
+}
+
+.blockMeta small {
+  color: #64748b;
+}
+
+.deleteBtn {
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  background: #fff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+@media (max-width: 720px) {
+  .blockItem {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deleteBtn {
+    width: 100%;
+  }
+}

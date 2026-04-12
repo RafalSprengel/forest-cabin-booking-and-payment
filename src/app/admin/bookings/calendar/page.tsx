@@ -18,6 +18,27 @@ const MONTH_NAMES = [
 
 const BookingTooltip = ({ details }: { details: BookingDetails }) => {
   if (!details) return null
+  const isAdminBlocked = details.status === 'blocked' && details.source === 'admin' && details.guestName === 'Zabl. przez admina'
+
+  if (isAdminBlocked) {
+    return (
+      <div className={styles.tooltip}>
+        <div className={styles.tooltipHeader}>
+          <h4 className={styles.guestNameText}>Zabl. przez admina</h4>
+          <span className={styles.badge}>ZABLOKOWANA</span>
+        </div>
+        <div className={styles.tooltipRow}>
+          <span className={styles.label}>🗓️ Termin:</span>
+          <span className={styles.valueText}>{details.startDate} do {details.endDate}</span>
+        </div>
+        <div className={styles.tooltipRow}>
+          <span className={styles.label}>📝 Notatka:</span>
+          <span className={styles.valueText}>{details.adminNotes?.trim() || '-'}</span>
+        </div>
+      </div>
+    )
+  }
+
   const isPaid = details.paidAmount >= details.totalPrice && details.totalPrice > 0
   const isDeposit = details.paidAmount > 0 && !isPaid
   const paymentClass = isPaid ? styles.paymentPaid : isDeposit ? styles.paymentDeposit : styles.paymentUnpaid
@@ -143,7 +164,7 @@ export default function Calendar() {
                     if (cell.status === 'booked' || cell.status === 'blocked_sys') {
                       return (
                         <td key={cabin.id} className={styles.cell} style={{ backgroundColor: isPast ? '#f5f5f5' : cell.details?.color }}>
-                          <span className={styles.statusText}>{cell.status === 'booked' ? 'Zajęty' : 'Zabl.'}</span>
+                          <span className={styles.statusText}>{cell.status === 'booked' ? 'Zajęty' : 'Zablokowany'}</span>
                           <div className={styles.tooltipContainer}><BookingTooltip details={cell.details!} /></div>
                         </td>
                       )

@@ -16,6 +16,8 @@ export interface BookingDetails {
   guestName: string;
   guestEmail: string;
   guestPhone: string;
+  adminNotes?: string;
+  source?: string;
   numberOfGuests: number;
   extraBeds: number;
   totalPrice: number;
@@ -75,6 +77,8 @@ export async function getCalendarData(daysInMonth: number, startDateStr: string)
       guestName: b.guestName || 'Gość',
       guestEmail: b.guestEmail || '',
       guestPhone: b.guestPhone || '',
+      adminNotes: b.adminNotes || '',
+      source: b.source || '',
       numberOfGuests: b.numberOfGuests || 0,
       extraBeds: b.extraBedsCount || 0,
       totalPrice: rawTotalPrice,
