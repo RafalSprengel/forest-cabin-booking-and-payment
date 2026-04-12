@@ -9,6 +9,7 @@
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
+  text-align: left;
 }
 
 .copyLink:hover:not(:disabled) {

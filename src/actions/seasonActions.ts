@@ -3,6 +3,8 @@
 import dbConnect from '@/db/connection';
 import Season from '@/db/models/Season';
 import PropertyPrices from '@/db/models/PropertyPrices';
+import Property from '@/db/models/Property';
+import CustomPrice from '@/db/models/CustomPrice';
 import { revalidatePath } from 'next/cache';
 
 export interface ISeasonData {
@@ -317,4 +319,51 @@ export async function updateSeasonPrices(
   formData: FormData
 ) {
   return updateSeasonPricesForProperty(previousState, formData);
+}
+
+/**
+ * Kopiuje wszystkie ceny (podstawowe + sezonowe) z jednego domku do pozostałych aktywnych domków.
+ */
+export async function copyPricesToAllProperties(sourcePropertyId: string) {
+  try {
+    await dbConnect();
+
+    const sourcePrices = await PropertyPrices.find({ propertyId: sourcePropertyId }).lean();
+    const sourceCustomPrices = await CustomPrice.find({ propertyId: sourcePropertyId }).lean();
+    const otherProperties = await Property.find({
+      isActive: true,
+      _id: { $ne: sourcePropertyId },
+    }).lean();
+
+    if (otherProperties.length === 0) {
+      return { success: false, message: 'Brak innych domków do skopiowania cen.' };
+    }
+
+    for (const property of otherProperties) {
+      const targetId = property._id.toString();
+
+      // Kopiuj ceny sezonowe/podstawowe
+      await PropertyPrices.deleteMany({ propertyId: targetId });
+      for (const priceRecord of sourcePrices) {
+        const { _id, propertyId: _src, ...rest } = priceRecord as any;
+        await PropertyPrices.create({ ...rest, propertyId: targetId });
+      }
+
+      // Kopiuj ceny indywidualne
+      await CustomPrice.deleteMany({ propertyId: targetId });
+      for (const customRecord of sourceCustomPrices) {
+        const { _id, propertyId: _src, ...rest } = customRecord as any;
+        await CustomPrice.create({ ...rest, propertyId: targetId });
+      }
+    }
+
+    revalidatePath('/admin/prices');
+    return {
+      success: true,
+      message: `Ceny skopiowano do ${otherProperties.length} domku(ów).`,
+    };
+  } catch (error) {
+    console.error('Błąd kopiowania cen:', error);
+    return { success: false, message: 'Nie udało się skopiować cen.' };
+  }
 }
