@@ -91,10 +91,6 @@
         aspect-ratio: 1 / 1;
     }
 
-    .imageLink:nth-child(n + 7) {
-        display: none;
-    }
-
     .image {
         clip-path: none !important;
         border-radius: 2px;

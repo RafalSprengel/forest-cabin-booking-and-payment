@@ -28,3 +28,9 @@
     color: #1e8449;
     text-decoration: underline;
 }
+
+@media (max-width: 762px) {
+    .galleryWrap :global(.glightbox:nth-child(n + 7)) {
+        display: none;
+    }
+}
