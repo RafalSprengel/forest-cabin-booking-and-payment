@@ -19,6 +19,7 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export interface SearchOption {
+  propertyId: string;
   displayName: string;
   totalPrice: number;
   extraBedPrice: number;
@@ -334,6 +335,7 @@ export async function searchAction(params: SearchParams) {
         : 0;
 
       options.push({
+        propertyId: property._id.toString(),
         displayName: property.name ?? '',
         totalPrice: price,
         extraBedPrice,

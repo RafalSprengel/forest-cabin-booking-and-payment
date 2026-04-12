@@ -11,7 +11,7 @@ import ResultCard from './ResultCard'
 import styles from './page.module.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUsers, faSpinner, faExclamationCircle, faArrowRight } from '@fortawesome/free-solid-svg-icons'
-import AllPropertiesCard from './allPropertiesCard'
+import AllPropertiesCard from './AllPropertiesCard'
 
 interface BookingDates {
   start: string | null
@@ -68,6 +68,7 @@ export default function BookingClient({
 
   const [isSearching, setIsSearching] = useState(false)
   const [extraBedsMap, setExtraBedsMap] = useState<Record<string, number>>({})
+  const [guestsMap, setGuestsMap] = useState<Record<string, number>>({})
   const [hasDraft, setHasDraft] = useState(false)
 
   const guestsRef = useRef<HTMLDivElement>(null)
@@ -90,7 +91,7 @@ export default function BookingClient({
   useEffect(() => {
     const resultsGuests = initialAdults + initialChildren;
     const currentGuests = adults + children;
-    
+
     if (resultsGuests > 0 && resultsGuests !== currentGuests) {
     }
   }, [adults, children, initialAdults, initialChildren]);
@@ -137,6 +138,7 @@ export default function BookingClient({
 
     setIsSearching(true)
     setExtraBedsMap({})
+    setGuestsMap({})
     closeAllBoxes()
 
     const params = new URLSearchParams()
@@ -155,10 +157,17 @@ export default function BookingClient({
     }))
   }
 
+  const handleGuestsChange = (optionDisplayName: string, value: number) => {
+    setGuestsMap(prev => ({
+      ...prev,
+      [optionDisplayName]: value
+    }))
+  }
+
   const handleSelectOption = (option: SearchOption, totalPriceWithExtraBeds: number) => {
 
     const extraBeds = extraBedsMap[option.displayName] || 0
-    
+
     const maxCapacity = option.maxGuests + extraBeds;
     if (totalGuests > maxCapacity) {
       alert(`Liczba osób (${totalGuests}) przekracza pojemność dla "${option.displayName}" (max ${maxCapacity}). Proszę wybrać inną opcję lub zmniejszyć liczbę osób.`);
@@ -174,6 +183,30 @@ export default function BookingClient({
       selectedOption: {
         ...option,
         totalPrice: totalPriceWithExtraBeds
+      }
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+    router.push('/booking/details')
+  }
+
+  const handleSelectAllProperties = (combinedTotalPrice: number) => {
+    const extraBeds = Object.values(extraBedsMap).reduce((sum, value) => sum + value, 0)
+
+    const draft: BookingDraft = {
+      startDate: bookingDates.start!,
+      endDate: bookingDates.end!,
+      adults,
+      children,
+      extraBeds,
+      selectedOption: {
+        propertyId: 'ALL_PROPERTIES',
+        displayName: `Wszystkie domki (${searchResults?.propertiesAvailable?.length || 0})`,
+        totalPrice: combinedTotalPrice,
+        extraBedPrice: 0,
+        maxGuests: 0,
+        maxExtraBeds: 0,
+        description: 'Rezerwacja łączona'
       }
     }
 
@@ -330,9 +363,16 @@ export default function BookingClient({
                   {searchResults.areAllAvailable && (
                     <div className={styles.allAvailableNote}>
                       <h3>Zarezerwuj {searchResults.propertiesAvailable.length} domki teraz</h3>
-                      {searchResults.propertiesAvailable.map((option) => (
-                        <AllPropertiesCard key={option.displayName} />
-                      ))}
+                      <AllPropertiesCard
+                        searchResults={searchResults}
+                        extraBedsMap={extraBedsMap}
+                        onExtraBedsChange={handleExtraBedsChange}
+                        guestsMap={guestsMap}
+                        onGuestsChange={handleGuestsChange}
+                        startDate={bookingDates.start}
+                        endDate={bookingDates.end}
+                        onSelectAll={handleSelectAllProperties}
+                      />
                     </div>
                   )}
 

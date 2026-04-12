@@ -14,13 +14,24 @@ interface PriceTier {
     price: number;
 }
 
+interface BasicPricesData {
+    weekdayPrices?: PriceTier[];
+    weekendPrices?: PriceTier[];
+    weekdayExtraBedPrice?: number;
+    weekendExtraBedPrice?: number;
+}
+
 function formatGuestsLabel(minGuests: number, maxGuests: number): string {
     if (minGuests === maxGuests) {
         if (minGuests === 1) return '1 osoba';
         return `${minGuests} osób`;
+    } else if(maxGuests === 2 || maxGuests === 3 || maxGuests === 4) {
+        return `${minGuests}-${maxGuests} osoby`
+    }else {
+        return `${minGuests}-${maxGuests} osób`;
     }
-    return `${minGuests}-${maxGuests} osoby`;
 }
+
 
 function mapTiersToPriceItems(tiers: PriceTier[]): PriceItem[] {
     return [...tiers]
@@ -32,20 +43,22 @@ function mapTiersToPriceItems(tiers: PriceTier[]): PriceItem[] {
 }
 
 export default async function Services() {
-    let childrenFreeAge
-    let weekdayRates: PriceItem[] = [
-        { description: '2-3 osoby', amount: '300 zł' },
-        { description: '4-5 osób', amount: '400 zł' },
-        { description: '6 osób', amount: '500 zł' },
-        { description: 'Dostawka', amount: '+50 zł' }
+    let childrenFreeAge = 13;
+    const defaultWeekdayRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '' },
+        { description: '4-5 osób', amount: '' },
+        { description: '6 osób', amount: '' },
+        { description: 'Dostawka', amount: '' }
     ];
 
-    let weekendRates: PriceItem[] = [
-        { description: '2-3 osoby', amount: '400 zł' },
-        { description: '4-5 osób', amount: '500 zł' },
-        { description: '6 osób', amount: '600 zł' },
-        { description: 'Dostawka', amount: '+50 zł' }
+    const defaultWeekendRates: PriceItem[] = [
+        { description: '2-3 osoby', amount: '' },
+        { description: '4-5 osób', amount: '' },
+        { description: '6 osób', amount: '' },
+        { description: 'Dostawka', amount: '' }
     ];
+
+    let basicPricesData: BasicPricesData | null = null;
 
     try {
         const bookingConfig = await getBookingConfig();
@@ -57,36 +70,32 @@ export default async function Services() {
         if (firstProperty?._id) {
             const basicPricesResult = await getBasicPrices(firstProperty._id);
             if (basicPricesResult.success && basicPricesResult.data) {
-                const data = basicPricesResult.data as {
-                    weekdayPrices?: PriceTier[];
-                    weekendPrices?: PriceTier[];
-                    weekdayExtraBedPrice?: number;
-                    weekendExtraBedPrice?: number;
-                };
-
-                const weekdayItems = mapTiersToPriceItems(data.weekdayPrices ?? []);
-                const weekendItems = mapTiersToPriceItems(data.weekendPrices ?? []);
-
-                weekdayRates = [
-                    ...weekdayItems,
-                    {
-                        description: 'Dostawka',
-                        amount: `+${data.weekdayExtraBedPrice ?? 50} zł`,
-                    },
-                ];
-
-                weekendRates = [
-                    ...weekendItems,
-                    {
-                        description: 'Dostawka',
-                        amount: `+${data.weekendExtraBedPrice ?? 70} zł`,
-                    },
-                ];
+                basicPricesData = basicPricesResult.data as BasicPricesData;
             }
         }
     } catch {
         // Error handling mostly silent for UI components
     }
+
+    const weekdayRates = basicPricesData
+        ? [
+            ...mapTiersToPriceItems(basicPricesData.weekdayPrices ?? []),
+            {
+                description: 'Dostawka',
+                amount: basicPricesData.weekdayExtraBedPrice != null ? `+${basicPricesData.weekdayExtraBedPrice} zł` : '',
+            },
+        ]
+        : defaultWeekdayRates;
+
+    const weekendRates = basicPricesData
+        ? [
+            ...mapTiersToPriceItems(basicPricesData.weekendPrices ?? []),
+            {
+                description: 'Dostawka',
+                amount: basicPricesData.weekendExtraBedPrice != null ? `+${basicPricesData.weekendExtraBedPrice} zł` : '',
+            },
+        ]
+        : defaultWeekendRates;
 
 
     return (
