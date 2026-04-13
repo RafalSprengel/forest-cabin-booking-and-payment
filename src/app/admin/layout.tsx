@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import AppToaster from '@/app/_components/AppToaster/AppToaster';
 import styles from './admin.module.css';
 
 export default function AdminLayout({
@@ -48,23 +49,25 @@ export default function AdminLayout({
   }, [isBookingsActive]);
 
   return (
-    <div className={styles.adminLayout}>
-      <div
-        className={`${styles.mobileOverlay} ${isMobileMenuOpen ? styles.visible : ''}`}
-        onClick={closeMobileMenu}
-      ></div>
+    <>
+      <AppToaster />
+      <div className={styles.adminLayout}>
+        <div
+          className={`${styles.mobileOverlay} ${isMobileMenuOpen ? styles.visible : ''}`}
+          onClick={closeMobileMenu}
+        ></div>
 
-      <button
-        className={styles.mobileToggle}
-        onClick={openMobileMenu}
-      >
-        ☰ Menu
-      </button>
+        <button
+          className={styles.mobileToggle}
+          onClick={openMobileMenu}
+        >
+          ☰ Menu
+        </button>
 
-      <aside className={`${styles.adminSidebar} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
-        <div className={styles.sidebarHeader}>
-          <h2>Panel Admina</h2>
-        </div>
+        <aside className={`${styles.adminSidebar} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
+          <div className={styles.sidebarHeader}>
+            <h2>Panel Admina</h2>
+          </div>
 
         <nav className={styles.sidebarNav}>
           <div>
@@ -181,11 +184,12 @@ export default function AdminLayout({
             Wyloguj się
           </button>
         </div>
-      </aside>
+        </aside>
 
-      <main className={styles.adminContent}>
-        {children}
-      </main>
-    </div>
+        <main className={styles.adminContent}>
+          {children}
+        </main>
+      </div>
+    </>
   );
 }

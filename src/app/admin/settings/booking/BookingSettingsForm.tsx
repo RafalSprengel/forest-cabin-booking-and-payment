@@ -3,7 +3,7 @@ import { useActionState, useEffect, useState, useTransition, useMemo } from 'rea
 import { updateBookingConfig, updateAllowCheckinOnDepartureDay } from '@/actions/bookingConfigActions';
 import { getAllSeasons, updateSeasonDates, updateSeasonOrder, ISeasonData } from '@/actions/seasonActions';
 import dayjs from 'dayjs';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import styles from './booking.module.css';
 
 interface BookingConfig {
@@ -311,7 +311,6 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
 
   return (
     <>
-      <Toaster position="bottom-center" />
       <form action={formAction} className={styles.settingsCard}>
         <input type="hidden" name="minBookingDays" value={localMinDays} />
         <input type="hidden" name="maxBookingDays" value={localMaxDays} />

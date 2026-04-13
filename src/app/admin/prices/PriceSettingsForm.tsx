@@ -15,7 +15,7 @@ import {
 import CalendarPicker, { DatesData } from '@/app/_components/CalendarPicker/CalendarPicker'
 import dayjs from 'dayjs'
 import Modal from '@/app/_components/Modal/Modal'
-import { toast, Toaster } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import '../settings/settings.css'
 import styles from './page.module.css'
 
@@ -724,8 +724,6 @@ export default function PriceSettingsForm({
 
   return (
     <>
-      <Toaster position="bottom-center" />
-
       {/* ── Potwierdzenie kopiowania cen ──────────────────────────────────── */}
       <Modal
         isOpen={copyConfirmOpen}

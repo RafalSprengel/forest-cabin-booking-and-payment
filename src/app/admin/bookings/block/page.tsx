@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
 import CalendarPicker, { DatesData } from '@/app/_components/CalendarPicker/CalendarPicker'
+import Modal from '@/app/_components/Modal/Modal'
 import { getAllProperties } from '@/actions/adminPropertyActions'
 import {
   createBlockedBookingByAdmin,
@@ -47,7 +49,8 @@ export default function BlockBookingsPage() {
   const [isLoadingUnavailable, setIsLoadingUnavailable] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<BlockedItem | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const loadBlockedBookings = useCallback(async (propertyId?: string) => {
     const rows = await getBlockedBookings(propertyId)
@@ -87,7 +90,7 @@ export default function BlockBookingsPage() {
 
   useEffect(() => {
     setBookingDates({ start: null, end: null, count: 0 })
-    setMessage(null)
+    setErrorMessage(null)
 
     if (!selectedPropertyId) {
       setCalendarDates({})
@@ -107,12 +110,12 @@ export default function BlockBookingsPage() {
     e.preventDefault()
 
     if (!selectedPropertyId || !bookingDates.start || !bookingDates.end) {
-      setMessage({ type: 'error', text: 'Wybierz domek i zakres dat blokady.' })
+      setErrorMessage('Wybierz domek i zakres dat blokady.')
       return
     }
 
     setIsSubmitting(true)
-    setMessage(null)
+    setErrorMessage(null)
 
     try {
       const result = await createBlockedBookingByAdmin({
@@ -123,7 +126,7 @@ export default function BlockBookingsPage() {
       })
 
       if (result.success) {
-        setMessage({ type: 'success', text: result.message })
+        toast.success(result.message)
         setBookingDates({ start: null, end: null, count: 0 })
         setAdminNotes('')
         await loadUnavailable(selectedPropertyId)
@@ -133,7 +136,7 @@ export default function BlockBookingsPage() {
           await loadBlockedBookings(selectedPropertyId)
         }
       } else {
-        setMessage({ type: 'error', text: result.message })
+        setErrorMessage(result.message)
       }
     } finally {
       setIsSubmitting(false)
@@ -141,16 +144,14 @@ export default function BlockBookingsPage() {
   }
 
   const handleDeleteBlock = async (id: string) => {
-    const accepted = window.confirm('Czy na pewno chcesz usunąć tę blokadę?')
-    if (!accepted) return
-
     setIsDeletingId(id)
-    setMessage(null)
+    setErrorMessage(null)
 
     try {
       const result = await deleteBlockedBookingByAdmin(id)
       if (result.success) {
-        setMessage({ type: 'success', text: result.message })
+        setDeleteTarget(null)
+        toast.success(result.message)
         if (selectedPropertyId) {
           await loadUnavailable(selectedPropertyId)
         }
@@ -160,7 +161,7 @@ export default function BlockBookingsPage() {
           await loadBlockedBookings()
         }
       } else {
-        setMessage({ type: 'error', text: result.message })
+        setErrorMessage(result.message)
       }
     } finally {
       setIsDeletingId(null)
@@ -256,9 +257,9 @@ export default function BlockBookingsPage() {
           </button>
         </div>
 
-        {message && (
-          <div className={message.type === 'success' ? styles.successMsg : styles.errorMsg}>
-            {message.text}
+        {errorMessage && (
+          <div className={styles.errorMsg}>
+            {errorMessage}
           </div>
         )}
       </form>
@@ -285,7 +286,7 @@ export default function BlockBookingsPage() {
                 <button
                   type="button"
                   className={styles.deleteBtn}
-                  onClick={() => handleDeleteBlock(item._id)}
+                  onClick={() => setDeleteTarget(item)}
                   disabled={isDeletingId === item._id}
                 >
                   {isDeletingId === item._id ? 'Usuwanie...' : 'Usuń blokadę'}
@@ -295,6 +296,20 @@ export default function BlockBookingsPage() {
           </div>
         )}
       </section>
+
+      <Modal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={deleteTarget ? () => handleDeleteBlock(deleteTarget._id) : undefined}
+        title="Potwierdź usunięcie"
+        confirmText="Tak, usuń"
+        loadingText="Usuwanie..."
+        cancelText="Anuluj"
+        confirmVariant="danger"
+        isLoading={Boolean(deleteTarget && isDeletingId === deleteTarget._id)}
+      >
+        <p>Czy na pewno chcesz usunąć tę blokadę?</p>
+      </Modal>
     </div>
   )
 }
