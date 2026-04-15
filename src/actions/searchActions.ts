@@ -28,6 +28,11 @@ export interface SearchOption {
   description: string;
 }
 
+export interface SearchResults {
+  propertiesAvailable: SearchOption[];
+  areAllAvailable: boolean;
+}
+
 interface SearchParams {
   startDate: string;
   endDate: string;
@@ -288,7 +293,7 @@ export async function searchAction(params: SearchParams) {
     });
 
     if (autoBlockOtherCabins && occupiedIds.length > 0) {
-      return { propertiesAvailable: [], areAllAvailable: false };
+      return [];
     }
 
     const availableProperties = await Property.find({
@@ -297,7 +302,7 @@ export async function searchAction(params: SearchParams) {
       baseCapacity: { $gte: baseGuests - extraBeds }
     }).select('-createdAt -updatedAt').sort({ name: 1 });
 
-    if (availableProperties.length === 0) return { propertiesAvailable: [], areAllAvailable: false };
+    if (availableProperties.length === 0) return [];
 
     const options: SearchOption[] = [];
 
@@ -344,7 +349,7 @@ export async function searchAction(params: SearchParams) {
         description: property.description ?? '',
       });
     }
-    const result  = options.sort((a, b) => a.totalPrice - b.totalPrice);
+    const result = options.sort((a, b) => a.totalPrice - b.totalPrice);
     return { propertiesAvailable: result, areAllAvailable: result.length === availableProperties.length };
   } catch (error) {
     console.error('Błąd wyszukiwania dostępności:', error);

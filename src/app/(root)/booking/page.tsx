@@ -4,6 +4,8 @@ import { getBookingConfig } from '@/actions/bookingConfigActions'
 import { getBlockedDates } from '@/actions/bookingActions'
 import BookingClient from './BookingClient'
 
+import StripeTestButton from './StripeTestButton';
+
 interface SearchParams {
   start?: string
   end?: string
@@ -47,17 +49,20 @@ export default async function BookingPage({
   }
   console.log(searchResults)
   return (
-    <BookingClient
-      initialStart={start}
-      initialEnd={end}
-      initialAdults={adults}
-      initialChildren={children}
-      maxTotalGuests={maxTotalGuests}
-      minBookingDays={bookingConfig.minBookingDays}
-      maxBookingDays={bookingConfig.maxBookingDays}
-      childrenFreeAgeLimit={bookingConfig.childrenFreeAgeLimit}
-      blockedDates={blockedDates}
-      searchResults={searchResults}
-    />
+    <>
+      <BookingClient
+        initialStart={start}
+        initialEnd={end}
+        initialAdults={adults}
+        initialChildren={children}
+        maxTotalGuests={maxTotalGuests}
+        minBookingDays={bookingConfig.minBookingDays}
+        maxBookingDays={bookingConfig.maxBookingDays}
+        childrenFreeAgeLimit={bookingConfig.childrenFreeAgeLimit}
+        blockedDates={blockedDates}
+        searchResults={searchResults}
+      />
+      <StripeTestButton />
+    </>
   )
 }
