@@ -5,41 +5,9 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 import { createCheckoutSession } from '@/actions/stripe';
+import { BookingData } from '@/types/booking';
 
-interface InvoiceData {
-  companyName: string;
-  nip: string;
-  street: string;
-  city: string;
-  postalCode: string;
-}
-
-interface GuestData {
-  firstName: string;
-  lastName: string;
-  address: string;
-  email: string;
-  phone: string;
-  invoice: boolean;
-  invoiceData?: InvoiceData;
-  termsAccepted: boolean;
-}
-
-interface BookingData {
-  startDate: string;
-  endDate: string;
-  adults: number;
-  children: number;
-  extraBeds: number;
-  selectedOption: {
-    displayName: string;
-    totalPrice: number;
-    maxGuests: number;
-  } | null;
-  guestData: GuestData;
-}
-
-const STORAGE_KEY = 'wilczechatki_booking_draft'; //local storage name for booking data draft
+const STORAGE_KEY = 'wilczechatki_booking_draft';
 
 export default function BookingSummaryPage() {
   const router = useRouter();
@@ -66,22 +34,57 @@ export default function BookingSummaryPage() {
   }, [router]);
 
   const handleStripePayment = async () => {
-    console.log('Inicjowanie płatności Stripe z danymi:', bookingData);
+    console.log('Dane rezerwacji przed inicjowaniem płatności Stripe:');
+    console.log(bookingData);
+   
+    return;
     if (!bookingData) return;
-    
+
     setIsProcessing(true);
     try {
-     const result =  await createCheckoutSession(bookingData);
-     if (result?.url) {
-       window.location.href = result.url;
-     } else {
-       throw new Error("Nie można uzyskać URL sesji płatności");
-     }
-    
+      const isMultiBooking = bookingData.selectedOption.propertyId === 'ALL_PROPERTIES';
+
+      const formattedData = {
+        startDate: bookingData.startDate,
+        endDate: bookingData.endDate,
+        clientData: {
+          firstName: bookingData.guestData.firstName,
+          lastName: bookingData.guestData.lastName,
+          address: bookingData.guestData.address,
+          email: bookingData.guestData.email,
+          phone: bookingData.guestData.phone,
+        },
+        invoiceData: bookingData.guestData.invoice ? {
+          companyName: bookingData.guestData.invoiceData?.companyName,
+          nip: bookingData.guestData.invoiceData?.nip,
+          street: bookingData.guestData.invoiceData?.street,
+          city: bookingData.guestData.invoiceData?.city,
+          postalCode: bookingData.guestData.invoiceData?.postalCode,
+        } : null,
+        orders: isMultiBooking
+          ? bookingData.selectedOption.propertyAllocations
+          : [{
+            propertyId: bookingData.selectedOption.propertyId,
+            displayName: bookingData.selectedOption.displayName,
+            guests: bookingData.adults + bookingData.children,
+            extraBeds: bookingData.extraBeds,
+            totalPrice: bookingData.selectedOption.totalPrice
+          }]
+      };
+
+      //console.log('Inicjowanie płatności Stripe z sformatowanymi danymi:', formattedData);
+
+      const result = await createCheckoutSession(formattedData as any);
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        throw new Error("Nie można uzyskać URL sesji płatności");
+      }
+
     } catch (error) {
       console.error('Błąd podczas inicjowania płatności:', error);
       setIsProcessing(false);
-      alert('Wystąpił błąd podczas inicjowania płatności. Spróbuj ponownie:'+error );
+      alert('Wystąpił błąd podczas inicjowania płatności. Spróbuj ponownie: ' + error);
     }
   };
 
@@ -111,7 +114,6 @@ export default function BookingSummaryPage() {
         <p>Sprawdź dane przed potwierdzeniem</p>
       </header>
 
-      {/* Blok podsumowania pobytu */}
       <div className={styles.summaryCard}>
         <h2 className={styles.summaryTitle}>Dane pobytu</h2>
         <div className={styles.summaryGrid}>
@@ -135,7 +137,6 @@ export default function BookingSummaryPage() {
         </div>
       </div>
 
-      {/* Blok danych kontaktowych */}
       <div className={styles.summaryCard}>
         <h2 className={styles.summaryTitle}>Dane kontaktowe</h2>
         <div className={styles.summaryGrid}>
@@ -158,7 +159,6 @@ export default function BookingSummaryPage() {
         </div>
       </div>
 
-      {/* Blok danych faktury (jeśli zaznaczona) */}
       {guestData.invoice && guestData.invoiceData && (
         <div className={styles.summaryCard}>
           <h2 className={styles.summaryTitle}>Dane faktury VAT</h2>
@@ -181,7 +181,6 @@ export default function BookingSummaryPage() {
         </div>
       )}
 
-      {/* Blok ceny */}
       <div className={styles.priceCard}>
         <div className={styles.priceRow}>
           <span className={styles.priceLabel}>Cena całkowita:</span>
@@ -189,18 +188,18 @@ export default function BookingSummaryPage() {
         </div>
       </div>
 
-        <div className={styles.actions}>
-          <Link href="/booking/details" className={styles.btnBack}>
-            ← Edytuj dane
-          </Link>
-          <button 
-            onClick={handleStripePayment}
-            className={styles.btnConfirm}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Przekierowywanie do płatności...' : 'Przejdź do płatności →'}
-          </button>
-        </div>
+      <div className={styles.actions}>
+        <Link href="/booking/details" className={styles.btnBack}>
+          ← Edytuj dane
+        </Link>
+        <button
+          onClick={handleStripePayment}
+          className={styles.btnConfirm}
+          disabled={isProcessing}
+        >
+          {isProcessing ? 'Przekierowywanie do płatności...' : 'Przejdź do płatności →'}
+        </button>
+      </div>
     </div>
   );
 }

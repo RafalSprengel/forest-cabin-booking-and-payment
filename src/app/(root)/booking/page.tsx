@@ -4,8 +4,6 @@ import { getBookingConfig } from '@/actions/bookingConfigActions'
 import { getBlockedDates } from '@/actions/bookingActions'
 import BookingClient from './BookingClient'
 
-import StripeTestButton from './StripeTestButton';
-
 interface SearchParams {
   start?: string
   end?: string
@@ -47,7 +45,6 @@ export default async function BookingPage({
       searchResults = { propertiesAvailable: [], areAllAvailable: false }
     }
   }
-  console.log(searchResults)
   return (
     <>
       <BookingClient
@@ -62,7 +59,6 @@ export default async function BookingPage({
         blockedDates={blockedDates}
         searchResults={searchResults}
       />
-      <StripeTestButton />
     </>
   )
 }

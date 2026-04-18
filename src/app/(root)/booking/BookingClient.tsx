@@ -19,21 +19,36 @@ interface BookingDates {
   count: number
 }
 
+interface BookingOrderItem {
+  propertyId: string
+  displayName: string
+  guests: number
+  extraBeds: number
+  price: number
+}
+
+interface ClientData {
+  firstName: string
+  lastName: string
+  address: string
+  email: string
+  phone: string
+}
+
+interface InvoiceData {
+  companyName: string
+  nip: string
+  street: string
+  city: string
+  postalCode: string
+}
+
 interface BookingDraft {
   startDate: string
   endDate: string
-  adults: number
-  children: number
-  extraBeds: number
-  selectedOption: (SearchOption & {
-    propertyAllocations?: Array<{
-      propertyId: string
-      displayName: string
-      guests: number
-      extraBeds: number
-      totalPrice: number
-    }>
-  }) | null
+  clientData: ClientData
+  invoiceData: InvoiceData
+  orders: BookingOrderItem[]
 }
 
 const STORAGE_KEY = 'wilczechatki_booking_draft'
@@ -109,12 +124,12 @@ export default function BookingClient({
     }
   }, [adults, children, initialAdults, initialChildren]);
 
-  useEffect(() => {  // po odswierzeniu wkłada daty do pola "wybierz terminy"
+  useEffect(() => {
     const draft = localStorage.getItem(STORAGE_KEY)
     if (draft) {
       try {
-        const parsed = JSON.parse(draft)
-        if (parsed.selectedOption) {
+        const parsed = JSON.parse(draft) as BookingDraft
+        if (Array.isArray(parsed.orders) && parsed.orders.length > 0) {
           setHasDraft(true)
         }
       } catch {
@@ -122,7 +137,6 @@ export default function BookingClient({
       }
     }
   }, [])
-
 
   useClickOutside(guestsRef, () => {
     if (activeBox === 'guests') setActiveBox(null)
@@ -178,7 +192,6 @@ export default function BookingClient({
   }
 
   const handleSelectOption = (option: SearchOption, totalPriceWithExtraBeds: number) => {
-
     const extraBeds = extraBedsMap[option.displayName] || 0
 
     const maxCapacity = option.maxGuests + extraBeds;
@@ -190,13 +203,29 @@ export default function BookingClient({
     const draft: BookingDraft = {
       startDate: bookingDates.start!,
       endDate: bookingDates.end!,
-      adults,
-      children,
-      extraBeds,
-      selectedOption: {
-        ...option,
-        totalPrice: totalPriceWithExtraBeds
-      }
+      clientData: {
+        firstName: '',
+        lastName: '',
+        address: '',
+        email: '',
+        phone: ''
+      },
+      invoiceData: {
+        companyName: '',
+        nip: '',
+        street: '',
+        city: '',
+        postalCode: ''
+      },
+      orders: [
+        {
+          propertyId: option.propertyId,
+          displayName: option.displayName,
+          guests: totalGuests,
+          extraBeds,
+          price: totalPriceWithExtraBeds
+        }
+      ]
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
@@ -204,34 +233,35 @@ export default function BookingClient({
   }
 
   const handleSelectAllProperties = (combinedTotalPrice: number) => {
-    const propertyAllocations = (searchResults?.propertiesAvailable || []).map((option) => ({
+    const orders: BookingOrderItem[] = (searchResults?.propertiesAvailable || []).map((option) => ({
       propertyId: option.propertyId,
       displayName: option.displayName,
       guests: Math.max(1, guestsMap[option.displayName] || 1),
       extraBeds: extraBedsMap[option.displayName] || 0,
-      totalPrice: 0,
+      price: 0,
     }))
-
-    const extraBeds = Object.values(extraBedsMap).reduce((sum, value) => sum + value, 0)
 
     const draft: BookingDraft = {
       startDate: bookingDates.start!,
       endDate: bookingDates.end!,
-      adults,
-      children,
-      extraBeds,
-      selectedOption: {
-        propertyId: 'ALL_PROPERTIES',
-        displayName: `Wszystkie domki (${searchResults?.propertiesAvailable?.length || 0})`,
-        totalPrice: combinedTotalPrice,
-        extraBedPrice: 0,
-        maxGuests: 0,
-        maxExtraBeds: 0,
-        description: 'Rezerwacja łączona',
-        propertyAllocations,
-      }
+      clientData: {
+        firstName: '',
+        lastName: '',
+        address: '',
+        email: '',
+        phone: ''
+      },
+      invoiceData: {
+        companyName: '',
+        nip: '',
+        street: '',
+        city: '',
+        postalCode: ''
+      },
+      orders
     }
-
+    console.log('Zapisuję szkic rezerwacji dla wszystkich domków:');
+    console.log(draft)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
     router.push('/booking/details')
   }

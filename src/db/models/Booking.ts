@@ -8,7 +8,8 @@ export interface IBooking extends Document {
   guestEmail: string;
   guestPhone: string;
   guestAddress?: string;
-  numberOfGuests: number;
+  adults: number;
+  children: number;
   extraBedsCount: number;
   totalPrice: number;
   paidAmount: number;
@@ -62,9 +63,15 @@ const BookingSchema = new Schema({
     type: String,
     trim: true
   },
-  numberOfGuests: {
+  adults: {
     type: Number,
-    required: true
+    required: true,
+    min: 1
+  },
+  children: {
+    type: Number,
+    default: 0,
+    min: 0
   },
   extraBedsCount: {
     type: Number,
@@ -117,4 +124,4 @@ BookingSchema.index({ propertyId: 1, startDate: 1, endDate: 1 });
 BookingSchema.index({ startDate: 1, endDate: 1 });
 BookingSchema.index({ status: 1 });
 
-export default mongoose.models.Booking || mongoose.model('Booking', BookingSchema);
+export default mongoose.models.Booking || mongoose.model<IBooking>('Booking', BookingSchema);
