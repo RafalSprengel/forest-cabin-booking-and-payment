@@ -8,25 +8,30 @@ import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBac
 interface BookingData {
   startDate: string;
   endDate: string;
-  adults: number;
-  children: number;
-  extraBeds: number;
-  selectedOption: {
-    displayName: string;
-    totalPrice: number;
-    maxGuests: number;
-  } | null;
-  guestData: GuestData;
+  clientData: ClientData;
+  invoiceData: InvoiceData;
+  orders: BookingOrderItem[];
 }
 
-interface GuestData {
+interface BookingOrderItem {
+  propertyId: string;
+  displayName: string;
+  guests: number;
+  extraBeds: number;
+  price: number;
+}
+
+interface ClientData {
   firstName: string;
   lastName: string;
   address: string;
   email: string;
   phone: string;
+}
+
+interface GuestData extends ClientData {
   invoice: boolean;
-  invoiceData?: InvoiceData;
+  invoiceData: InvoiceData;
   termsAccepted: boolean;
 }
 
@@ -67,20 +72,33 @@ export default function BookingDetailsPage() {
     if (savedData) {
       try {
         const parsed: BookingData = JSON.parse(savedData);
-        setBookingSummary(parsed);
-        if (parsed.guestData) {
-          setFormData(prev => ({
-            ...prev,
-            ...parsed.guestData,
-            invoiceData: parsed.guestData.invoiceData || {
-              companyName: '',
-              nip: '',
-              street: '',
-              city: '',
-              postalCode: '',
-            },
-          }));
+
+        if (!Array.isArray(parsed.orders) || parsed.orders.length === 0) {
+          router.push('/booking');
+          return;
         }
+
+        setBookingSummary(parsed);
+        const hasInvoiceData = Boolean(
+          parsed.invoiceData.companyName ||
+          parsed.invoiceData.nip ||
+          parsed.invoiceData.street ||
+          parsed.invoiceData.city ||
+          parsed.invoiceData.postalCode
+        );
+
+        setFormData(prev => ({
+          ...prev,
+          ...parsed.clientData,
+          invoice: hasInvoiceData,
+          invoiceData: parsed.invoiceData || {
+            companyName: '',
+            nip: '',
+            street: '',
+            city: '',
+            postalCode: '',
+          },
+        }));
       } catch {
         router.push('/booking');
       }
@@ -175,11 +193,29 @@ export default function BookingDetailsPage() {
   };
 
   const handleTermAndConditionsClick = () => {
+    const nextInvoiceData = formData.invoice
+      ? formData.invoiceData
+      : {
+          companyName: '',
+          nip: '',
+          street: '',
+          city: '',
+          postalCode: '',
+        };
+
     const updatedData: BookingData = {
       ...(bookingSummary as BookingData),
-      guestData: formData,
+      clientData: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address,
+        email: formData.email,
+        phone: formData.phone,
+      },
+      invoiceData: nextInvoiceData,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+   
     router.push('/terms-and-conditions');
   };
 
@@ -187,9 +223,27 @@ export default function BookingDetailsPage() {
     e.preventDefault();
     if (!validateForm()) return;
     setIsSubmitting(true);
+
+    const nextInvoiceData = formData.invoice
+      ? formData.invoiceData
+      : {
+          companyName: '',
+          nip: '',
+          street: '',
+          city: '',
+          postalCode: '',
+        };
+
     const updatedData: BookingData = {
       ...(bookingSummary as BookingData),
-      guestData: formData,
+      clientData: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address,
+        email: formData.email,
+        phone: formData.phone,
+      },
+      invoiceData: nextInvoiceData,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -208,7 +262,15 @@ export default function BookingDetailsPage() {
     );
   }
 
-  const { startDate, endDate, adults, children, extraBeds, selectedOption } = bookingSummary;
+  const { startDate, endDate, orders } = bookingSummary;
+  const totalGuests = orders.reduce((sum, item) => sum + item.guests, 0);
+  const totalExtraBeds = orders.reduce((sum, item) => sum + item.extraBeds, 0);
+  const totalPrice = orders.reduce((sum, item) => sum + item.price, 0);
+  const orderDisplayName =
+    orders.length === 1
+      ? orders[0].displayName
+      : `${orders.length} obiekty: ${orders.map((item) => item.displayName).join(', ')}`;
+
   const nights = Math.ceil(
     (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -226,7 +288,7 @@ export default function BookingDetailsPage() {
         <div className={styles.summaryGrid}>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Obiekt:</span>
-            <span className={styles.summaryValue}>{selectedOption?.displayName}</span>
+            <span className={styles.summaryValue}>{orderDisplayName}</span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Termin:</span>
@@ -237,13 +299,13 @@ export default function BookingDetailsPage() {
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Goście:</span>
             <span className={styles.summaryValue}>
-              {adults} dorosłych, {children} dzieci
-              {extraBeds > 0 && ` + ${extraBeds} dostawka${extraBeds > 1 ? 'i' : ''}`}
+              {totalGuests} osób
+              {totalExtraBeds > 0 && ` + ${totalExtraBeds} dostawka${totalExtraBeds > 1 ? 'i' : ''}`}
             </span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Cena całkowita:</span>
-            <span className={styles.summaryPrice}>{selectedOption?.totalPrice} zł</span>
+            <span className={styles.summaryPrice}>{totalPrice} zł</span>
           </div>
         </div>
       </div>

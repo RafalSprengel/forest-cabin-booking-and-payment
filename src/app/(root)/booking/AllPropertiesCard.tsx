@@ -5,6 +5,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBed, faUser } from '@fortawesome/free-solid-svg-icons'
 import { calculateTotalPrice } from '@/actions/searchActions'
 
+interface CombinedOrderSelection {
+  propertyId: string
+  displayName: string
+  guests: number
+  extraBeds: number
+  price: number
+}
+
 export default function AllPropertiesCard({ 
   searchResults, 
   extraBedsMap, 
@@ -24,7 +32,7 @@ export default function AllPropertiesCard({
   totalGuestsLimit: number,
   startDate: string | null,
   endDate: string | null,
-  onSelectAll: (totalPrice: number) => void
+  onSelectAll: (orders: CombinedOrderSelection[]) => void
 }) {
   const [priceMap, setPriceMap] = useState<Record<string, number>>({})
   const [showGuestsValidation, setShowGuestsValidation] = useState(false)
@@ -101,7 +109,26 @@ export default function AllPropertiesCard({
       setShowGuestsValidation(true)
       return
     }
-    onSelectAll(combinedTotalPrice)
+
+    const orders: CombinedOrderSelection[] = searchResults.propertiesAvailable.map((option: any) => {
+      const guests = Math.max(1, guestsMap[option.displayName] || 1)
+      const extraBeds = extraBedsMap[option.displayName] || 0
+      const price = priceMap[option.displayName]
+
+      if (price === undefined) {
+        throw new Error(`Brak ceny dla domku: ${option.displayName}`)
+      }
+
+      return {
+        propertyId: option.propertyId,
+        displayName: option.displayName,
+        guests,
+        extraBeds,
+        price,
+      }
+    })
+
+    onSelectAll(orders)
   }
 
   return (

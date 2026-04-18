@@ -5,6 +5,11 @@ import { headers } from "next/headers";
 import { BookingData } from "@/types/booking";
 
 export async function createCheckoutSession(bookingData: BookingData) {
+
+  console.log('Dane rezerwacji przed inicjowaniem płatności Stripe:');
+  console.log(bookingData);
+
+  return;
   const amount = bookingData.selectedOption?.totalPrice;
 
   // Rygorystyczna walidacja kwoty przed wysłaniem do Stripe

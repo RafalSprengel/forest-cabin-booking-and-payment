@@ -11,7 +11,7 @@ interface ResultCardProps {
   option: SearchOption
   extraBeds: number
   onExtraBedsChange: (displayName: string, value: number) => void
-  onSelect: (option: SearchOption, totalPrice: number) => void
+  onSelect: (option: SearchOption) => void
 }
 
 export default function ResultCard({
@@ -64,7 +64,7 @@ export default function ResultCard({
 
       <button
         className={styles.btnSelect}
-        onClick={() => onSelect(option, totalPriceWithExtraBeds)}
+        onClick={() => onSelect(option)}
       >
         Wybieram tę opcję
       </button>

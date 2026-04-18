@@ -27,6 +27,14 @@ interface BookingOrderItem {
   price: number
 }
 
+interface CombinedOrderSelection {
+  propertyId: string
+  displayName: string
+  guests: number
+  extraBeds: number
+  price: number
+}
+
 interface ClientData {
   firstName: string
   lastName: string
@@ -117,14 +125,6 @@ export default function BookingClient({
   }, [initialStart, initialEnd]);
 
   useEffect(() => {
-    const resultsGuests = initialAdults + initialChildren;
-    const currentGuests = adults + children;
-
-    if (resultsGuests > 0 && resultsGuests !== currentGuests) {
-    }
-  }, [adults, children, initialAdults, initialChildren]);
-
-  useEffect(() => {
     const draft = localStorage.getItem(STORAGE_KEY)
     if (draft) {
       try {
@@ -191,56 +191,7 @@ export default function BookingClient({
     }))
   }
 
-  const handleSelectOption = (option: SearchOption, totalPriceWithExtraBeds: number) => {
-    const extraBeds = extraBedsMap[option.displayName] || 0
-
-    const maxCapacity = option.maxGuests + extraBeds;
-    if (totalGuests > maxCapacity) {
-      alert(`Liczba osób (${totalGuests}) przekracza pojemność dla "${option.displayName}" (max ${maxCapacity}). Proszę wybrać inną opcję lub zmniejszyć liczbę osób.`);
-      return;
-    }
-
-    const draft: BookingDraft = {
-      startDate: bookingDates.start!,
-      endDate: bookingDates.end!,
-      clientData: {
-        firstName: '',
-        lastName: '',
-        address: '',
-        email: '',
-        phone: ''
-      },
-      invoiceData: {
-        companyName: '',
-        nip: '',
-        street: '',
-        city: '',
-        postalCode: ''
-      },
-      orders: [
-        {
-          propertyId: option.propertyId,
-          displayName: option.displayName,
-          guests: totalGuests,
-          extraBeds,
-          price: totalPriceWithExtraBeds
-        }
-      ]
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
-    router.push('/booking/details')
-  }
-
-  const handleSelectAllProperties = (combinedTotalPrice: number) => {
-    const orders: BookingOrderItem[] = (searchResults?.propertiesAvailable || []).map((option) => ({
-      propertyId: option.propertyId,
-      displayName: option.displayName,
-      guests: Math.max(1, guestsMap[option.displayName] || 1),
-      extraBeds: extraBedsMap[option.displayName] || 0,
-      price: 0,
-    }))
-
+  const handleConfirmBooking = (orders: BookingOrderItem[]) => {
     const draft: BookingDraft = {
       startDate: bookingDates.start!,
       endDate: bookingDates.end!,
@@ -260,10 +211,41 @@ export default function BookingClient({
       },
       orders
     }
-    console.log('Zapisuję szkic rezerwacji dla wszystkich domków:');
-    console.log(draft)
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+  
     router.push('/booking/details')
+  }
+
+  const handleSingleSelect = (option: SearchOption) => {
+    const extraBeds = extraBedsMap[option.displayName] || 0
+    const maxCapacity = option.maxGuests + extraBeds;
+    const totalPrice = option.totalPrice + (extraBeds * option.extraBedPrice)
+
+    if (totalGuests > maxCapacity) {
+      alert(`Liczba osób (${totalGuests}) przekracza pojemność dla "${option.displayName}" (max ${maxCapacity}). Proszę wybrać inną opcję lub zmniejszyć liczbę osób.`);
+      return;
+    }
+
+    handleConfirmBooking([{
+      propertyId: option.propertyId,
+      displayName: option.displayName,
+      guests: totalGuests,
+      extraBeds,
+      price: totalPrice
+    }])
+  }
+
+  const handleAllSelect = (selectedOrders: CombinedOrderSelection[]) => {
+    const orders: BookingOrderItem[] = selectedOrders.map((order) => ({
+      propertyId: order.propertyId,
+      displayName: order.displayName,
+      guests: order.guests,
+      extraBeds: order.extraBeds,
+      price: order.price,
+    }))
+
+    handleConfirmBooking(orders)
   }
 
   const renderGuestsText = () => {
@@ -274,6 +256,7 @@ export default function BookingClient({
   }
 
   const isSearchDisabled = totalGuests === 0 || !bookingDates.start || !bookingDates.end
+
   return (
     <div className={styles.container}>
       {hasDraft && (
@@ -459,7 +442,7 @@ export default function BookingClient({
                       option={option}
                       extraBeds={extraBedsMap[option.displayName] || 0}
                       onExtraBedsChange={handleExtraBedsChange}
-                      onSelect={handleSelectOption}
+                      onSelect={handleSingleSelect}
                     />
                   ))}
 
@@ -476,7 +459,7 @@ export default function BookingClient({
                           totalGuestsLimit={totalGuests}
                           startDate={bookingDates.start}
                           endDate={bookingDates.end}
-                          onSelectAll={handleSelectAllProperties}
+                          onSelectAll={handleAllSelect}
                         />
                       </div>
                     ) : (
@@ -485,7 +468,6 @@ export default function BookingClient({
                       </div>
                     )
                   )}
-
                 </div>
               )
             })()}

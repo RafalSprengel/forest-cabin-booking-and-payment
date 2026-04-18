@@ -5,7 +5,39 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 import { createCheckoutSession } from '@/actions/stripe';
-import { BookingData } from '@/types/booking';
+
+interface BookingOrderItem {
+  propertyId: string;
+  displayName: string;
+  guests: number;
+  extraBeds: number;
+  price: number;
+}
+
+interface ClientData {
+  firstName: string;
+  lastName: string;
+  address: string;
+  email: string;
+  phone: string;
+}
+
+interface InvoiceData {
+  companyName: string;
+  nip: string;
+  street: string;
+  city: string;
+  postalCode: string;
+}
+
+interface BookingData {
+  startDate: string;
+  endDate: string;
+  clientData: ClientData;
+  invoiceData: InvoiceData;
+  orders: BookingOrderItem[];
+  reservationId?: string;
+}
 
 const STORAGE_KEY = 'wilczechatki_booking_draft';
 
@@ -23,7 +55,8 @@ export default function BookingSummaryPage() {
 
     try {
       const parsed: BookingData = JSON.parse(saved);
-      if (!parsed.guestData?.firstName) {
+      const hasOrders = Array.isArray(parsed.orders) && parsed.orders.length > 0;
+      if (!parsed.clientData?.firstName || !hasOrders) {
         router.push('/booking/details');
         return;
       }
@@ -34,45 +67,49 @@ export default function BookingSummaryPage() {
   }, [router]);
 
   const handleStripePayment = async () => {
-    console.log('Dane rezerwacji przed inicjowaniem płatności Stripe:');
-    console.log(bookingData);
-   
-    return;
+
     if (!bookingData) return;
 
     setIsProcessing(true);
     try {
-      const isMultiBooking = bookingData.selectedOption.propertyId === 'ALL_PROPERTIES';
+      const totalPrice = bookingData.orders.reduce((sum, item) => sum + item.price, 0);
+      const totalGuests = bookingData.orders.reduce((sum, item) => sum + item.guests, 0);
+      const totalExtraBeds = bookingData.orders.reduce((sum, item) => sum + item.extraBeds, 0);
+      const selectedDisplayName = bookingData.orders.length === 1
+        ? bookingData.orders[0].displayName
+        : `${bookingData.orders.length} obiekty`;
+
+      const hasInvoiceData = Boolean(
+        bookingData.invoiceData.companyName ||
+        bookingData.invoiceData.nip ||
+        bookingData.invoiceData.street ||
+        bookingData.invoiceData.city ||
+        bookingData.invoiceData.postalCode
+      );
 
       const formattedData = {
         startDate: bookingData.startDate,
         endDate: bookingData.endDate,
-        clientData: {
-          firstName: bookingData.guestData.firstName,
-          lastName: bookingData.guestData.lastName,
-          address: bookingData.guestData.address,
-          email: bookingData.guestData.email,
-          phone: bookingData.guestData.phone,
+        adults: totalGuests,
+        children: 0,
+        extraBeds: totalExtraBeds,
+        selectedOption: {
+          propertyId: bookingData.orders[0].propertyId,
+          displayName: selectedDisplayName,
+          totalPrice,
+          maxGuests: totalGuests,
         },
-        invoiceData: bookingData.guestData.invoice ? {
-          companyName: bookingData.guestData.invoiceData?.companyName,
-          nip: bookingData.guestData.invoiceData?.nip,
-          street: bookingData.guestData.invoiceData?.street,
-          city: bookingData.guestData.invoiceData?.city,
-          postalCode: bookingData.guestData.invoiceData?.postalCode,
-        } : null,
-        orders: isMultiBooking
-          ? bookingData.selectedOption.propertyAllocations
-          : [{
-            propertyId: bookingData.selectedOption.propertyId,
-            displayName: bookingData.selectedOption.displayName,
-            guests: bookingData.adults + bookingData.children,
-            extraBeds: bookingData.extraBeds,
-            totalPrice: bookingData.selectedOption.totalPrice
-          }]
+        guestData: {
+          firstName: bookingData.clientData.firstName,
+          lastName: bookingData.clientData.lastName,
+          address: bookingData.clientData.address,
+          email: bookingData.clientData.email,
+          phone: bookingData.clientData.phone,
+          invoice: hasInvoiceData,
+          invoiceData: hasInvoiceData ? bookingData.invoiceData : undefined,
+          termsAccepted: true,
+        }
       };
-
-      //console.log('Inicjowanie płatności Stripe z sformatowanymi danymi:', formattedData);
 
       const result = await createCheckoutSession(formattedData as any);
       if (result?.url) {
@@ -100,7 +137,21 @@ export default function BookingSummaryPage() {
     );
   }
 
-  const { startDate, endDate, adults, children, extraBeds, selectedOption, guestData } = bookingData;
+  const { startDate, endDate, clientData, invoiceData, orders } = bookingData;
+  const totalGuests = orders.reduce((sum, item) => sum + item.guests, 0);
+  const totalExtraBeds = orders.reduce((sum, item) => sum + item.extraBeds, 0);
+  const totalPrice = orders.reduce((sum, item) => sum + item.price, 0);
+  const orderDisplayName = orders.length === 1
+    ? orders[0].displayName
+    : `${orders.length} obiekty: ${orders.map((item) => item.displayName).join(', ')}`;
+  const hasInvoiceData = Boolean(
+    invoiceData.companyName ||
+    invoiceData.nip ||
+    invoiceData.street ||
+    invoiceData.city ||
+    invoiceData.postalCode
+  );
+
   const nights = Math.ceil(
     (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -125,13 +176,13 @@ export default function BookingSummaryPage() {
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Obiekt:</span>
-            <span className={styles.summaryValue}>{selectedOption?.displayName}</span>
+            <span className={styles.summaryValue}>{orderDisplayName}</span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Goście:</span>
             <span className={styles.summaryValue}>
-              {adults} dorosłych, {children} dzieci
-              {extraBeds > 0 && ` + ${extraBeds} dostawki`}
+              {totalGuests} osób
+              {totalExtraBeds > 0 && ` + ${totalExtraBeds} dostawki`}
             </span>
           </div>
         </div>
@@ -142,39 +193,39 @@ export default function BookingSummaryPage() {
         <div className={styles.summaryGrid}>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Imię i nazwisko:</span>
-            <span className={styles.summaryValue}>{guestData.firstName} {guestData.lastName}</span>
+            <span className={styles.summaryValue}>{clientData.firstName} {clientData.lastName}</span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Adres:</span>
-            <span className={styles.summaryValue}>{guestData.address}</span>
+            <span className={styles.summaryValue}>{clientData.address}</span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Email:</span>
-            <span className={styles.summaryValue}>{guestData.email}</span>
+            <span className={styles.summaryValue}>{clientData.email}</span>
           </div>
           <div className={styles.summaryItem}>
             <span className={styles.summaryLabel}>Telefon:</span>
-            <span className={styles.summaryValue}>{guestData.phone}</span>
+            <span className={styles.summaryValue}>{clientData.phone}</span>
           </div>
         </div>
       </div>
 
-      {guestData.invoice && guestData.invoiceData && (
+      {hasInvoiceData && (
         <div className={styles.summaryCard}>
           <h2 className={styles.summaryTitle}>Dane faktury VAT</h2>
           <div className={styles.summaryGrid}>
             <div className={styles.summaryItem}>
               <span className={styles.summaryLabel}>Nazwa firmy:</span>
-              <span className={styles.summaryValue}>{guestData.invoiceData.companyName}</span>
+              <span className={styles.summaryValue}>{invoiceData.companyName}</span>
             </div>
             <div className={styles.summaryItem}>
               <span className={styles.summaryLabel}>NIP:</span>
-              <span className={styles.summaryValue}>{guestData.invoiceData.nip}</span>
+              <span className={styles.summaryValue}>{invoiceData.nip}</span>
             </div>
             <div className={styles.summaryItem}>
               <span className={styles.summaryLabel}>Adres:</span>
               <span className={styles.summaryValue}>
-                {guestData.invoiceData.street}, {guestData.invoiceData.postalCode} {guestData.invoiceData.city}
+                {invoiceData.street}, {invoiceData.postalCode} {invoiceData.city}
               </span>
             </div>
           </div>
@@ -184,7 +235,7 @@ export default function BookingSummaryPage() {
       <div className={styles.priceCard}>
         <div className={styles.priceRow}>
           <span className={styles.priceLabel}>Cena całkowita:</span>
-          <span className={styles.priceValue}>{selectedOption?.totalPrice} zł</span>
+          <span className={styles.priceValue}>{totalPrice} zł</span>
         </div>
       </div>
 
