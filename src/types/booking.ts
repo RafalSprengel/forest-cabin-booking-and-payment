@@ -6,30 +6,28 @@ export interface InvoiceData {
   postalCode: string;
 }
 
-export interface GuestData {
+export interface ClientData {
   firstName: string;
   lastName: string;
   address: string;
   email: string;
   phone: string;
-  invoice: boolean;
-  invoiceData?: InvoiceData;
-  termsAccepted: boolean;
+}
+
+export interface BookingOrderItem {
+  propertyId: string;
+  displayName: string;
+  guests: number;
+  extraBeds: number;
+  price: number;
 }
 
 export interface BookingData {
   startDate: string;
   endDate: string;
-  adults: number;
-  children: number;
-  extraBeds: number;
-  selectedOption: {
-    propertyId: string;
-    displayName: string;
-    totalPrice: number;
-    maxGuests: number;
-  } | null;
-  guestData: GuestData;
+  clientData: ClientData;
+  invoiceData: InvoiceData;
+  orders: BookingOrderItem[];
   reservationId?: string;
 }
 

@@ -287,7 +287,10 @@ export async function searchAction(params: SearchParams) {
     const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? false;
 
     const occupiedIds = await Booking.distinct('propertyId', {
-      status: { $in: ['confirmed', 'blocked'] },
+      $or: [
+        { status: 'blocked' },
+        { status: 'confirmed' },
+      ],
       startDate: { $lt: end },
       endDate: { $gt: start },
     });

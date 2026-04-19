@@ -5,39 +5,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 import { createCheckoutSession } from '@/actions/stripe';
-
-interface BookingOrderItem {
-  propertyId: string;
-  displayName: string;
-  guests: number;
-  extraBeds: number;
-  price: number;
-}
-
-interface ClientData {
-  firstName: string;
-  lastName: string;
-  address: string;
-  email: string;
-  phone: string;
-}
-
-interface InvoiceData {
-  companyName: string;
-  nip: string;
-  street: string;
-  city: string;
-  postalCode: string;
-}
-
-interface BookingData {
-  startDate: string;
-  endDate: string;
-  clientData: ClientData;
-  invoiceData: InvoiceData;
-  orders: BookingOrderItem[];
-  reservationId?: string;
-}
+import type { BookingData } from '@/types/booking';
 
 const STORAGE_KEY = 'wilczechatki_booking_draft';
 
@@ -72,46 +40,7 @@ export default function BookingSummaryPage() {
 
     setIsProcessing(true);
     try {
-      const totalPrice = bookingData.orders.reduce((sum, item) => sum + item.price, 0);
-      const totalGuests = bookingData.orders.reduce((sum, item) => sum + item.guests, 0);
-      const totalExtraBeds = bookingData.orders.reduce((sum, item) => sum + item.extraBeds, 0);
-      const selectedDisplayName = bookingData.orders.length === 1
-        ? bookingData.orders[0].displayName
-        : `${bookingData.orders.length} obiekty`;
-
-      const hasInvoiceData = Boolean(
-        bookingData.invoiceData.companyName ||
-        bookingData.invoiceData.nip ||
-        bookingData.invoiceData.street ||
-        bookingData.invoiceData.city ||
-        bookingData.invoiceData.postalCode
-      );
-
-      const formattedData = {
-        startDate: bookingData.startDate,
-        endDate: bookingData.endDate,
-        adults: totalGuests,
-        children: 0,
-        extraBeds: totalExtraBeds,
-        selectedOption: {
-          propertyId: bookingData.orders[0].propertyId,
-          displayName: selectedDisplayName,
-          totalPrice,
-          maxGuests: totalGuests,
-        },
-        guestData: {
-          firstName: bookingData.clientData.firstName,
-          lastName: bookingData.clientData.lastName,
-          address: bookingData.clientData.address,
-          email: bookingData.clientData.email,
-          phone: bookingData.clientData.phone,
-          invoice: hasInvoiceData,
-          invoiceData: hasInvoiceData ? bookingData.invoiceData : undefined,
-          termsAccepted: true,
-        }
-      };
-
-      const result = await createCheckoutSession(formattedData as any);
+      const result = await createCheckoutSession(bookingData);
       if (result?.url) {
         window.location.href = result.url;
       } else {

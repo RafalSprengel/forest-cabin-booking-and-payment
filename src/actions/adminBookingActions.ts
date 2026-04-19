@@ -29,13 +29,31 @@ interface BlockedBookingListItem {
 }
 
 const ALL_PROPERTIES_ID = 'ALL_PROPERTIES'
+const AVAILABILITY_STATUS_FILTER = {
+  $or: [
+    { status: 'blocked' },
+    { status: 'confirmed' },
+  ],
+}
+
+function resolvePaymentStatus(totalPrice: number, paidAmount: number): 'unpaid' | 'partial_paid' | 'paid' {
+  if (paidAmount <= 0) {
+    return 'unpaid'
+  }
+
+  if (paidAmount < totalPrice) {
+    return 'partial_paid'
+  }
+
+  return 'paid'
+}
 
 export async function getUnavailableDatesForProperty(propertyId: string): Promise<UnavailableDate[]> {
   await dbConnect()
   const config = await SystemConfig.findById('main')
   const autoBlockOtherCabins = config?.autoBlockOtherCabins ?? true
   const query: any = {
-    status: { $in: ['confirmed', 'blocked'] }
+    ...AVAILABILITY_STATUS_FILTER,
   }
 
   if (!autoBlockOtherCabins) {
@@ -96,17 +114,16 @@ export async function getAdminBookingsList() {
   const normalizedBookings = bookings.map((booking: any) => {
     const property = booking.propertyId
     const propertyId = property?._id ? String(property._id) : String(property || '')
-    const rawPaidAmount = Number(booking.paidAmount || 0)
-    const rawTotalPrice = Number(booking.totalPrice || 0)
-    const paidAmount = booking.source === 'customer' && rawPaidAmount === 0 && rawTotalPrice > 0
-      ? rawTotalPrice
-      : rawPaidAmount
+    const paidAmount = Number(booking.paidAmount)
+    const totalPrice = Number(booking.totalPrice)
+    const paymentStatus = booking.paymentStatus || resolvePaymentStatus(totalPrice, paidAmount)
 
     return {
       ...booking,
       propertyId,
       propertyName: property?.name || 'Domek',
       paidAmount,
+      paymentStatus,
     }
   })
 
@@ -124,17 +141,16 @@ export async function getBookingById(bookingId: string) {
   }
 
   const property = (booking as any).propertyId
-  const rawPaidAmount = Number((booking as any).paidAmount || 0)
-  const rawTotalPrice = Number((booking as any).totalPrice || 0)
-  const paidAmount = (booking as any).source === 'customer' && rawPaidAmount === 0 && rawTotalPrice > 0
-    ? rawTotalPrice
-    : rawPaidAmount
+  const paidAmount = Number((booking as any).paidAmount)
+  const totalPrice = Number((booking as any).totalPrice)
+  const paymentStatus = (booking as any).paymentStatus || resolvePaymentStatus(totalPrice, paidAmount)
 
   const normalizedBooking = {
     ...booking,
     propertyId: property?._id ? String(property._id) : String(property || ''),
     propertyName: property?.name || '',
     paidAmount,
+    paymentStatus,
   }
 
   return JSON.parse(JSON.stringify(normalizedBooking))
@@ -155,6 +171,9 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
       city: rawData.invoiceCity,
       postalCode: rawData.invoicePostalCode,
     } : undefined
+    const totalPrice = Number(rawData.totalPrice)
+    const paidAmount = Number(rawData.paidAmount)
+    const paymentStatus = resolvePaymentStatus(totalPrice, paidAmount)
     const newBooking = new Booking({
       propertyId: rawData.propertyId,
       startDate: new Date(rawData.startDate as string),
@@ -162,11 +181,16 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
       guestName: rawData.guestName,
       guestEmail: rawData.guestEmail,
       guestPhone: rawData.guestPhone,
+      adults: Number(rawData.numGuests),
+      children: 0,
       numberOfGuests: Number(rawData.numGuests),
       extraBedsCount: Number(rawData.extraBeds),
-      totalPrice: Number(rawData.totalPrice),
-      paidAmount: Number(rawData.paidAmount),
+      totalPrice,
+      depositAmount: paidAmount,
+      paidAmount,
+      paymentStatus,
       status: 'confirmed',
+      paymentMethod: 'transfer',
       invoice: rawData.invoice === 'true',
       invoiceData,
       customerNotes: rawData.internalNotes,
@@ -196,6 +220,9 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       city: rawData.invoiceCity,
       postalCode: rawData.invoicePostalCode,
     } : undefined
+    const totalPrice = Number(rawData.totalPrice)
+    const paidAmount = Number(rawData.paidAmount)
+    const paymentStatus = resolvePaymentStatus(totalPrice, paidAmount)
     const bookingData = {
       propertyId: rawData.propertyId,
       startDate: new Date(rawData.startDate as string),
@@ -203,11 +230,16 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       guestName: rawData.guestName,
       guestEmail: rawData.guestEmail,
       guestPhone: rawData.guestPhone,
+      adults: Number(rawData.numGuests),
+      children: 0,
       numberOfGuests: Number(rawData.numGuests),
       extraBedsCount: Number(rawData.extraBeds),
-      totalPrice: Number(rawData.totalPrice),
-      paidAmount: Number(rawData.paidAmount),
+      totalPrice,
+      depositAmount: paidAmount,
+      paidAmount,
+      paymentStatus,
       status: rawData.status,
+      paymentMethod: 'transfer',
       invoice: rawData.invoice === 'true',
       invoiceData,
       customerNotes: rawData.internalNotes,
@@ -268,7 +300,7 @@ export async function getUnavailableDatesForBlocking(propertyId: string): Promis
   if (!propertyId) return []
 
   const query: any = {
-    status: { $in: ['confirmed', 'blocked'] }
+    ...AVAILABILITY_STATUS_FILTER,
   }
 
   if (propertyId !== ALL_PROPERTIES_ID) {
@@ -372,7 +404,7 @@ export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
   for (const property of targetProperties) {
     const conflict = await Booking.findOne({
       propertyId: property._id,
-      status: { $in: ['confirmed', 'blocked'] },
+      ...AVAILABILITY_STATUS_FILTER,
       startDate: { $lt: endDate },
       endDate: { $gt: startDate },
     }).select('_id').lean()
@@ -394,11 +426,16 @@ export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
     guestName: 'Zabl. przez admina',
     guestEmail: 'blokada@admin.local',
     guestPhone: '-',
+    adults: 1,
+    children: 0,
     numberOfGuests: 0,
     extraBedsCount: 0,
     totalPrice: 0,
+    depositAmount: 0,
     paidAmount: 0,
+    paymentStatus: 'unpaid',
     status: 'blocked',
+    paymentMethod: 'transfer',
     adminNotes: data.adminNotes?.trim() || 'Blokada terminu',
     source: 'admin',
   }))

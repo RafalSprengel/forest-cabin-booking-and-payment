@@ -39,7 +39,7 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
     )
   }
 
-  const isPaid = details.paidAmount >= details.totalPrice && details.totalPrice > 0
+  const isPaid = details.paymentStatus === 'paid'
   const isDeposit = details.paidAmount > 0 && !isPaid
   const paymentClass = isPaid ? styles.paymentPaid : isDeposit ? styles.paymentDeposit : styles.paymentUnpaid
   const paymentLabel = isPaid ? 'Opłacone' : isDeposit ? 'Zaliczka' : 'Nieopłacone'

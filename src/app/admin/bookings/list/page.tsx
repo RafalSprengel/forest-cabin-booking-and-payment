@@ -3,8 +3,9 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 
-function getPaymentBadge(totalPrice: number, paidAmount: number) {
-  if (paidAmount >= totalPrice && totalPrice > 0) return { text: 'Opłacone', class: styles.paymentPaid };
+function getPaymentBadge(paymentStatus: string, paidAmount: number, totalPrice: number) {
+  const isFullyPaidByAmount = totalPrice > 0 && paidAmount >= totalPrice;
+  if (paymentStatus === 'paid' || isFullyPaidByAmount) return { text: 'Opłacone', class: styles.paymentPaid };
   if (paidAmount > 0) return { text: 'Zaliczka', class: styles.paymentDeposit };
   return { text: 'Nieopłacone', class: styles.paymentUnpaid };
 }
@@ -40,15 +41,17 @@ export default async function BookingsListPage() {
         <>
           {upcomingBookings.length > 0 && (
             <div className={styles.cardsList}>
-              {upcomingBookings.map((booking) => {
+              {upcomingBookings.map((booking: any) => {
                 const start = new Date(booking.startDate);
                 const end = new Date(booking.endDate);
                 const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
                 const statusKey = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
                 const statusLabel = booking.status === 'confirmed' ? 'Potwierdzona' : booking.status === 'blocked' ? 'Zablokowana' : booking.status === 'cancelled' ? 'Anulowana' : 'Oczekująca';
-                const remainingAmount = booking.totalPrice - (booking.paidAmount || 0);
-                const paymentBadge = getPaymentBadge(booking.totalPrice, booking.paidAmount || 0);
-                const isFullyPaid = (booking.paidAmount || 0) >= booking.totalPrice && booking.totalPrice > 0;
+                const paidAmount = Number(booking.paidAmount);
+                const totalPrice = Number(booking.totalPrice);
+                const remainingAmount = totalPrice - paidAmount;
+                const paymentBadge = getPaymentBadge(booking.paymentStatus, paidAmount, totalPrice);
+                const isFullyPaid = booking.paymentStatus === 'paid' || (totalPrice > 0 && paidAmount >= totalPrice);
 
                 return (
                   <article key={booking._id} className={styles.bookingCard}>
@@ -81,7 +84,7 @@ export default async function BookingsListPage() {
                           <div className={styles.detailRow}>
                             <span className={styles.label}></span>
                             <div className={styles.priceBreakdown}>
-                              <span className={styles.pricePaid}>Wpłacono: {(booking.paidAmount || 0).toFixed(2)} zł</span>
+                              <span className={styles.pricePaid}>Wpłacono: {paidAmount.toFixed(2)} zł</span>
                               <span className={styles.priceDue}>Do zapłaty: {remainingAmount.toFixed(2)} zł</span>
                             </div>
                           </div>
@@ -112,15 +115,17 @@ export default async function BookingsListPage() {
 
           {pastBookings.length > 0 && (
             <div className={styles.cardsList}>
-              {pastBookings.map((booking) => {
+              {pastBookings.map((booking: any) => {
                 const start = new Date(booking.startDate);
                 const end = new Date(booking.endDate);
                 const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
                 const statusKey = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
                 const statusLabel = booking.status === 'confirmed' ? 'Potwierdzona' : booking.status === 'blocked' ? 'Zablokowana' : booking.status === 'cancelled' ? 'Anulowana' : 'Oczekująca';
-                const remainingAmount = booking.totalPrice - (booking.paidAmount || 0);
-                const paymentBadge = getPaymentBadge(booking.totalPrice, booking.paidAmount || 0);
-                const isFullyPaid = (booking.paidAmount || 0) >= booking.totalPrice && booking.totalPrice > 0;
+                const paidAmount = Number(booking.paidAmount);
+                const totalPrice = Number(booking.totalPrice);
+                const remainingAmount = totalPrice - paidAmount;
+                const paymentBadge = getPaymentBadge(booking.paymentStatus, paidAmount, totalPrice);
+                const isFullyPaid = booking.paymentStatus === 'paid' || (totalPrice > 0 && paidAmount >= totalPrice);
 
                 return (
                   <article key={booking._id} className={`${styles.bookingCard} ${styles.pastCard}`}>
@@ -153,7 +158,7 @@ export default async function BookingsListPage() {
                           <div className={styles.detailRow}>
                             <span className={styles.label}></span>
                             <div className={styles.priceBreakdown}>
-                              <span className={styles.pricePaid}>Wpłacono: {(booking.paidAmount || 0).toFixed(2)} zł</span>
+                              <span className={styles.pricePaid}>Wpłacono: {paidAmount.toFixed(2)} zł</span>
                               <span className={styles.priceDue}>Do zapłaty: {remainingAmount.toFixed(2)} zł</span>
                             </div>
                           </div>

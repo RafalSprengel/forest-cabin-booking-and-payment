@@ -28,7 +28,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
   const initialGuestName = initialData.guestName ?? initialData.guestInfo?.name ?? '';
   const initialGuestEmail = initialData.guestEmail ?? initialData.guestInfo?.email ?? '';
   const initialGuestPhone = initialData.guestPhone ?? initialData.guestInfo?.phone ?? '';
-  const initialNumGuests = initialData.numberOfGuests ?? initialData.numGuests ?? 0;
+  const initialNumGuests = initialData.adults;
   const initialExtraBeds = initialData.extraBedsCount ?? initialData.extraBeds ?? 0;
 
   const [form, setForm] = useState<FormData>({

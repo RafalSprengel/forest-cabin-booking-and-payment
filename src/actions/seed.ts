@@ -360,7 +360,10 @@ export async function seedBookings() {
         numberOfGuests: 4,
         extraBedsCount: 1,
         totalPrice: 3500,
+        depositAmount: 500,
         paidAmount: 500,
+        paymentStatus: 'partial_paid',
+        paymentMethod: 'transfer',
         status: 'confirmed',
         invoice: true,
         invoiceData: {
@@ -371,7 +374,7 @@ export async function seedBookings() {
           postalCode: '00-002',
         },
         customerNotes: 'Rezerwacja testowa dla chatki A',
-        source: 'customer',
+        source: 'online',
       },
       {
         propertyId: new Types.ObjectId(properties[1]._id),
@@ -384,11 +387,14 @@ export async function seedBookings() {
         numberOfGuests: 2,
         extraBedsCount: 0,
         totalPrice: 1800,
+        depositAmount: 1800,
         paidAmount: 1800,
+        paymentStatus: 'paid',
+        paymentMethod: 'transfer',
         status: 'confirmed',
         invoice: false,
         customerNotes: 'Prośba o ciszę nocną',
-        source: 'customer',
+        source: 'online',
       },
     ];
 

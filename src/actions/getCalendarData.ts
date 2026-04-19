@@ -22,6 +22,7 @@ export interface BookingDetails {
   extraBeds: number;
   totalPrice: number;
   paidAmount: number;
+  paymentStatus: 'unpaid' | 'partial_paid' | 'paid' | 'refunded';
   status: string;
   startDate: string;
   endDate: string;
@@ -59,18 +60,19 @@ export async function getCalendarData(daysInMonth: number, startDateStr: string)
 
   const properties = await Property.find({ isActive: true }).lean();
   const bookings = await Booking.find({
-    status: { $in: ['confirmed', 'blocked'] },
+    $or: [
+      { status: 'blocked' },
+      { status: 'confirmed' },
+    ],
     startDate: { $lt: endDate.toDate() },
     endDate: { $gt: startDate.toDate() }
   }).lean();
 
   const mapBookingDetails = (b: any): BookingDetails => {
     const id = b._id.toString();
-    const rawPaidAmount = Number(b.paidAmount || 0);
-    const rawTotalPrice = Number(b.totalPrice || 0);
-    const paidAmount = b.source === 'customer' && rawPaidAmount === 0 && rawTotalPrice > 0
-      ? rawTotalPrice
-      : rawPaidAmount;
+    const paidAmount = Number(b.paidAmount);
+    const totalPrice = Number(b.totalPrice);
+    const paymentStatus = b.paymentStatus || (paidAmount <= 0 ? 'unpaid' : paidAmount < totalPrice ? 'partial_paid' : 'paid');
 
     return {
       id,
@@ -81,8 +83,9 @@ export async function getCalendarData(daysInMonth: number, startDateStr: string)
       source: b.source || '',
       numberOfGuests: b.numberOfGuests || 0,
       extraBeds: b.extraBedsCount || 0,
-      totalPrice: rawTotalPrice,
+      totalPrice,
       paidAmount,
+      paymentStatus,
       status: b.status,
       startDate: dayjs.utc(b.startDate).format('YYYY-MM-DD'),
       endDate: dayjs.utc(b.endDate).format('YYYY-MM-DD'),

@@ -1,15 +1,16 @@
-export type PaymentStatus = 'unpaid' | 'deposit' | 'paid';
+export type PaymentStatus = 'unpaid' | 'partial_paid' | 'paid' | 'refunded';
 
 export function calculatePaymentStatus(totalPrice: number, paidAmount: number): PaymentStatus {
   if (paidAmount >= totalPrice) return 'paid';
-  if (paidAmount > 0) return 'deposit';
+  if (paidAmount > 0) return 'partial_paid';
   return 'unpaid';
 }
 
 export function getPaymentStatusLabel(status: PaymentStatus): string {
   switch (status) {
     case 'paid': return 'Opłacone';
-    case 'deposit': return 'Zaliczka';
+    case 'partial_paid': return 'Częściowo opłacone';
+    case 'refunded': return 'Zwrócone';
     case 'unpaid': return 'Nieopłacone';
     default: return 'Nieznany';
   }
@@ -18,7 +19,8 @@ export function getPaymentStatusLabel(status: PaymentStatus): string {
 export function getPaymentStatusClass(status: PaymentStatus): string {
   switch (status) {
     case 'paid': return 'paymentPaid';
-    case 'deposit': return 'paymentDeposit';
+    case 'partial_paid': return 'paymentDeposit';
+    case 'refunded': return 'paymentRefunded';
     case 'unpaid': return 'paymentUnpaid';
     default: return '';
   }

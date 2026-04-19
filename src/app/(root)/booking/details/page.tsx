@@ -4,43 +4,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
-
-interface BookingData {
-  startDate: string;
-  endDate: string;
-  clientData: ClientData;
-  invoiceData: InvoiceData;
-  orders: BookingOrderItem[];
-}
-
-interface BookingOrderItem {
-  propertyId: string;
-  displayName: string;
-  guests: number;
-  extraBeds: number;
-  price: number;
-}
-
-interface ClientData {
-  firstName: string;
-  lastName: string;
-  address: string;
-  email: string;
-  phone: string;
-}
+import type { BookingData, ClientData, InvoiceData } from '@/types/booking';
 
 interface GuestData extends ClientData {
   invoice: boolean;
   invoiceData: InvoiceData;
   termsAccepted: boolean;
-}
-
-interface InvoiceData {
-  companyName: string;
-  nip: string;
-  street: string;
-  city: string;
-  postalCode: string;
 }
 
 const STORAGE_KEY = 'wilczechatki_booking_draft';
@@ -91,13 +60,7 @@ export default function BookingDetailsPage() {
           ...prev,
           ...parsed.clientData,
           invoice: hasInvoiceData,
-          invoiceData: parsed.invoiceData || {
-            companyName: '',
-            nip: '',
-            street: '',
-            city: '',
-            postalCode: '',
-          },
+          invoiceData: parsed.invoiceData,
         }));
       } catch {
         router.push('/booking');
@@ -412,7 +375,7 @@ export default function BookingDetailsPage() {
                   id="invoice.companyName"
                   name="invoice.companyName"
                   type="text"
-                  value={formData.invoiceData?.companyName || ''}
+                  value={formData.invoiceData.companyName}
                   onChange={handleChange}
                   className={errors.companyName ? styles.inputError : ''}
                   placeholder="Pełna nazwa firmy"
@@ -426,7 +389,7 @@ export default function BookingDetailsPage() {
                   id="invoice.nip"
                   name="invoice.nip"
                   type="text"
-                  value={formData.invoiceData?.nip || ''}
+                  value={formData.invoiceData.nip}
                   onChange={handleChange}
                   className={errors.nip ? styles.inputError : ''}
                   placeholder="123-456-78-90"
@@ -440,7 +403,7 @@ export default function BookingDetailsPage() {
                   id="invoice.street"
                   name="invoice.street"
                   type="text"
-                  value={formData.invoiceData?.street || ''}
+                  value={formData.invoiceData.street}
                   onChange={handleChange}
                   className={errors.invoiceStreet ? styles.inputError : ''}
                   placeholder="ul. Przykładowa 123"
@@ -455,7 +418,7 @@ export default function BookingDetailsPage() {
                     id="invoice.postalCode"
                     name="invoice.postalCode"
                     type="text"
-                    value={formData.invoiceData?.postalCode || ''}
+                    value={formData.invoiceData.postalCode}
                     onChange={handleChange}
                     className={errors.postalCode ? styles.inputError : ''}
                     placeholder="00-000"
@@ -470,7 +433,7 @@ export default function BookingDetailsPage() {
                     id="invoice.city"
                     name="invoice.city"
                     type="text"
-                    value={formData.invoiceData?.city || ''}
+                    value={formData.invoiceData.city}
                     onChange={handleChange}
                     className={errors.invoiceCity ? styles.inputError : ''}
                     placeholder="Miejscowość"

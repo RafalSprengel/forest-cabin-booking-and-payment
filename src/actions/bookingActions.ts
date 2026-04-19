@@ -58,6 +58,18 @@ interface BookingDraftData {
   guestData: GuestData;
 }
 
+function resolvePaymentStatus(totalPrice: number, paidAmount: number): 'unpaid' | 'partial_paid' | 'paid' {
+  if (paidAmount <= 0) {
+    return 'unpaid';
+  }
+
+  if (paidAmount < totalPrice) {
+    return 'partial_paid';
+  }
+
+  return 'paid';
+}
+
 export async function createBookingFromDraft(draftData: BookingDraftData) {
   try {
     await dbConnect();
@@ -84,11 +96,12 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
       guestEmail: guestData.email,
       guestPhone: guestData.phone,
       guestAddress: guestData.address,
-      status: 'confirmed' as const,
+      status: 'pending' as const,
+      paymentMethod: 'online' as const,
       invoice: guestData.invoice,
       invoiceData: guestData.invoiceData,
       customerNotes: '',
-      source: 'customer',
+      source: 'online' as const,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -134,7 +147,9 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
           numberOfGuests: allocation.guests,
           extraBedsCount: allocation.extraBeds,
           totalPrice: recalculatedPrice,
-          paidAmount: recalculatedPrice,
+          depositAmount: recalculatedPrice,
+          paidAmount: 0,
+          paymentStatus: resolvePaymentStatus(recalculatedPrice, 0),
         });
       }
     } else {
@@ -172,7 +187,9 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         numberOfGuests,
         extraBedsCount: extraBeds,
         totalPrice: recalculatedPrice,
-        paidAmount: recalculatedPrice,
+        depositAmount: recalculatedPrice,
+        paidAmount: 0,
+        paymentStatus: resolvePaymentStatus(recalculatedPrice, 0),
       });
     }
 
@@ -217,7 +234,10 @@ export async function getBlockedDates(): Promise<{ date: string }[]> {
     const allowCheckinOnDepartureDay = bookingConfig?.allowCheckinOnDepartureDay ?? true;
 
     const bookings = await Booking.find({
-      status: { $in: ['confirmed', 'blocked'] }
+      $or: [
+        { status: 'blocked' },
+        { status: 'confirmed' },
+      ],
     }).select('startDate endDate').lean();
 
     const blockedSet = new Set<string>();

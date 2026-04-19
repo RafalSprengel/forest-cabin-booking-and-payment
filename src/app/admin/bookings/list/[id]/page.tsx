@@ -10,7 +10,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
   const booking = await getBookingById(id);
   if (!booking) { notFound(); }
 
-  const bookingTypeLabel = booking.source === 'customer'
+  const bookingTypeLabel = booking.source === 'online'
     ? 'Klient (online)'
     : booking.source === 'admin'
       ? 'Admin (ręcznie)'

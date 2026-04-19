@@ -12,7 +12,10 @@ export interface IBooking extends Document {
   children: number;
   extraBedsCount: number;
   totalPrice: number;
+  depositAmount: number;
   paidAmount: number;
+  paymentStatus: 'unpaid' | 'partial_paid' | 'paid' | 'refunded';
+  paymentMethod: 'online' | 'cash' | 'transfer';
   status: 'pending' | 'confirmed' | 'cancelled' | 'blocked';
   invoice?: boolean;
   invoiceData?: {
@@ -24,7 +27,7 @@ export interface IBooking extends Document {
   };
   customerNotes?: string;
   adminNotes?: string;
-  source?: string;
+  source: 'online' | 'admin';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,10 +86,20 @@ const BookingSchema = new Schema({
     required: true,
     min: 0
   },
+  depositAmount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   paidAmount: {
     type: Number,
     default: 0,
     min: 0
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'partial_paid', 'paid', 'refunded'],
+    default: 'unpaid'
   },
   status: {
     type: String,
@@ -114,7 +127,14 @@ const BookingSchema = new Schema({
   },
   source: {
     type: String,
+    enum: ['online', 'admin'],
+    required: true,
     trim: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['online', 'cash', 'transfer'],
+    default: 'online'
   }
 }, {
   timestamps: true
@@ -123,5 +143,16 @@ const BookingSchema = new Schema({
 BookingSchema.index({ propertyId: 1, startDate: 1, endDate: 1 });
 BookingSchema.index({ startDate: 1, endDate: 1 });
 BookingSchema.index({ status: 1 });
+BookingSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 86400,
+    partialFilterExpression: {
+      paymentStatus: 'unpaid',
+      status: 'pending',
+      source: 'online'
+    }
+  }
+);
 
 export default mongoose.models.Booking || mongoose.model<IBooking>('Booking', BookingSchema);
