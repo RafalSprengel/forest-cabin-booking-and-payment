@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 import { toast } from 'react-hot-toast'
 import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
 import CalendarPicker, { DatesData } from '@/app/_components/CalendarPicker/CalendarPicker'
@@ -53,8 +54,12 @@ export default function BlockBookingsPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const loadBlockedBookings = useCallback(async (propertyId?: string) => {
-    const rows = await getBlockedBookings(propertyId)
-    setBlockedBookings(rows)
+    try {
+      const rows = await getBlockedBookings(propertyId)
+      setBlockedBookings(rows)
+    } catch (error: any) {
+      setErrorMessage(error?.message ?? 'Nie udało się pobrać listy blokad.')
+    }
   }, [])
 
   const loadUnavailable = useCallback(async (propertyId: string) => {
@@ -68,6 +73,8 @@ export default function BlockBookingsPage() {
         }
       })
       setCalendarDates(mapped)
+    } catch (error: any) {
+      setErrorMessage(error?.message ?? 'Nie udało się pobrać zajętych terminów.')
     } finally {
       setIsLoadingUnavailable(false)
     }
@@ -106,13 +113,17 @@ export default function BlockBookingsPage() {
     }
   }, [selectedPropertyId, loadBlockedBookings, loadUnavailable])
 
-  const handleCreateBlock = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!selectedPropertyId || !bookingDates.start || !bookingDates.end) {
-      setErrorMessage('Wybierz domek i zakres dat blokady.')
+  const handleCreateBlock = async () => {
+    if (!selectedPropertyId || !bookingDates.start) {
+      const message = 'Wybierz domek i co najmniej dzień rozpoczęcia blokady.'
+      setErrorMessage(message)
+      toast.error(message)
       return
     }
+
+    const normalizedEndDate = bookingDates.end && dayjs(bookingDates.end).isAfter(dayjs(bookingDates.start), 'day')
+      ? bookingDates.end
+      : dayjs(bookingDates.start).add(1, 'day').format('YYYY-MM-DD')
 
     setIsSubmitting(true)
     setErrorMessage(null)
@@ -121,7 +132,7 @@ export default function BlockBookingsPage() {
       const result = await createBlockedBookingByAdmin({
         propertyId: selectedPropertyId,
         startDate: bookingDates.start,
-        endDate: bookingDates.end,
+        endDate: normalizedEndDate,
         adminNotes,
       })
 
@@ -136,8 +147,13 @@ export default function BlockBookingsPage() {
           await loadBlockedBookings(selectedPropertyId)
         }
       } else {
+        toast.error(result.message)
         setErrorMessage(result.message)
       }
+    } catch (error: any) {
+      const message = error?.message ?? 'Nie udało się utworzyć blokady terminu.'
+      toast.error(message)
+      setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -161,8 +177,13 @@ export default function BlockBookingsPage() {
           await loadBlockedBookings()
         }
       } else {
+        toast.error(result.message)
         setErrorMessage(result.message)
       }
+    } catch (error: any) {
+      const message = error?.message ?? 'Nie udało się usunąć blokady.'
+      toast.error(message)
+      setErrorMessage(message)
     } finally {
       setIsDeletingId(null)
     }
@@ -176,7 +197,13 @@ export default function BlockBookingsPage() {
         <p className="admin-subtitle">Twórz blokady administracyjne dla jednego domku lub wszystkich domków.</p>
       </header>
 
-      <form className="settings-card" onSubmit={handleCreateBlock}>
+      <form
+        className="settings-card"
+        onSubmit={(e) => {
+          e.preventDefault()
+          void handleCreateBlock()
+        }}
+      >
         <div className="card-header">
           <h2 className="card-title">Nowa blokada</h2>
           <span className="card-badge">Admin</span>
@@ -210,7 +237,7 @@ export default function BlockBookingsPage() {
           <div className="setting-row">
             <div className="setting-content">
               <label className="setting-label">Zakres blokady</label>
-              <p className="setting-description">Wybierz początek i koniec blokady w kalendarzu.</p>
+              <p className="setting-description">Wybierz dzień lub zakres blokady w kalendarzu.</p>
             </div>
             <div className="setting-control">
               {isLoadingUnavailable ? (
@@ -219,13 +246,15 @@ export default function BlockBookingsPage() {
                 <CalendarPicker
                   dates={calendarDates}
                   onDateChange={setBookingDates}
-                  minBookingDays={1}
+                  minBookingDays={0}
                 />
               )}
               <div className={styles.rangePreview}>
                 <strong>Wybrany zakres:</strong>{' '}
                 {bookingDates.start && bookingDates.end
                   ? `${bookingDates.start} -> ${bookingDates.end}`
+                  : bookingDates.start
+                    ? `${bookingDates.start} (1 dzień)`
                   : 'brak'}
               </div>
             </div>
@@ -252,9 +281,12 @@ export default function BlockBookingsPage() {
         )}
 
         <div className={styles.actionsRow}>
-          <button type="submit" className="btn-primary" disabled={isSubmitting || !selectedPropertyId || !bookingDates.start || !bookingDates.end}>
+          <button type="button" className="btn-primary" onClick={() => void handleCreateBlock()} disabled={isSubmitting}>
             {isSubmitting ? 'Zapisywanie...' : 'Zablokuj termin'}
           </button>
+          {(!selectedPropertyId || !bookingDates.start) && (
+            <div className={styles.submitHint}>Wybierz domek i dzień rozpoczęcia. Jeśli nie wybierzesz końca, zablokowany zostanie 1 dzień.</div>
+          )}
         </div>
 
         {errorMessage && (

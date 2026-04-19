@@ -543,7 +543,7 @@ export default function BookingSettingsForm({ initialConfig }: Props) {
             </label>
             <p className={styles.settingDescription}>
               Jeśli włączone, nowi goście mogą przyjechać tego samego dnia, w którym poprzedni wyjeżdżają (po {localCheckOutHour}:00).<br />
-              Jeśli wyłączone, dzień wymeldowania jest niedostępny dla nowych rezerwacji.
+              Jeśli wyłączone, dzień rozpoczęcia i dzień zakończenia istniejącej rezerwacji są niedostępne dla innych rezerwacji w tym samym domku.
             </p>
           </div>
           <div className={styles.settingControl}>

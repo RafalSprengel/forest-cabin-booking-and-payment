@@ -3,8 +3,10 @@ import dbConnect from '@/db/connection'
 import Booking from '@/db/models/Booking'
 import Property from '@/db/models/Property'
 import SystemConfig from '@/db/models/SystemConfig'
+import BookingConfig from '@/db/models/BookingConfig'
 import { revalidatePath } from 'next/cache'
 import { calculateTotalPrice } from './searchActions'
+import { buildBookingOverlapFilter } from '@/utils/bookingOverlap'
 import { Types } from 'mongoose'
 
 interface UnavailableDate {
@@ -29,11 +31,24 @@ interface BlockedBookingListItem {
 }
 
 const ALL_PROPERTIES_ID = 'ALL_PROPERTIES'
+const ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY = true
 const AVAILABILITY_STATUS_FILTER = {
   $or: [
     { status: 'blocked' },
     { status: 'confirmed' },
   ],
+}
+
+async function getAllowCheckinOnDepartureDay(): Promise<boolean> {
+  const bookingConfig = await BookingConfig.findById('main')
+    .select('allowCheckinOnDepartureDay')
+    .lean()
+
+  if (typeof bookingConfig?.allowCheckinOnDepartureDay !== 'boolean') {
+    throw new Error('Brak poprawnej konfiguracji ustawienia zameldowania w dniu wymeldowania.')
+  }
+
+  return bookingConfig.allowCheckinOnDepartureDay
 }
 
 function resolvePaymentStatus(totalPrice: number, paidAmount: number): 'unpaid' | 'partial_paid' | 'paid' {
@@ -52,6 +67,7 @@ export async function getUnavailableDatesForProperty(propertyId: string): Promis
   await dbConnect()
   const config = await SystemConfig.findById('main')
   const autoBlockOtherCabins = config?.autoBlockOtherCabins ?? true
+  const allowCheckinOnDepartureDay = ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY
   const query: any = {
     ...AVAILABILITY_STATUS_FILTER,
   }
@@ -70,6 +86,10 @@ export async function getUnavailableDatesForProperty(propertyId: string): Promis
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
       const dateStr = d.toISOString().split('T')[0]
       unavailableDates.add(dateStr)
+    }
+
+    if (!allowCheckinOnDepartureDay) {
+      unavailableDates.add(end.toISOString().split('T')[0])
     }
   }
   return Array.from(unavailableDates)
@@ -106,7 +126,7 @@ function validateBookingData(data: any) {
 
 export async function getAdminBookingsList() {
   await dbConnect()
-  const bookings = await Booking.find({})
+  const bookings = await Booking.find({ status: { $ne: 'blocked' } })
     .sort({ startDate: -1 })
     .populate('propertyId', 'name')
     .lean()
@@ -174,10 +194,31 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
     const totalPrice = Number(rawData.totalPrice)
     const paidAmount = Number(rawData.paidAmount)
     const paymentStatus = resolvePaymentStatus(totalPrice, paidAmount)
+    const allowCheckinOnDepartureDay = ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY
+    const propertyId = rawData.propertyId as string
+    const startDate = new Date(rawData.startDate as string)
+    const endDate = new Date(rawData.endDate as string)
+
+    if (!Types.ObjectId.isValid(propertyId)) {
+      return { message: 'Nieprawidłowy identyfikator obiektu.', success: false }
+    }
+
+    const overlapFilter = buildBookingOverlapFilter(startDate, endDate, allowCheckinOnDepartureDay)
+
+    const existingConflict = await Booking.findOne({
+      propertyId: new Types.ObjectId(propertyId),
+      ...AVAILABILITY_STATUS_FILTER,
+      ...overlapFilter,
+    }).select('_id').lean()
+
+    if (existingConflict) {
+      return { message: 'Wybrany termin koliduje z istniejącą rezerwacją lub blokadą.', success: false }
+    }
+
     const newBooking = new Booking({
-      propertyId: rawData.propertyId,
-      startDate: new Date(rawData.startDate as string),
-      endDate: new Date(rawData.endDate as string),
+      propertyId,
+      startDate,
+      endDate,
       guestName: rawData.guestName,
       guestEmail: rawData.guestEmail,
       guestPhone: rawData.guestPhone,
@@ -198,6 +239,7 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
     })
     await newBooking.save()
     revalidatePath('/admin/bookings')
+    revalidatePath('/booking')
     return { message: 'Rezerwacja została pomyślnie utworzona!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -223,10 +265,35 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
     const totalPrice = Number(rawData.totalPrice)
     const paidAmount = Number(rawData.paidAmount)
     const paymentStatus = resolvePaymentStatus(totalPrice, paidAmount)
+    const allowCheckinOnDepartureDay = ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY
+    const propertyId = rawData.propertyId as string
+    const startDate = new Date(rawData.startDate as string)
+    const endDate = new Date(rawData.endDate as string)
+    const status = rawData.status as string
+
+    if (!Types.ObjectId.isValid(propertyId)) {
+      return { message: 'Nieprawidłowy identyfikator obiektu.', success: false }
+    }
+
+    if (status === 'confirmed' || status === 'blocked') {
+      const overlapFilter = buildBookingOverlapFilter(startDate, endDate, allowCheckinOnDepartureDay)
+
+      const existingConflict = await Booking.findOne({
+        _id: { $ne: bookingId },
+        propertyId: new Types.ObjectId(propertyId),
+        ...AVAILABILITY_STATUS_FILTER,
+        ...overlapFilter,
+      }).select('_id').lean()
+
+      if (existingConflict) {
+        return { message: 'Wybrany termin koliduje z istniejącą rezerwacją lub blokadą.', success: false }
+      }
+    }
+
     const bookingData = {
-      propertyId: rawData.propertyId,
-      startDate: new Date(rawData.startDate as string),
-      endDate: new Date(rawData.endDate as string),
+      propertyId,
+      startDate,
+      endDate,
       guestName: rawData.guestName,
       guestEmail: rawData.guestEmail,
       guestPhone: rawData.guestPhone,
@@ -238,7 +305,7 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       depositAmount: paidAmount,
       paidAmount,
       paymentStatus,
-      status: rawData.status,
+      status,
       paymentMethod: 'transfer',
       invoice: rawData.invoice === 'true',
       invoiceData,
@@ -249,6 +316,7 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       return { message: 'Nie znaleziono rezerwacji do zaktualizowania.', success: false }
     }
     revalidatePath('/admin/bookings')
+    revalidatePath('/booking')
     revalidatePath(`/admin/bookings/list/${bookingId}`)
     return { message: 'Rezerwacja została pomyślnie zaktualizowana!', success: true }
   } catch (error: any) {
@@ -296,6 +364,7 @@ export async function calculatePriceAction(
 
 export async function getUnavailableDatesForBlocking(propertyId: string): Promise<UnavailableDate[]> {
   await dbConnect()
+  const allowCheckinOnDepartureDay = ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY
 
   if (!propertyId) return []
 
@@ -319,6 +388,10 @@ export async function getUnavailableDatesForBlocking(propertyId: string): Promis
     const end = new Date(booking.endDate)
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
       unavailableDates.add(d.toISOString().split('T')[0])
+    }
+
+    if (!allowCheckinOnDepartureDay) {
+      unavailableDates.add(end.toISOString().split('T')[0])
     }
   }
 
@@ -352,127 +425,138 @@ export async function getBlockedBookings(propertyId?: string): Promise<BlockedBo
 }
 
 export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
-  await dbConnect()
+  try {
+    await dbConnect()
+    const allowCheckinOnDepartureDay = ADMIN_ALLOW_CHECKIN_ON_DEPARTURE_DAY
 
-  if (!data.propertyId || !data.startDate || !data.endDate) {
-    return { success: false, message: 'Wybierz domek oraz zakres dat.' }
-  }
-
-  const startDate = new Date(data.startDate)
-  const endDate = new Date(data.endDate)
-
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return { success: false, message: 'Nieprawidłowy zakres dat.' }
-  }
-
-  if (endDate <= startDate) {
-    return { success: false, message: 'Data końca blokady musi być późniejsza niż data początku.' }
-  }
-
-  let targetProperties: Array<{ _id: Types.ObjectId; name: string }> = []
-
-  if (data.propertyId === ALL_PROPERTIES_ID) {
-    const properties = await Property
-      .find({ isActive: true })
-      .select('name')
-      .lean()
-
-    targetProperties = properties.map((p: any) => ({ _id: p._id, name: p.name || 'Domek' }))
-  } else {
-    if (!Types.ObjectId.isValid(data.propertyId)) {
-      return { success: false, message: 'Nieprawidłowy domek.' }
+    if (!data.propertyId || !data.startDate || !data.endDate) {
+      return { success: false, message: 'Wybierz domek oraz zakres dat.' }
     }
 
-    const property = await Property
-      .findById(data.propertyId)
-      .select('name')
-      .lean()
+    const startDate = new Date(data.startDate)
+    const endDate = new Date(data.endDate)
 
-    if (!property) {
-      return { success: false, message: 'Nie znaleziono wybranego domku.' }
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return { success: false, message: 'Nieprawidłowy zakres dat.' }
     }
 
-    targetProperties = [{ _id: property._id, name: property.name || 'Domek' }]
-  }
+    if (endDate <= startDate) {
+      return { success: false, message: 'Data końca blokady musi być późniejsza niż data początku.' }
+    }
 
-  if (targetProperties.length === 0) {
-    return { success: false, message: 'Brak domków do zablokowania.' }
-  }
+    let targetProperties: Array<{ _id: Types.ObjectId; name: string }> = []
 
-  const conflictedProperties: string[] = []
+    if (data.propertyId === ALL_PROPERTIES_ID) {
+      const properties = await Property
+        .find({ isActive: true })
+        .select('name')
+        .lean()
 
-  for (const property of targetProperties) {
-    const conflict = await Booking.findOne({
+      targetProperties = properties.map((p: any) => ({ _id: p._id, name: p.name || 'Domek' }))
+    } else {
+      if (!Types.ObjectId.isValid(data.propertyId)) {
+        return { success: false, message: 'Nieprawidłowy domek.' }
+      }
+
+      const property = await Property
+        .findById(data.propertyId)
+        .select('name')
+        .lean()
+
+      if (!property) {
+        return { success: false, message: 'Nie znaleziono wybranego domku.' }
+      }
+
+      targetProperties = [{ _id: property._id, name: property.name || 'Domek' }]
+    }
+
+    if (targetProperties.length === 0) {
+      return { success: false, message: 'Brak domków do zablokowania.' }
+    }
+
+    const conflictedProperties: string[] = []
+    const overlapFilter = buildBookingOverlapFilter(startDate, endDate, allowCheckinOnDepartureDay)
+
+    for (const property of targetProperties) {
+      const conflict = await Booking.findOne({
+        propertyId: property._id,
+        ...AVAILABILITY_STATUS_FILTER,
+        ...overlapFilter,
+      }).select('_id').lean()
+
+      if (conflict) conflictedProperties.push(property.name)
+    }
+
+    if (conflictedProperties.length > 0) {
+      return {
+        success: false,
+        message: `Zakres koliduje z istniejącą rezerwacją/blokadą: ${conflictedProperties.join(', ')}`,
+      }
+    }
+
+    const docs = targetProperties.map((property) => ({
       propertyId: property._id,
-      ...AVAILABILITY_STATUS_FILTER,
-      startDate: { $lt: endDate },
-      endDate: { $gt: startDate },
-    }).select('_id').lean()
+      startDate,
+      endDate,
+      guestName: 'Zabl. przez admina',
+      guestEmail: 'blokada@admin.local',
+      guestPhone: '-',
+      adults: 1,
+      children: 0,
+      numberOfGuests: 0,
+      extraBedsCount: 0,
+      totalPrice: 0,
+      depositAmount: 0,
+      paidAmount: 0,
+      paymentStatus: 'unpaid',
+      status: 'blocked',
+      paymentMethod: 'transfer',
+      adminNotes: data.adminNotes?.trim() || 'Blokada terminu',
+      source: 'admin',
+    }))
 
-    if (conflict) conflictedProperties.push(property.name)
-  }
+    await Booking.insertMany(docs)
 
-  if (conflictedProperties.length > 0) {
+    revalidatePath('/admin/bookings/block')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/list')
+    revalidatePath('/booking')
+
     return {
-      success: false,
-      message: `Zakres koliduje z istniejącą rezerwacją/blokadą: ${conflictedProperties.join(', ')}`,
+      success: true,
+      message: targetProperties.length === 1
+        ? 'Termin został zablokowany.'
+        : `Terminy zostały zablokowane dla ${targetProperties.length} domków.`,
     }
-  }
-
-  const docs = targetProperties.map((property) => ({
-    propertyId: property._id,
-    startDate,
-    endDate,
-    guestName: 'Zabl. przez admina',
-    guestEmail: 'blokada@admin.local',
-    guestPhone: '-',
-    adults: 1,
-    children: 0,
-    numberOfGuests: 0,
-    extraBedsCount: 0,
-    totalPrice: 0,
-    depositAmount: 0,
-    paidAmount: 0,
-    paymentStatus: 'unpaid',
-    status: 'blocked',
-    paymentMethod: 'transfer',
-    adminNotes: data.adminNotes?.trim() || 'Blokada terminu',
-    source: 'admin',
-  }))
-
-  await Booking.insertMany(docs)
-
-  revalidatePath('/admin/bookings/block')
-  revalidatePath('/admin/bookings/calendar')
-  revalidatePath('/admin/bookings/list')
-
-  return {
-    success: true,
-    message: targetProperties.length === 1
-      ? 'Termin został zablokowany.'
-      : `Terminy zostały zablokowane dla ${targetProperties.length} domków.`,
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Wystąpił błąd podczas blokowania terminu.' }
   }
 }
 
 export async function deleteBlockedBookingByAdmin(bookingId: string) {
-  await dbConnect()
+  try {
+    await dbConnect()
 
-  if (!Types.ObjectId.isValid(bookingId)) {
-    return { success: false, message: 'Nieprawidłowe ID blokady.' }
+    if (!Types.ObjectId.isValid(bookingId)) {
+      return { success: false, message: 'Nieprawidłowe ID blokady.' }
+    }
+
+    const deleted = await Booking.findOneAndDelete({
+      _id: new Types.ObjectId(bookingId),
+      status: 'blocked',
+    })
+
+    if (!deleted) {
+      return { success: false, message: 'Nie znaleziono blokady do usunięcia.' }
+    }
+
+    revalidatePath('/admin/bookings/block')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/list')
+    revalidatePath('/booking')
+
+    return { success: true, message: 'Blokada została usunięta.' }
+  } catch (error: any) {
+    return { success: false, message: error?.message || 'Wystąpił błąd podczas usuwania blokady.' }
   }
-
-  const deleted = await Booking.findOneAndDelete({
-    _id: new Types.ObjectId(bookingId),
-    status: 'blocked',
-  })
-
-  if (!deleted) {
-    return { success: false, message: 'Nie znaleziono blokady do usunięcia.' }
-  }
-
-  revalidatePath('/admin/bookings/block')
-  revalidatePath('/admin/bookings/calendar')
-  revalidatePath('/admin/bookings/list')
-
-  return { success: true, message: 'Blokada została usunięta.' }
 }

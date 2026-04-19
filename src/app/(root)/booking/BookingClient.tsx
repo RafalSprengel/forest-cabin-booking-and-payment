@@ -111,6 +111,16 @@ export default function BookingClient({
   }, [searchResults])
 
   useEffect(() => {
+    if (!searchResults) {
+      setBookingMode(null)
+      return
+    }
+
+    if (!searchResults.areAllAvailable) {
+      setBookingMode('single')
+      return
+    }
+
     setBookingMode(null)
   }, [searchResults, initialStart, initialEnd, initialAdults, initialChildren])
 
@@ -124,7 +134,7 @@ export default function BookingClient({
     }
   }, [initialStart, initialEnd]);
 
-  useEffect(() => {
+  useEffect(() => { //needed to show a link with proposal to continue previous reservation
     const draft = localStorage.getItem(STORAGE_KEY)
     if (draft) {
       try {
@@ -213,7 +223,7 @@ export default function BookingClient({
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
-  
+
     router.push('/booking/details')
   }
 
@@ -256,6 +266,8 @@ export default function BookingClient({
   }
 
   const isSearchDisabled = totalGuests === 0 || !bookingDates.start || !bookingDates.end
+  const showModeSelector = searchResults?.areAllAvailable === true
+  const showSingleResults = searchResults?.areAllAvailable === false || bookingMode === 'single'
 
   return (
     <div className={styles.container}>
@@ -396,47 +408,47 @@ export default function BookingClient({
                   <h3 className={styles.resultsTitle}>
                     Dostępne opcje ({searchResults.propertiesAvailable.length})
                   </h3>
+                  {showModeSelector && (
+                    <div className={styles.modeSelector} role="radiogroup" aria-label="Tryb rezerwacji">
+                      <label className={`${styles.modeOption} ${bookingMode === 'single' ? styles.modeOptionActive : ''}`}>
+                        <input
+                          type="radio"
+                          name="bookingMode"
+                          checked={bookingMode === 'single'}
+                          onChange={() => setBookingMode('single')}
+                        />
+                        <span className={styles.modeLabel}>Jeden domek</span>
+                        <span className={styles.modeIconSingle} aria-hidden="true">
+                          <FontAwesomeIcon icon={faHome} />
+                        </span>
+                      </label>
 
-                  <div className={styles.modeSelector} role="radiogroup" aria-label="Tryb rezerwacji">
-                    <label className={`${styles.modeOption} ${bookingMode === 'single' ? styles.modeOptionActive : ''}`}>
-                      <input
-                        type="radio"
-                        name="bookingMode"
-                        checked={bookingMode === 'single'}
-                        onChange={() => setBookingMode('single')}
-                      />
-                      <span className={styles.modeLabel}>Jeden domek</span>
-                      <span className={styles.modeIconSingle} aria-hidden="true">
-                        <FontAwesomeIcon icon={faHome} />
-                      </span>
-                    </label>
-
-                    <label className={`${styles.modeOption} ${bookingMode === 'double' ? styles.modeOptionActive : ''}`}>
-                      <input
-                        type="radio"
-                        name="bookingMode"
-                        checked={bookingMode === 'double'}
-                        onChange={() => {
-                          setBookingMode('double')
-                          setGuestsMap((prev) => {
-                            const next = { ...prev }
-                            searchResults.propertiesAvailable.forEach((option) => {
-                              const current = next[option.displayName]
-                              next[option.displayName] = current && current > 0 ? current : 1
+                      <label className={`${styles.modeOption} ${bookingMode === 'double' ? styles.modeOptionActive : ''}`}>
+                        <input
+                          type="radio"
+                          name="bookingMode"
+                          checked={bookingMode === 'double'}
+                          onChange={() => {
+                            setBookingMode('double')
+                            setGuestsMap((prev) => {
+                              const next = { ...prev }
+                              searchResults.propertiesAvailable.forEach((option) => {
+                                const current = next[option.displayName]
+                                next[option.displayName] = current && current > 0 ? current : 1
+                              })
+                              return next
                             })
-                            return next
-                          })
-                        }}
-                      />
-                      <span className={styles.modeLabel}>Dwa domki</span>
-                      <span className={styles.modeIconDouble} aria-hidden="true">
-                        <span className={styles.modeHomeBack}><FontAwesomeIcon icon={faHome} /></span>
-                        <span className={styles.modeHomeFront}><FontAwesomeIcon icon={faHome} /></span>
-                      </span>
-                    </label>
-                  </div>
-
-                  {bookingMode === 'single' && searchResults.propertiesAvailable.map((option) => (
+                          }}
+                        />
+                        <span className={styles.modeLabel}>Dwa domki</span>
+                        <span className={styles.modeIconDouble} aria-hidden="true">
+                          <span className={styles.modeHomeBack}><FontAwesomeIcon icon={faHome} /></span>
+                          <span className={styles.modeHomeFront}><FontAwesomeIcon icon={faHome} /></span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                  {showSingleResults && searchResults.propertiesAvailable.map((option) => (
                     <ResultCard
                       key={option.displayName}
                       option={option}
@@ -446,7 +458,7 @@ export default function BookingClient({
                     />
                   ))}
 
-                  {bookingMode === 'double' && (
+                  {showModeSelector && bookingMode === 'double' && (
                     searchResults.areAllAvailable ? (
                       <div className={styles.allAvailableNote}>
                         <h3>Zarezerwuj {searchResults.propertiesAvailable.length} domki teraz</h3>
@@ -462,11 +474,7 @@ export default function BookingClient({
                           onSelectAll={handleAllSelect}
                         />
                       </div>
-                    ) : (
-                      <div className={styles.emptyState}>
-                        <p>W wybranym terminie nie da się zarezerwować dwóch domków jednocześnie.</p>
-                      </div>
-                    )
+                    ) : null
                   )}
                 </div>
               )

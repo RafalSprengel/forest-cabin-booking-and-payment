@@ -11,14 +11,11 @@ description: Agent odpowiedzialny za logikę biznesową i precyzyjną refaktoryz
 - **INTEGRALNOŚĆ DANYCH > STABILNOŚĆ**: Błąd aplikacji jest preferowany ponad wyświetlenie błędnej ceny (0).
 
 ## 🛠️ ZASADY REFAKTORYZACJI I KODOWANIA
-- **PRECYZJA**: Poprawiaj błędy, zachowując 100% otoczenia kodu. Nie upraszczaj struktury danych ani logiki.
 - **BRAK KOMENTARZY**: Nigdy nie dodawaj komentarzy oznajmiającyh mi co wlasnie zrobiles.
 - **BEZ TAILWIND**: Pod żadnym pozorem nie używaj Tailwind CSS.
 - **ZAKAZ ZGADYWANIA I DOMNIEMAŃ**: Jeśli jakakolwiek część logiki, struktury danych lub celu zadania budzi wątpliwości, ZATRZYMAJ SIĘ. Nie generuj kodu opartego na założeniach.
 - **NAJPIERW PYTAJ**: Masz obowiązek zadać pytanie doprecyzowujące przed rozpoczęciem pisania kodu, jeśli brakuje pełnego kontekstu lub istnieją różne drogi implementacji.
 - **NO SILENT FAILURES**: Nigdy nie używaj wartości domyślnych (tzw. "magic defaults") jak 0, "", [], false, aby "uciszyć" błędy typów lub brak danych.
-- **ZOD/VALIBOT FIRST**: Przy parsowaniu danych (np. z API lub formularzy) zawsze sugeruj użycie biblioteki Zod do walidacji schematu. Jeśli walidacja zawiedzie, aplikacja ma zgłosić błąd, a nie kontynuować z niepełnymi danymi.
-- **PREFER CONST**: Zawsze używaj `const`, chyba że reasygnowanie zmiennej jest absolutnie konieczne (wtedy `let`). Całkowity zakaz `var`.
 - **OPTIONAL CHAINING & NULLISH COALESCING**: Używaj `?.` oraz `??`, ale tylko wtedy, gdy `null/undefined` jest świadomym stanem biznesowym, a nie ucieczką przed błędem.
 - **ASYNC/AWAIT ONLY**: Zakaz używania `.then().catch()`. Zawsze stosuj `async/await` z blokami `try-catch`, gdzie w bloku `catch` musi nastąpić jawna obsługa błędu (logowanie/re-throw), a nie zwrócenie zera.
 ## 🌀 OBSŁUGA STANÓW ŁADOWANIA (UI/UX)
@@ -28,4 +25,6 @@ description: Agent odpowiedzialny za logikę biznesową i precyzyjną refaktoryz
 
 - Nie usuwaj mi komentarzy
 
--to jest projekt w fazie budowania, nie ma tu waznych danych nie potrzeba migracji, wszystkie dane skazuje a nowe sobie dodam
+-to jest projekt w fazie budowania, nie ma tu waznych danych nie potrzeba migracji, wszystkie dane skazuje a nowe sobie dodam\
+
+<!-- - **PRECYZJA**: Poprawiaj błędy, zachowując 100% otoczenia kodu. Nie upraszczaj struktury danych ani logiki. -->

@@ -8,12 +8,16 @@ import PriceConfig from '@/db/models/PriceConfig';
 import Season, { ISeason } from '@/db/models/Season';
 import CustomPrice from '@/db/models/CustomPrice';
 import SystemConfig from '@/db/models/SystemConfig';
+import BookingConfig from '@/db/models/BookingConfig';
+import { buildBookingOverlapFilter } from '@/utils/bookingOverlap';
 import { Types } from 'mongoose';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import isBetween from 'dayjs/plugin/isBetween';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
+dayjs.extend(utc);
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
@@ -280,19 +284,23 @@ export async function searchAction(params: SearchParams) {
   const { startDate, endDate, baseGuests, extraBeds } = params;
   try {
     await dbConnect();
-    const start = dayjs(startDate);
-    const end = dayjs(endDate);
+    const start = dayjs.utc(startDate, 'YYYY-MM-DD', true);
+    const end = dayjs.utc(endDate, 'YYYY-MM-DD', true);
+
+    const totalActiveProperties = await Property.countDocuments({ isActive: true });
 
     const systemConfig = await SystemConfig.findById('main');
     const autoBlockOtherCabins = systemConfig?.autoBlockOtherCabins ?? false;
+    const bookingConfig = await BookingConfig.findById('main').lean();
+    const allowCheckinOnDepartureDay = bookingConfig?.allowCheckinOnDepartureDay ?? true;
+    const overlapCondition = buildBookingOverlapFilter(start.toDate(), end.toDate(), allowCheckinOnDepartureDay);
 
     const occupiedIds = await Booking.distinct('propertyId', {
       $or: [
         { status: 'blocked' },
         { status: 'confirmed' },
       ],
-      startDate: { $lt: end },
-      endDate: { $gt: start },
+      ...overlapCondition,
     });
 
     if (autoBlockOtherCabins && occupiedIds.length > 0) {
@@ -353,7 +361,8 @@ export async function searchAction(params: SearchParams) {
       });
     }
     const result = options.sort((a, b) => a.totalPrice - b.totalPrice);
-    return { propertiesAvailable: result, areAllAvailable: result.length === availableProperties.length };
+
+   return { propertiesAvailable: result, areAllAvailable: result.length === totalActiveProperties };
   } catch (error) {
     console.error('Błąd wyszukiwania dostępności:', error);
     throw new Error('Nie udało się pobrać dostępnych terminów.');
