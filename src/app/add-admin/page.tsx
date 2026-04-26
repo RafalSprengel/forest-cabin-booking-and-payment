@@ -9,11 +9,11 @@ export default function AddAdminPage() {
         const createAdmin = async () => {
             try {
                 const { data, error } = await authClient.signUp.email({
-                    email: "admin@twojadomena.pl",
-                    password: "TwojeBardzoMocneHaslo2026!",
+                    email: "admin@admin.pl",
+                    password: "admin",
                     name: "Rafał",
                     role: "admin", // To pole zostanie zapisane dzięki Twojej konfiguracji w auth.js
-                    callbackURL: "/dashboard"
+                    callbackURL: "/admin"
                 });
 
                 if (error) {

@@ -9,6 +9,7 @@
     --error-color: #c0392b;
     --section-bg-light: #f9f9f9;
     --section-bg-dark: #eeeeee;
+    --site-header-offset: 100px;
     --transition: 0.3s ease-in-out;
 }
 
@@ -21,6 +22,7 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--site-header-offset) + 16px);
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;
 }
@@ -30,7 +32,6 @@ body {
     --font-heading: var(--font-pt-serif), serif;
     --font-body: var(--font-mulish), sans-serif;
 
-    margin-top: 100px;
     color: var(--text-main);
     background-color: var(--bg-white);
     font-family: var(--font-body);
@@ -44,7 +45,7 @@ body {
 
 section {
     padding: 60px 20px;
-    scroll-margin-top: 40px;
+    scroll-margin-top: calc(var(--site-header-offset) + 16px);
 }
 
 section:nth-child(odd) {

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 import AppToaster from '@/app/_components/AppToaster/AppToaster';
 import styles from './admin.module.css';
 
@@ -12,6 +13,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
   const [isPaymentsOpen, setIsPaymentsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -219,7 +221,10 @@ export default function AdminLayout({
             <span className={styles.navIcon}>🏠</span>
             Wróć na stronę
           </Link>
-          <button className={styles.btnLogout} onClick={() => alert('Wylogowanie (do implementacji)')}>
+          <button className={styles.btnLogout} onClick={async () => {
+            await authClient.signOut();
+            router.push('/admin-login');
+          }}>
             Wyloguj się
           </button>
         </div>

@@ -10,6 +10,7 @@ import {
   seedBookingConfig,
   seedPropertyPrices,
   clearAllData,
+  seedAdmin,
 } from '@/actions/seed';
 import styles from './page.module.css';
 
@@ -111,6 +112,16 @@ export default function DevPage() {
                 onClick={() => runAction('Clear Database', clearAllData)}
               >
                 Clear All Collections
+              </button>
+
+              <hr className={styles.divider} />
+
+              {/* ── Auth / Admin ─────────────────────────────────────────────── */}
+              <button
+                className={styles.btnSecondary}
+                onClick={() => runAction('Seed Admin (admin@wilczechatki.pl)', seedAdmin)}
+              >
+                Seed Admin User
               </button>
             </div>
           </section>

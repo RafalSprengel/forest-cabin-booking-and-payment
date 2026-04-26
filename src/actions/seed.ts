@@ -10,6 +10,7 @@ import PriceConfig from '@/db/models/PriceConfig';
 import Season from '@/db/models/Season';
 import CustomPrice from '@/db/models/CustomPrice';
 import { Types } from 'mongoose';
+import mongoose from 'mongoose';
 
 function toPlainObject(doc: any) {
   return JSON.parse(JSON.stringify(doc));
@@ -453,5 +454,60 @@ export async function seedAllData() {
   } catch (error) {
     console.error('Błąd podczas seedowania wszystkich danych:', error);
     return { success: false, error: 'Nie udało się zresetować danych' };
+  }
+}
+
+export async function seedAdmin() {
+  const ADMIN_EMAIL = 'admin@wilczechatki.pl';
+  const ADMIN_PASSWORD = 'Admin2026!';
+  const ADMIN_NAME = 'Admin';
+
+  try {
+    await dbConnect();
+
+    const db = mongoose.connection.db;
+    if (!db) throw new Error('Brak połączenia z MongoDB');
+
+    const usersCol = db.collection('user');
+    const accountsCol = db.collection('account');
+
+    const existing = await usersCol.findOne({ email: ADMIN_EMAIL });
+    if (existing) {
+      return { success: false, error: `Admin ${ADMIN_EMAIL} już istnieje w bazie` };
+    }
+
+    const { hash } = await import('bcryptjs');
+    const hashedPassword = await hash(ADMIN_PASSWORD, 10);
+    const userId = crypto.randomUUID();
+    const now = new Date();
+
+    await usersCol.insertOne({
+      id: userId,
+      name: ADMIN_NAME,
+      email: ADMIN_EMAIL,
+      emailVerified: true,
+      role: 'admin',
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await accountsCol.insertOne({
+      id: crypto.randomUUID(),
+      accountId: userId,
+      providerId: 'credential',
+      userId: userId,
+      password: hashedPassword,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return {
+      success: true,
+      message: `Admin utworzony. Email: ${ADMIN_EMAIL} | Hasło: ${ADMIN_PASSWORD}`,
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Nieznany błąd';
+    console.error('seedAdmin error:', error);
+    return { success: false, error: message };
   }
 }

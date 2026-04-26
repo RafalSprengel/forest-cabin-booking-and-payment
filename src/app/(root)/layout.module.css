@@ -1,0 +1,10 @@
+.shell {
+    min-height: 100vh;
+    padding-top: var(--site-header-offset);
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1;
+}

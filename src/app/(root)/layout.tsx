@@ -1,5 +1,6 @@
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
+import styles from './layout.module.css';
 
 export default function ClientLayout({
     children,
@@ -9,8 +10,10 @@ export default function ClientLayout({
     return (
         <>
             <Header />
-            <main>{children}</main>
-            <Footer />
+            <div className={styles.shell}>
+                <main className={styles.main}>{children}</main>
+                <Footer />
+            </div>
         </>
     );
 }

@@ -1,6 +1,5 @@
-import Header from '@components/Header/Header';
-import Footer from '@components/Footer/Footer';
 import BookingStepper from './BookingStepper';
+import styles from './layout.module.css';
 
 export default function BookingLayout({
     children,
@@ -9,10 +8,8 @@ export default function BookingLayout({
 }) {
     return (
         <>
-            <Header />
             <BookingStepper />
-            <main>{children}</main>
-            <Footer />
+            <div className={styles.content}>{children}</div>
         </>
     );
 }

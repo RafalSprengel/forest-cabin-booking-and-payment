@@ -80,6 +80,10 @@
   opacity: 0.8;
 }
 
+.copyright p {
+  margin: 2px 0;
+}s
+
 .creator {
   margin-top: 8px;
   font-size: 0.75rem;

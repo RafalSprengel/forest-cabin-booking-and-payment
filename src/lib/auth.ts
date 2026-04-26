@@ -1,34 +1,40 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import mongoose from "mongoose";
+import dbConnect from "@/db/connection";
 
-const db = mongoose.connection.db;
+let _auth: ReturnType<typeof betterAuth> | undefined;
 
-if (!db) {
-    throw new Error("Mongoose connection is not initialized. Connect to MongoDB before creating Better Auth.");
-}
+export async function getAuth() {
+    if (_auth) return _auth;
 
-export const auth = betterAuth({
-    // Better Auth użyje Twojego istniejącego połączenia z MongoDB
-    database: mongodbAdapter(db),
-    
-    emailAndPassword: {
-        enabled: true,
-        // Opcjonalnie możesz wymusić unikalność maili, choć Better Auth robi to domyślnie
-    },
+    await dbConnect();
 
-    user: {
-        additionalFields: {
-            role: {
-                type: "string",
-                required: true,
-                defaultValue: "user",
-                // 'input: true' pozwala na przesłanie roli podczas rejestracji (np. z selecta)
-                input: true, 
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("MongoDB connection.db nie jest dostępne po dbConnect()");
+
+    _auth = betterAuth({
+        database: mongodbAdapter(db),
+
+        emailAndPassword: {
+            enabled: true,
+            minPasswordLength: 5,
+        },
+
+        user: {
+            additionalFields: {
+                role: {
+                    type: "string",
+                    required: true,
+                    defaultValue: "user",
+                    input: true,
+                }
             }
-        }
-    },
+        },
 
-    // Ważne dla bezpieczeństwa w Next.js
-    secret: process.env.BETTER_AUTH_SECRET,
-});
+        secret: process.env.BETTER_AUTH_SECRET,
+        trustedOrigins: [process.env.BETTER_AUTH_URL ?? "http://localhost:3000"],
+    });
+
+    return _auth;
+}
