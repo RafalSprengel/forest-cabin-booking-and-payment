@@ -26,9 +26,9 @@ export async function createCheckoutSession(bookingData: BookingData) {
     throw new Error("Niekompletne dane rezerwacji.");
   }
 
-//sprawdzamy czy domki o danych id istnieja w bazie
-// robimy petle po orders i sprawdzamy czy kazdy z nich ma propertyId, displayName, price, guests i extraBeds oraz dodajemy do wpis o rezerwacji dla kazdego domku oobno z tymi samymi danymi dotyczacymi rezerwujacego oraz datami, oznaczamy paymentStatus jako unpaid, status: pending. Pozniej jak zrobimy obsługe webhooka to bedziemy zonaczac jako caonfirmad albo jak sie nie uda platnosc nie wiem cancelled
-// ponizej tworzymy sesje checkout dla stripe
+  //sprawdzamy czy domki o danych id istnieja w bazie
+  // robimy petle po orders i sprawdzamy czy kazdy z nich ma propertyId, displayName, price, guests i extraBeds oraz dodajemy do wpis o rezerwacji dla kazdego domku oobno z tymi samymi danymi dotyczacymi rezerwujacego oraz datami, oznaczamy paymentStatus jako unpaid, status: pending. Pozniej jak zrobimy obsługe webhooka to bedziemy zonaczac jako caonfirmad albo jak sie nie uda platnosc nie wiem cancelled
+  // ponizej tworzymy sesje checkout dla stripe
 
   await dbConnect();
 
@@ -141,6 +141,13 @@ export async function createCheckoutSession(bookingData: BookingData) {
         guests: totalGuests.toString(),
         extraBeds: totalExtraBeds.toString(),
         bookingIds: bookingIds.join(","),
+      },
+      shipping_address_collection: {
+        allowed_countries: [
+          'PL', 'DE', 'GB', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH',
+          'DK', 'SE', 'NO', 'FI', 'IE', 'PT', 'CZ', 'SK', 'HU', 'LT',
+          'LV', 'EE', 'RO', 'BG', 'GR', 'HR', 'SI', 'IS', 'LU'
+        ],
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/booking/summary`,

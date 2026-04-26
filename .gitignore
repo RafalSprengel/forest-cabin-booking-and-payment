@@ -1,5 +1,5 @@
-# --- OSZCZĘDNOŚĆ TOKENÓW ---
-# Te pliki są ogromne i niepotrzebne dla AI podczas pisania kodu
+# --- LARGE & UNNEEDED FILES ---
+# These unnecessary for development
 node_modules/
 package-lock.json
 yarn.lock
@@ -14,17 +14,18 @@ repomix-output.xml
 next-env.d.ts
 *.tsbuildinfo
 
-# --- NARZĘDZIA AI I EDYTOR (VS Code) ---
+# --- AI TOOLS & EDITOR (VS Code) ---
 .vscode/
 .gemini/
 .continue/
 
-# --- ŚRODOWISKO I SEKRETY ---
+# --- ENVIRONMENT & SECRETS ---
 .env*
+!.env.example
 .vercel/
 *.pem
 
-# --- MENEDŻERY PACZEK (Yarn & PnP) ---
+# --- PACKAGE MANAGERS (Yarn & PnP) ---
 /.pnp
 .pnp.*
 .yarn/*
@@ -33,13 +34,13 @@ next-env.d.ts
 !.yarn/releases
 !.yarn/versions
 
-# --- LOGI I DEBUGOWANIE ---
+# --- LOGS & DEBUGGING ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# --- SYSTEMOWE I TESTY ---
+# --- SYSTEM & TESTS ---
 .DS_Store
 /coverage/
 
