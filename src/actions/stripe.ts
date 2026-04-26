@@ -170,26 +170,7 @@ export async function createCheckoutSession(bookingData: BookingData) {
       throw new Error('Nie udało się przypisać identyfikatora sesji Stripe do wszystkich rezerwacji.');
     }
 
-    // Wysyłka maila z potwierdzeniem rezerwacji (React template)
-    try {
-      const html = await render(
-        BookingConfirmation({
-          customerName: `${clientData.firstName} ${clientData.lastName}`,
-          orderNumber: orderId,
-          checkIn: startDate,
-          checkOut: endDate,
-          totalPrice: amount
-        })
-      );
-      await sendBookingEmail({
-        to: clientData.email,
-        subject: "Potwierdzenie rezerwacji w Wilcze Chatki",
-        html,
-      });
-    } catch (mailError) {
-      console.error("Błąd wysyłki maila potwierdzającego rezerwację:", mailError);
-      // Nie przerywamy procesu, tylko logujemy błąd
-    }
+
 
     return { url: session.url };
   } catch (error) {
