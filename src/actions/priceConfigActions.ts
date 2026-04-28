@@ -105,7 +105,7 @@ export async function updateCustompriceForDate(data: CustomPriceUpdate) {
     await CustomPrice.collection.bulkWrite(operations as any[]);
     revalidatePath('/admin/prices');
     
-    return { success: true, message: `Zapisano ceny dla ${data.dates.length} dni.` };
+    return { success: true, message: `Zapisano ceny dla zaznaczonych dni.` };
   } catch (error) {
     console.error('Błąd zapisu custom prices:', error);
     return { success: false, message: 'Błąd bazy danych.' };
@@ -125,7 +125,7 @@ export async function deleteCustomPricesForDate(data: { propertyId: string; date
 
     revalidatePath('/admin/prices');
     
-    return { success: true, message: `Przywrócono ceny sezonowe dla ${data.dates.length} dni.` };
+    return { success: true, message: `Przywrócono ceny sezonowe dla usuniętego elementu.` };
   } catch (error) {
     console.error('Błąd usuwania cen:', error);
     return { success: false, message: 'Błąd bazy danych podczas usuwania.' };

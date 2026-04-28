@@ -64,6 +64,7 @@ interface Props {
 
 const OFF_SEASON_ID = 'off-season'
 const DEFAULT_CUSTOM_TIERS: PriceTier[] = [{ minGuests: 1, maxGuests: 2, price: 350 }]
+const DEFAULT_CUSTOM_EXTRA_BED_PRICE = 100
 
 type TierField = keyof PriceTier
 
@@ -214,7 +215,7 @@ export default function PriceSettingsForm({
   })
   const [customTiers, setCustomTiers] = useState<PriceTier[]>([...DEFAULT_CUSTOM_TIERS])
   const [customPrices, setCustomPrices] = useState<CustomPriceEntry[]>([])
-  const [customExtraBedPrice, setCustomExtraBedPrice] = useState<number>(50)
+  const [customExtraBedPrice, setCustomExtraBedPrice] = useState<number>(DEFAULT_CUSTOM_EXTRA_BED_PRICE)
   const [calendarPrices, setCalendarPrices] = useState<Record<string, number>>({})
   const [isCustomRangeMode, setIsCustomRangeMode] = useState(true)
   const [customTierErrors, setCustomTierErrors] = useState<TierValidationError[]>([])
@@ -235,10 +236,13 @@ export default function PriceSettingsForm({
     type: 'weekday' | 'weekend' | null
     index: number | null
   }>({ isOpen: false, type: null, index: null })
+  const [isRemovingTier, setIsRemovingTier] = useState(false)
   const [tierErrors, setTierErrors] = useState<{
     weekday: TierValidationError[]
     weekend: TierValidationError[]
   }>({ weekday: [], weekend: [] })
+  const [deleteCustomModal, setDeleteCustomModal] = useState<{ isOpen: boolean; date: string | null }>({ isOpen: false, date: null })
+  const [isDeletingCustomSingle, setIsDeletingCustomSingle] = useState(false)
 
   const loadSeasonPrices = useCallback(async () => {
     if (!selectedPropertyId) return
@@ -372,13 +376,34 @@ export default function PriceSettingsForm({
     setDeleteModal({ isOpen: true, type, index })
   }
 
-  const confirmRemoveTier = () => {
-    if (deleteModal.type && deleteModal.index !== null) {
-      const setter = deleteModal.type === 'weekend' ? setWeekendTiers : setWeekdayTiers
-      setIsSeasonDirty(true)
-      setTierErrors((prev) => ({ ...prev, [deleteModal.type!]: [] }))
-      setter((prev) => prev.filter((_, i) => i !== deleteModal.index))
-      setDeleteModal({ isOpen: false, type: null, index: null })
+  const confirmRemoveTier = async () => {
+    if (!deleteModal.type || deleteModal.index === null) return
+
+    const removeType = deleteModal.type
+    const removeIndex = deleteModal.index
+
+    const nextWeekdayTiers =
+      removeType === 'weekday'
+        ? weekdayTiers.filter((_, i) => i !== removeIndex)
+        : weekdayTiers
+    const nextWeekendTiers =
+      removeType === 'weekend'
+        ? weekendTiers.filter((_, i) => i !== removeIndex)
+        : weekendTiers
+
+    setIsRemovingTier(true)
+    setTierErrors((prev) => ({ ...prev, [removeType]: [] }))
+
+    try {
+      const saved = await handleSavePrices({
+        weekdayTiersOverride: nextWeekdayTiers,
+        weekendTiersOverride: nextWeekendTiers,
+      })
+      if (saved) {
+        setDeleteModal({ isOpen: false, type: null, index: null })
+      }
+    } finally {
+      setIsRemovingTier(false)
     }
   }
 
@@ -387,13 +412,25 @@ export default function PriceSettingsForm({
 
   // ── Zapis cen sezonowych/basic ───────────────────────────────────────────────
 
-  const handleSavePrices = async (): Promise<boolean> => {
+  const handleSavePrices = async (overrides?: {
+    weekdayTiersOverride?: PriceTier[]
+    weekendTiersOverride?: PriceTier[]
+  }): Promise<boolean> => {
     if (!selectedPropertyId) {
       toast.error('Wybierz domek')
       return false
     }
 
-    const weekdayValidation = normalizeAndValidateTiers(weekdayTiers, 'weekday')
+    const weekdayTiersToSave =
+      overrides && overrides.weekdayTiersOverride
+        ? overrides.weekdayTiersOverride
+        : weekdayTiers
+    const weekendTiersToSave =
+      overrides && overrides.weekendTiersOverride
+        ? overrides.weekendTiersOverride
+        : weekendTiers
+
+    const weekdayValidation = normalizeAndValidateTiers(weekdayTiersToSave, 'weekday')
     if (!weekdayValidation.isValid) {
       setWeekdayTiers(weekdayValidation.sorted)
       setTierErrors((prev) => ({
@@ -405,7 +442,7 @@ export default function PriceSettingsForm({
     }
     setTierErrors((prev) => ({ ...prev, weekday: [] }))
 
-    const weekendValidation = normalizeAndValidateTiers(weekendTiers, 'weekend')
+    const weekendValidation = normalizeAndValidateTiers(weekendTiersToSave, 'weekend')
     if (!weekendValidation.isValid) {
       setWeekendTiers(weekendValidation.sorted)
       setTierErrors((prev) => ({
@@ -481,11 +518,11 @@ export default function PriceSettingsForm({
               ? priceEntry.prices
               : [{ minGuests: 1, maxGuests: 2, price: priceEntry.previewPrice || 350 }]
           )
-          setCustomExtraBedPrice(priceEntry.extraBedPrice ?? 50)
+          setCustomExtraBedPrice(priceEntry.extraBedPrice ?? DEFAULT_CUSTOM_EXTRA_BED_PRICE)
           setCustomTierErrors([])
         } else {
           setCustomTiers([...DEFAULT_CUSTOM_TIERS])
-          setCustomExtraBedPrice(50)
+          setCustomExtraBedPrice(DEFAULT_CUSTOM_EXTRA_BED_PRICE)
           setCustomTierErrors([])
         }
       } else {
@@ -614,7 +651,7 @@ export default function PriceSettingsForm({
   const resetCustomEditorToCurrentSelection = () => {
     if (!bookingDates.start) {
       setCustomTiers([...DEFAULT_CUSTOM_TIERS])
-      setCustomExtraBedPrice(50)
+      setCustomExtraBedPrice(DEFAULT_CUSTOM_EXTRA_BED_PRICE)
       setCustomTierErrors([])
       return
     }
@@ -622,10 +659,10 @@ export default function PriceSettingsForm({
     const priceEntry = customPrices.find((p) => p.date === bookingDates.start)
     if (priceEntry) {
       setCustomTiers(priceEntry.prices?.length ? priceEntry.prices : [...DEFAULT_CUSTOM_TIERS])
-      setCustomExtraBedPrice(priceEntry.extraBedPrice ?? 50)
+      setCustomExtraBedPrice(priceEntry.extraBedPrice ?? DEFAULT_CUSTOM_EXTRA_BED_PRICE)
     } else {
       setCustomTiers([...DEFAULT_CUSTOM_TIERS])
-      setCustomExtraBedPrice(50)
+      setCustomExtraBedPrice(DEFAULT_CUSTOM_EXTRA_BED_PRICE)
     }
     setCustomTierErrors([])
   }
@@ -690,6 +727,25 @@ export default function PriceSettingsForm({
       toast.error('Wystąpił błąd')
     } finally {
       setIsDeletingCustom(false)
+    }
+  }
+
+  const handleDeleteCustomPriceForDate = async () => {
+    if (!selectedProperty?._id || !deleteCustomModal.date) return
+    setIsDeletingCustomSingle(true)
+    try {
+      const res = await deleteCustomPricesForDate({ propertyId: selectedProperty._id, dates: [deleteCustomModal.date] })
+      if (res?.success) {
+        toast.success(res.message)
+        await refreshCustomPrices()
+      } else {
+        toast.error(res?.message ?? 'Błąd podczas usuwania ceny indywidualnej.')
+      }
+    } catch (e) {
+      toast.error('Błąd podczas usuwania ceny indywidualnej.')
+    } finally {
+      setIsDeletingCustomSingle(false)
+      setDeleteCustomModal({ isOpen: false, date: null })
     }
   }
 
@@ -1110,10 +1166,10 @@ export default function PriceSettingsForm({
               <label className={styles.selectionModeToggle}>
                 <input
                   type="checkbox"
-                  checked={isCustomRangeMode}
-                  onChange={(e) => setIsCustomRangeMode(e.target.checked)}
+                  checked={!isCustomRangeMode}
+                  onChange={(e) => setIsCustomRangeMode(!e.target.checked)}
                 />
-                Zaznaczaj zakres dat (odznacz = jeden dzień)
+                Zaznaczaj jeden dzień
               </label>
             </div>
             <div className="setting-control">
@@ -1268,7 +1324,7 @@ export default function PriceSettingsForm({
                   onClick={handleRemoveCustomPrice}
                   disabled={isSaving || isDeletingCustom}
                 >
-                  {isDeletingCustom ? 'Przywracanie...' : '🗑️ Przywróć cenę sezonową'}
+                  {isDeletingCustom ? 'Przywracanie...' : '🗑️ Przywróć cenę sezonową dla zaznaczonego dnia'}
                 </button>
               </div>
             </>
@@ -1289,6 +1345,16 @@ export default function PriceSettingsForm({
                     <div key={idx} className={styles.customPriceItem}>
                       <span className={styles.customPriceDate}>{entry.date}</span>
                       <span className={styles.customPriceValue}>od {entry.previewPrice} zł</span>
+                      <button
+                        type="button"
+                        className={styles.removeTierBtn}
+                        aria-label="Usuń cenę indywidualną"
+                        onClick={() => {
+                          setDeleteCustomModal({ isOpen: true, date: entry.date })
+                        }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
                   {customPrices.length > 10 && (
@@ -1348,8 +1414,23 @@ export default function PriceSettingsForm({
         confirmText="Usuń"
         cancelText="Anuluj"
         confirmVariant="danger"
+        isLoading={isRemovingTier}
+        loadingText="Usuwanie..."
       >
         <p>Czy na pewno chcesz usunąć ten przedział cenowy?</p>
+      </Modal>
+
+      <Modal
+        isOpen={deleteCustomModal.isOpen}
+        onClose={() => setDeleteCustomModal({ isOpen: false, date: null })}
+        onConfirm={handleDeleteCustomPriceForDate}
+        title="Usuń cenę indywidualną"
+        confirmText="Usuń"
+        cancelText="Anuluj"
+        confirmVariant="danger"
+        isLoading={isDeletingCustomSingle}
+      >
+        <p>Czy na pewno chcesz usunąć cenę indywidualną dla tej daty?</p>
       </Modal>
     </>
   )

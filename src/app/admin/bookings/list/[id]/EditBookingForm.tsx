@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { updateBookingAction } from '@/actions/adminBookingActions';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
@@ -9,11 +9,11 @@ interface FormData {
   guestName: string;
   guestEmail: string;
   guestPhone: string;
-  numGuests: number;
-  children: number;
-  extraBedsCount: number;
-  totalPrice: number;
-  paidAmount: number;
+  numGuests: number | '';
+  children: number | '';
+  extraBedsCount: number | '';
+  totalPrice: number | '';
+  paidAmount: number | '';
   status: string;
   startDate: string;
   endDate: string;
@@ -25,63 +25,57 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [originalData, setOriginalData] = useState<FormData | null>(null);
 
-  const formatDate = (date: Date) => new Date(date).toISOString().split('T')[0];
-  const initialGuestName = initialData.guestName ?? initialData.guestInfo?.name ?? '';
-  const initialGuestEmail = initialData.guestEmail ?? initialData.guestInfo?.email ?? '';
-  const initialGuestPhone = initialData.guestPhone ?? initialData.guestInfo?.phone ?? '';
-  const initialNumGuests = initialData.adults;
-  const initialChildren = initialData.children ?? 0;
-  const initialExtraBeds = initialData.extraBedsCount ?? initialData.extraBeds ?? 0;
-  const orderId = typeof initialData.orderId === 'string' ? initialData.orderId.trim() : '';
+  const formatDate = (date: any) => {
+    if (!date) return '';
+    return new Date(date).toISOString().split('T')[0];
+  };
 
-  const [form, setForm] = useState<FormData>({
-    guestName: initialGuestName,
-    guestEmail: initialGuestEmail,
-    guestPhone: initialGuestPhone,
-    numGuests: initialNumGuests,
-    children: initialChildren,
-    extraBedsCount: initialExtraBeds,
-    totalPrice: initialData.totalPrice || 0,
-    paidAmount: initialData.paidAmount || 0,
-    status: initialData.status || 'pending',
+  const initialValues: FormData = {
+    guestName: initialData.guestName ?? initialData.guestInfo?.name ?? '',
+    guestEmail: initialData.guestEmail ?? initialData.guestInfo?.email ?? '',
+    guestPhone: initialData.guestPhone ?? initialData.guestInfo?.phone ?? '',
+    numGuests: initialData.adults ?? 1,
+    children: initialData.children ?? 0,
+    extraBedsCount: initialData.extraBedsCount ?? initialData.extraBeds ?? 0,
+    totalPrice: initialData.totalPrice ?? 0,
+    paidAmount: initialData.paidAmount ?? 0,
+    status: initialData.status ?? 'pending',
     startDate: formatDate(initialData.startDate),
     endDate: formatDate(initialData.endDate),
-  });
+  };
 
-  useEffect(() => {
-    setOriginalData({ ...form });
-  }, []);
+  const orderId = typeof initialData.orderId === 'string' ? initialData.orderId.trim() : '';
+
+  const [form, setForm] = useState<FormData>(initialValues);
+  const [originalData, setOriginalData] = useState<FormData>(initialValues);
 
   const hasChanges = () => {
-    if (!originalData) return false;
     return JSON.stringify(form) !== JSON.stringify(originalData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: ['numGuests', 'children', 'extraBedsCount', 'totalPrice', 'paidAmount'].includes(name) ? Number(value) : value,
-    }));
+    // Pozwól na chwilowe puste pole dla numerycznych
+    if (["numGuests", "children", "extraBedsCount", "totalPrice", "paidAmount"].includes(name)) {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value === "" ? "" : Number(value),
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
     if (isSaved) setIsSaved(false);
   };
 
   const handleEditToggle = () => {
     if (isEditing) {
-      setForm({
-        guestName: initialGuestName,
-        guestEmail: initialGuestEmail,
-        guestPhone: initialGuestPhone,
-        numGuests: initialNumGuests,
-        totalPrice: initialData.totalPrice || 0,
-        paidAmount: initialData.paidAmount || 0,
-        status: initialData.status || 'pending',
-        startDate: formatDate(initialData.startDate),
-        endDate: formatDate(initialData.endDate),
-      });
+      setForm(originalData);
       setIsSaved(false);
+      setMessage(null);
     }
     setIsEditing(!isEditing);
   };
@@ -90,6 +84,17 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
     e.preventDefault();
     setIsSaving(true);
     setMessage(null);
+
+    // Walidacja: nie pozwól na puste wartości numeryczne
+    const requiredNumeric = ["numGuests", "children", "extraBedsCount", "totalPrice", "paidAmount"];
+    for (const field of requiredNumeric) {
+      const val = form[field as keyof FormData];
+      if (val === "" || val === null || Number.isNaN(val)) {
+        setMessage({ type: 'error', text: 'Wszystkie pola numeryczne muszą być wypełnione.' });
+        setIsSaving(false);
+        return;
+      }
+    }
 
     const formData = new FormData();
     formData.append('bookingId', initialData._id);
@@ -105,8 +110,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
     formData.append('status', form.status);
     formData.append('startDate', form.startDate);
     formData.append('endDate', form.endDate);
-    formData.append('internalNotes', initialData.internalNotes || '');
-
+    formData.append('internalNotes', initialData.internalNotes ?? '');
 
     const result = await updateBookingAction(null, formData);
 
