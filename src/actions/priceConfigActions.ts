@@ -95,8 +95,12 @@ export async function updateCustompriceForDate(data: CustomPriceUpdate) {
       return { success: false, message: 'Brak przedziałów cenowych do zapisania.' };
     }
 
-    const normalizedExtraBedPrice =
-      typeof data.extraBedPrice === 'number' ? data.extraBedPrice : 50;
+    // Fail-fast: require a numeric extraBedPrice according to project rules.
+    if (typeof data.extraBedPrice !== 'number') {
+      return { success: false, message: 'Nieprawidłowa wartość extraBedPrice; oczekiwano liczby.' };
+    }
+
+    const normalizedExtraBedPrice = data.extraBedPrice;
 
     const operations = data.dates.map(date => ({
       updateOne: {
