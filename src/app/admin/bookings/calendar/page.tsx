@@ -33,7 +33,14 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
         </div>
         <div className={styles.tooltipRow}>
           <span className={styles.label}>🗓️ Termin:</span>
-          <span className={styles.valueText}>{details.startDate} do {details.endDate}</span>
+          <span className={styles.valueText}>{(() => {
+            const s = dayjs(details.startDate, 'DD.MM.YYYY')
+            const e = dayjs(details.endDate, 'DD.MM.YYYY')
+            if (!s.isValid()) return details.startDate
+            if (details.durationDays === 1) return s.format('D MMMM YYYY')
+            if (s.isSame(e, 'month') && s.isSame(e, 'year')) return `${s.format('D')}-${e.format('D')} ${e.format('MMMM YYYY')}`
+            return `${s.format('D MMMM YYYY')} - ${e.format('D MMMM YYYY')}`
+          })()}</span>
         </div>
         <div className={styles.tooltipRow}>
           <span className={styles.label}>📝 Notatka:</span>
@@ -62,7 +69,13 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
       </div>
       <div className={styles.tooltipRow}>
         <span className={styles.label}>🗓️ Termin:</span>
-        <span className={styles.valueText}>{details.startDate} do {details.endDate}</span>
+        <span className={styles.valueText}>{(() => {
+          const s = dayjs(details.startDate, 'DD.MM.YYYY')
+          const e = dayjs(details.endDate, 'DD.MM.YYYY')
+          if (!s.isValid() || !e.isValid()) return `${details.startDate} - ${details.endDate}`
+          if (s.isSame(e, 'month') && s.isSame(e, 'year')) return `${s.format('D')}-${e.format('D')} ${e.format('MMMM YYYY')}`
+          return `${s.format('D MMMM YYYY')} - ${e.format('D MMMM YYYY')}`
+        })()}</span>
       </div>
       <div className={styles.tooltipRow}>
         <span className={styles.label}>🌙 Ilość nocy:</span>
