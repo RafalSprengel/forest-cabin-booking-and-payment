@@ -138,6 +138,7 @@ export async function updateSeasonDates(
       endDate: normalizedEndDate,
     });
     revalidatePath('/admin/settings/booking');
+    revalidatePath('/admin/prices');
     return { success: true, message: 'Zaktualizowano daty sezonu' };
   } catch (error) {
     console.error('Błąd aktualizacji sezonu:', error);
@@ -152,6 +153,7 @@ export async function updateSeasonOrder(seasonId: string, order: number) {
     await dbConnect();
     await Season.findByIdAndUpdate(seasonId, { order });
     revalidatePath('/admin/settings/booking');
+    revalidatePath('/admin/prices');
     return { success: true, message: 'Zaktualizowano kolejność wyświetlania' };
   } catch (error) {
     console.error('Błąd aktualizacji kolejności sezonu:', error);
@@ -190,6 +192,7 @@ export async function createSeason(name: string, description: string, order: num
     });
 
     revalidatePath('/admin/settings/booking');
+    revalidatePath('/admin/prices');
     return {
       success: true,
       message: `Dodano sezon: ${normalizedName}`,
@@ -211,6 +214,7 @@ export async function deleteSeason(seasonId: string) {
     }
 
     revalidatePath('/admin/settings/booking');
+    revalidatePath('/admin/prices');
     return { success: true, message: `Usunięto sezon: ${deleted.name}` };
   } catch (error) {
     console.error('Błąd usuwania sezonu:', error);
