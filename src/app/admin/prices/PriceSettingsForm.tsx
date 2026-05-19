@@ -896,7 +896,7 @@ export default function PriceSettingsForm({
   const isAnyDirty = isSeasonDirty || isCustomDirty;
   const isPropertyDataLoading =
     !!selectedPropertyId && (isLoadingPrices || isLoadingCustomPrices);
-
+console.log(seasons);
   return (
     <>
       <Modal
