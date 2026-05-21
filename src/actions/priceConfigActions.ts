@@ -65,6 +65,7 @@ export async function updateCustompriceForDate(data: CustomPriceUpdate) {
 
     await CustomPrice.bulkWrite(operations);
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
 
     return { success: true, message: 'Zapisano ceny dla zaznaczonych dni.' };
   } catch (error) {
@@ -85,6 +86,7 @@ export async function deleteCustomPricesForDate(data: { propertyId: string; date
     });
 
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
 
     return { success: true, message: 'Usunięto ceny indywidualne.' };
   } catch (error) {

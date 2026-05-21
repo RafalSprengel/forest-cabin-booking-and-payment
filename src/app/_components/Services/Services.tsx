@@ -125,7 +125,7 @@ export default async function Services() {
                 </div>
                 <div className={styles.grid}>
 
-                    <div className={styles.equipment+' '+styles.gridFirstRow}>
+                    <div className={styles.equipment + ' ' + styles.gridFirstRow}>
                         <h3>Wyposażenie każdego domku:</h3>
                         <ul className={styles.equipmentList}>
                             <li>Kuchenka indukcyjna z piekarnikiem</li>

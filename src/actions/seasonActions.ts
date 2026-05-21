@@ -301,7 +301,8 @@ export async function updateBasicPrices(
       { upsert: true, new: true }
     );
 
-    revalidatePath('/admin/prices');
+    // revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
     return { success: true, message: 'Zapisano ceny podstawowe' };
   } catch (error) {
     console.error('Błąd zapisu cen podstawowych:', error);
@@ -317,6 +318,7 @@ export async function deleteBasicPrices(propertyId: string) {
     await dbConnect();
     await PropertyPrices.deleteOne({ propertyId, seasonId: null });
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
     return { success: true, message: 'Usunięto ceny podstawowe' };
   } catch (error) {
     console.error('Błąd usuwania cen podstawowych:', error);
@@ -370,6 +372,7 @@ export async function updateSeasonPricesForProperty(
     );
 
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
     return {
       success: true,
       message: mode === 'basic'
@@ -427,6 +430,7 @@ export async function copyPricesToAllProperties(sourcePropertyId: string) {
     }
 
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
     return {
       success: true,
       message: `Ceny skopiowano do ${otherProperties.length} domku(ów).`,
