@@ -97,11 +97,7 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
       <div className={styles.tooltip}>
         <div className={styles.tooltipHeader}>
           <h4 className={styles.guestNameText}>Zabl. przez admina</h4>
-          <span className={styles.badge}>ZABLOKOWANA</span>
-        </div>
-        <div className={styles.tooltipRow}>
-          <span className={styles.label}>🧾 Zamówienie nr.:</span>
-          <span className={styles.valueText}>{details.orderId ? details.orderId : '-'}</span>
+          <span className={`${styles.badge} ${styles.badgeBlocked}`}>ZABLOKOWANA</span>
         </div>
         <div className={styles.tooltipRow}>
           <span className={styles.label}>🗓️ Termin:</span>
@@ -125,9 +121,13 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
   const isPaid = details.paymentStatus === 'paid'
   const isDeposit = details.paidAmount > 0 && !isPaid
   const paymentClass = isPaid ? styles.paymentPaid : isDeposit ? styles.paymentDeposit : styles.paymentUnpaid
-  const paymentLabel = isPaid ? 'Opłacone' : isDeposit ? 'Zaliczka' : 'Nieopłacone'
+  const paymentLabel = isPaid
+    ? 'Opłacone'
+    : isDeposit
+      ? `Zaliczka (${details.paidAmount.toFixed(2)} PLN)`
+      : 'Nieopłacone'
   const statusBadgeText = details.status === 'confirmed' ? 'POTWIERDZONA' : details.status === 'pending' ? 'Klient jest w trakcie rezerwacji...' : 'ZABLOKOWANA'
-  const extraBedsText = details.extraBeds && details.extraBeds > 0 ? `${details.extraBeds} dostawka` : 'brak dostawek'
+  const extraBedsText = details.extraBeds && details.extraBeds > 0 ? `${details.extraBeds} dostawka` : '0'
 
   return (
     <div className={styles.tooltip}>

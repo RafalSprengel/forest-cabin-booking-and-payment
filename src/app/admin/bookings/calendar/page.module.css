@@ -233,6 +233,11 @@
     font-size: 0.6rem;
 }
 
+.badgeBlocked {
+    background: #fcebea;
+    color: #b71c1c;
+}
+
 .badgePending {
     background: #fff8dc; /* light yellow */
     color: #814b00; /* dark amber */
