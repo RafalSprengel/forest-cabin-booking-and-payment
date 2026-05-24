@@ -123,7 +123,7 @@
 }
 
 .slideTitle {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-weight: 400;
   font-style: normal;
   font-size: clamp(2.2rem, 5.5vw, 4rem);
