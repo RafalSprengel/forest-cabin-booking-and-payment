@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FadeIn, SlideLeft, SlideRight } from "../UI/Motions/Motions";
+import { FadeIn, SlideLeft, SlideRight } from '@components/UI/Motions/Motions';
 import styles from "./About.module.css";
 
 export default function About() {

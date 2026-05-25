@@ -5,6 +5,7 @@ import { faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
 import styles from './Contact.module.css';
 import ContactForm from './ContactForm';
 import { ISiteSettings } from '@/db/models/SiteSettings';
+import { SlideLeft, SlideRight } from '@components/UI/Motions/Motions';
 
 export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteSettings> }) {
   const lat = 54.157354;
@@ -16,10 +17,13 @@ export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteS
   return (
     <section id="contact" className={styles.section}>
       <div className={styles.mainContainer}>
-        <h2 className={styles.title}>Kontakt</h2>
+        <SlideRight>
+          <h2 className={styles.title}>Kontakt</h2>
+        </SlideRight>
         <div className={styles.flexWrapper}>
           <div className={styles.infoColumn}>
-            <div className={styles.details}>
+            <SlideLeft>
+              <div className={styles.details}>
               <div className={styles.companyName}>Wilcze Chatki</div>
              
                 <div>83-424 Szumleś Królewski 9A</div>
@@ -45,17 +49,22 @@ export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteS
                 <FontAwesomeIcon icon={faEnvelope} className={styles.detailIcon} />
                 <span>e-mail: <a href="mailto:kontakt@wilczechatki.pl" className={styles.contactLink}>kontakt@wilczechatki.pl</a></span>
               </p> */}
-            </div>
+              </div>
+            </SlideLeft>
 
-            <div className={styles.payment}>
-              <div className={styles.paymentTitle} >Dane do przelewu:</div>
-              <div>Numer konta PKO BP</div>
-              <div className={styles.bankAccountNumber}>{siteSettings.bankAccountNumber}</div>
-            </div>
+            <SlideLeft delay={0.12}>
+              <div className={styles.payment}>
+                <div className={styles.paymentTitle} >Dane do przelewu:</div>
+                <div>Numer konta PKO BP</div>
+                <div className={styles.bankAccountNumber}>{siteSettings.bankAccountNumber}</div>
+              </div>
+            </SlideLeft>
           </div>
 
           <div className={styles.formColumn}>
-            <ContactForm />
+            <SlideLeft delay={0.18}>
+              <ContactForm />
+            </SlideLeft>
           </div>
         </div>
       </div>

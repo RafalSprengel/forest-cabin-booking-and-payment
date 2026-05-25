@@ -1,4 +1,4 @@
-import { SlideLeft, SlideRight } from "../UI/Motions/Motions";
+import { SlideLeft, SlideRight } from '@components/UI/Motions/Motions';
 import styles from './Attractions.module.css';
 
 export default function Attractions() {
