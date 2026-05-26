@@ -6,7 +6,7 @@ import styles from './Navbar.module.css';
 import Image from 'next/image';
 import HamburgerButton from './HamburgerButton';
 
-export default function Navbar({isSmaller}: {isSmaller: boolean}) {
+export default function Navbar({isSmaller, isTransparent}: {isSmaller: boolean; isTransparent?: boolean}) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -37,8 +37,10 @@ export default function Navbar({isSmaller}: {isSmaller: boolean}) {
         };
     }, [isMenuOpen]);
 
+    const isNavbarTransparent = isTransparent && !isMenuOpen;
+
     return (
-        <nav className={styles.container+(isSmaller ? ' '+styles.smallerNavbar : '')}>
+        <nav className={`${styles.container} ${isSmaller ? styles.smallerNavbar : ''} ${isNavbarTransparent ? styles.transparentNavbar : ''}`}>
             <div className={styles.inner}>
                 <Link className={styles.logoWrapper} href="/">
                     <div className={styles.logoImageWrapper}>
@@ -56,6 +58,7 @@ export default function Navbar({isSmaller}: {isSmaller: boolean}) {
                         ref={hamburgerRef}
                         isOpen={isMenuOpen}
                         isSmaller={isSmaller}
+                        isTransparent={isNavbarTransparent}
                         onClick={toggleMenu}
                         className={styles.hamburger} />
                 </div>

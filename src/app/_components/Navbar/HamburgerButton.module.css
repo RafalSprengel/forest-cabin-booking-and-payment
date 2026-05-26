@@ -42,3 +42,7 @@
 .isOpen .bar:nth-child(3) {
   transform: rotate(-45deg);
 }
+
+.transparentHamburger .bar {
+  background: #ffffff;
+}

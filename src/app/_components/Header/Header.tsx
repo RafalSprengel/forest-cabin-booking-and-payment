@@ -1,27 +1,33 @@
-'use client'
+'use client';
 import { useState, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import Navbar from '@components/Navbar/Navbar';
 import styles from './Header.module.css';
 
 export default function Header({ topBar }: { topBar: ReactNode }) {
     const [isScrolled, setIsScrolled] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
-        const scrollY = () => {
-            if (window.scrollY > 100) {
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
                 setIsScrolled(true);
             } else {
                 setIsScrolled(false);
             }
-        }
-        window.addEventListener('scroll', scrollY);
-        return ()=> window.removeEventListener('scroll', scrollY);
-    }, [])
+        };
+        handleScroll();
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const isHome = pathname === '/';
+    const isTransparent = isHome && !isScrolled;
 
     return (
-        <header className={styles.container + (isScrolled ? ' ' + styles.scrolled : '')}>
+        <header className={`${styles.container} ${isScrolled ? styles.scrolled : ''} ${isTransparent ? styles.transparent : ''}`}>
             {topBar}
-            <Navbar isSmaller={isScrolled} />
+            <Navbar isSmaller={isScrolled} isTransparent={isTransparent} />
         </header>
-    )
+    );
 }
