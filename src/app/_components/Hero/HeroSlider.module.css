@@ -64,7 +64,8 @@
   position: absolute;
   inset: 0;
   /* background: linear-gradient(to bottom, #74747454, #000000e6); */
-  background: linear-gradient(#000000b3, #0000 14%), linear-gradient(2deg, #000c, #0000 92%);
+  /* background: linear-gradient(#000000b3, #0000 14%), linear-gradient(2deg, #000c, #0000 92%); */
+  background: linear-gradient(#000000b3, #0000 14%), linear-gradient(2deg, #000c, #0000 72%);
   z-index: 2;
 }
 
