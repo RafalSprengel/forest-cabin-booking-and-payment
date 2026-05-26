@@ -63,7 +63,8 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, #74747454, #000000e6);
+  /* background: linear-gradient(to bottom, #74747454, #000000e6); */
+  background: linear-gradient(#000000b3, #0000 14%), linear-gradient(2deg, #000c, #0000 92%);
   z-index: 2;
 }
 
@@ -348,9 +349,9 @@
 }
 
 @media (min-width: 1024px) {
-  .overlay {
+  /* .overlay {
     background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
-  }
+  } */
 
   .slideContent {
     bottom: unset;
