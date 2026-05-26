@@ -1,9 +1,4 @@
-@font-face {
-    font-family: 'Material Symbols Outlined';
-    font-style: normal;
-    font-weight: 100 700;
-    src: url(https://fonts.gstatic.com/s/materialsymbolsoutlined/v136/kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsI.woff2) format('woff2');
-}
+
 
 .calendar {
     font-size: 14px;
@@ -32,6 +27,11 @@
     align-items: center;
     justify-content: center;
     transition: opacity 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    color: inherit;
 }
 
 .navigation__current-month {
@@ -149,13 +149,7 @@
     color: #000 !important;
 }
 
-.material-symbols-outlined {
-    font-family: 'Material Symbols Outlined';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 1.5em;
-    line-height: 1;
-}
+
 
 .calendar-error {
     color: #ff4d4d;
