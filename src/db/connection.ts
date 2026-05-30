@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import '@/db/models/Booking';
 import '@/db/models/Property';
-import '@/db/models/PropertyPrices'; // ← nowy model
-import '@/db/models/Season';         // ← potrzebny dla middleware kaskadowego
+import '@/db/models/PropertyPrices';
+import '@/db/models/Season';
 import '@/db/models/PriceConfig';
 import '@/db/models/SystemConfig';
 

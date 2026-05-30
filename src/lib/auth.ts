@@ -12,7 +12,12 @@ import { Db } from "mongodb";
 function createAuth(db: Db) {
     return betterAuth({
         database: mongodbAdapter(db),
-
+        session: {                        // zamiast odpytywac baze przy kazdym przejsciu pomiedzy url chronionym zapisz sesje w ciasteczku, a baza bedzie odpytywana tylko co 5 minut (lub po zmianie sesji)
+            cookieCache: {
+                enabled: true,
+                maxAge: 60 * 5  // 5 minut
+            }
+        },
         emailAndPassword: {
             enabled: true,
             minPasswordLength: 5,
@@ -68,7 +73,7 @@ function createAuth(db: Db) {
         secret: process.env.BETTER_AUTH_SECRET,
         trustedOrigins: [
             process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-            "http://192.168.0.77:3000"
+            "http://192.168.0.80:3000"
         ],
     });
 }

@@ -404,10 +404,10 @@ export default function AddBookingPage() {
     (selectedPropertyMaxAdults == null || selectedPropertyMaxExtraBeds == null);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ fontStyle: "normal" }}>
       <FloatingBackButton />
       <header className={styles.header}>
-        <h1>Dodaj nową rezerwację</h1>
+        <h2>Dodaj nową rezerwację</h2>
         <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej).</p>
       </header>
 

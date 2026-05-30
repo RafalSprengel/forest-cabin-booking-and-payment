@@ -117,9 +117,6 @@ export async function seedSeasons() {
   }
 }
 
-/**
- * Tworzy domki BEZ cen – ceny żyją teraz w PropertyPrices.
- */
 export async function seedProperties() {
   try {
     await dbConnect();
