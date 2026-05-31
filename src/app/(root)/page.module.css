@@ -1,3 +1,10 @@
-.main {
+.landingPage {
   width: 100%;
+}
+
+.landingPage h1,
+.landingPage h2,
+.landingPage h3,
+.landingPage h4 {
+ font-style: oblique;
 }

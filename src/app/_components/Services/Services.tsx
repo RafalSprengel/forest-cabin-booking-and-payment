@@ -114,7 +114,7 @@ export default async function Services() {
             <div className={styles.container}>
                 <header className={styles.header}>
                     <SlideRight>
-                        <h2 className={styles.title}>Nasza oferta</h2>
+                        <h1 className={styles.title}>Nasza oferta</h1>
                     </SlideRight>
                 </header>
                 <SlideLeft>

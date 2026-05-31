@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createProperty } from '@/actions/adminPropertyActions';
 import Button from '@/app/_components/UI/Button/Button';
 import styles from './page.module.css';
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
+// FloatingBackButton provided by admin layout
 
 export default function AddPropertyForm() {
   const router = useRouter();
@@ -30,7 +30,6 @@ export default function AddPropertyForm() {
 
   return (
     <div className={styles.container}>
-      <FloatingBackButton />
       <header className={styles.header}>
         <h1>Dodaj nowy obiekt</h1>
         <p>Wprowadź dane nowego obiektu w systemie.</p>

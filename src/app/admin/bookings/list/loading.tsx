@@ -1,14 +1,12 @@
 import styles from './page.module.css'
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
+import adminStyles from "../../admin.module.css";
+// FloatingBackButton provided by admin layout
 
 export default function Loading() {
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerTop}>
-          <FloatingBackButton />
-          <h1>Lista Rezerwacji</h1>
-        </div>
+      <header className={adminStyles.adminPageHeader}>
+        <h1>Lista Rezerwacji</h1>
         <p>Przeglądaj, edytuj lub usuwaj istniejące rezerwacje.</p>
       </header>
 

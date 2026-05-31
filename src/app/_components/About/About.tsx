@@ -7,9 +7,9 @@ export default function About() {
     <section id="about-us" className={styles.section}>
       <div className={styles.wrapper}>
         <SlideRight>
-          <h2 className={styles.title}>
+          <h1 className={styles.title}>
             Serdecznie witamy w Wilczych Chatkach!
-          </h2>
+          </h1>
         </SlideRight>
         <SlideLeft delay={0.2}>
           <div className={styles.content}>

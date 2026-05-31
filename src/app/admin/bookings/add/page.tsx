@@ -19,12 +19,13 @@ import Button from "@/app/_components/UI/Button/Button";
 import CalendarPicker, {
   type DatesData,
 } from "@/app/_components/CalendarPicker/CalendarPicker";
-import FloatingBackButton from "@/app/_components/FloatingBackButton/FloatingBackButton";
+// FloatingBackButton provided by admin layout
 import Modal from "@/app/_components/Modal/Modal";
 import QuantityPicker from "@/app/_components/QuantityPicker/QuantityPicker";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { formatDisplayDate } from "@/utils/formatDate";
 import styles from "./page.module.css";
+import adminStyles from "../../admin.module.css";
 
 interface BookingDates {
   start: string | null;
@@ -404,11 +405,10 @@ export default function AddBookingPage() {
     (selectedPropertyMaxAdults == null || selectedPropertyMaxExtraBeds == null);
 
   return (
-    <div className={styles.container} style={{ fontStyle: "normal" }}>
-      <FloatingBackButton />
-      <header className={styles.header}>
-        <h2>Dodaj nową rezerwację</h2>
-        <p>Ręczne wprowadzenie rezerwacji (np. telefonicznej).</p>
+    <div>
+      <header className={adminStyles.adminPageHeader}>
+        <h1>Dodaj nową rezerwację</h1>
+        <p className={styles.headerDescription}>Ręczne wprowadzenie rezerwacji (np. telefonicznej).</p>
       </header>
 
       {missingLimits && (
@@ -465,7 +465,7 @@ export default function AddBookingPage() {
         />
         <input type="hidden" name="invoiceCity" value={invoiceData.city} />
 
-        <div className={styles.sectionTitle}>Termin i Obiekt</div>
+        <h2 className={styles.sectionTitle}>Termin i Obiekt</h2>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="propertyId">Obiekt</label>
@@ -589,7 +589,7 @@ export default function AddBookingPage() {
           </div>
         </div>
 
-        <div className={styles.sectionTitle}>Płatność</div>
+        <h2 className={styles.sectionTitle}>Płatność</h2>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="totalPrice">Cena całkowita (PLN)</label>
@@ -642,7 +642,7 @@ export default function AddBookingPage() {
           </div>
         </div>
 
-        <div className={styles.sectionTitle}>Dodatkowe opcje</div>
+        <h2 className={styles.sectionTitle}>Dodatkowe opcje</h2>
         <div className={styles.invoiceOptionGroup}>
           <label className={styles.checkboxLabel}>
             <input
@@ -725,7 +725,7 @@ export default function AddBookingPage() {
           </div>
         </div>
 
-        <div className={styles.sectionTitle}>Dane Gościa</div>
+        <h2 className={styles.sectionTitle}>Dane gościa</h2>
         <div className={styles.grid}>
           <div className={styles.inputGroup}>
             <label htmlFor="firstName">Imię</label>

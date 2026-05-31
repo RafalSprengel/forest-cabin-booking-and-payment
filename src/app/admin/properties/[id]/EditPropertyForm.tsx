@@ -153,7 +153,7 @@ export default function EditPropertyForm({
           </div>
         </div>
 
-        <div className={styles.section}>
+        {/* <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Zdjęcia</h2>
           <div className={styles.inputGroup}>
             <label htmlFor="images">URL-e zdjęć (oddzielone przecinkiem)</label>
@@ -168,7 +168,7 @@ export default function EditPropertyForm({
               Wklej ścieżki do zdjęć, oddzielając je przecinkami.
             </small>
           </div>
-        </div>
+        </div> */}
 
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Status</h2>

@@ -14,10 +14,11 @@ import Button from "@/app/_components/UI/Button/Button";
 import CalendarPicker, {
   type DatesData,
 } from "@/app/_components/CalendarPicker/CalendarPicker";
-import FloatingBackButton from "@/app/_components/FloatingBackButton/FloatingBackButton";
+// FloatingBackButton provided by admin layout
 import Modal from "@/app/_components/Modal/Modal";
 import { formatDisplayDate } from "@/utils/formatDate";
 import styles from "./page.module.css";
+import adminStyles from "../../admin.module.css";
 
 interface PropertyOption {
   _id: string;
@@ -189,180 +190,178 @@ export default function BlockBookingsPage() {
   };
 
   return (
-    <div className={styles.blockPageContainer}>
-      <div className={styles.headerRow}>
-        <FloatingBackButton />
-        <div>
-          <h1 className={styles.pageTitle}>Blokuj terminy</h1>
-          <p className={styles.pageSubtitle}>
-            Twórz blokady administracyjne dla jednego domku lub wszystkich
-            domków.
-          </p>
-        </div>
+    <>
+      <div className={adminStyles.adminPageHeader}>
+        <h1 >Blokuj terminy</h1>
+        <p>
+          Twórz blokady administracyjne dla jednego domku lub wszystkich
+          domków.
+        </p>
       </div>
-
-      <form
-        className={styles.card}
-        onSubmit={(e) => {
-          e.preventDefault();
-          void handleCreateBlock();
-        }}
-      >
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Nowa blokada</h2>
-          <span className={styles.cardBadge}>Admin</span>
-        </div>
-
-        <div className={styles.settingRow}>
-          <div className={styles.settingContent}>
-            <label className={styles.settingLabel} htmlFor="propertySelect">
-              Domek
-            </label>
-            <p className={styles.settingDescription}>
-              Wybierz domek z listy lub opcję "Wszystkie".
-            </p>
+      <div className={styles.blockPageContainer}>
+        <form
+          className={styles.card}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleCreateBlock();
+          }}
+        >
+          <div className={styles.cardHeader}>
+            <h2>Nowa blokada</h2>
+            <span className={styles.cardBadge}>Admin</span>
           </div>
-          <div className={styles.settingControl}>
-            <select
-              id="propertySelect"
-              value={selectedPropertyId}
-              onChange={(e) => setSelectedPropertyId(e.target.value)}
-              className={styles.selectInput}
-              disabled={isLoading || isSubmitting}
-            >
-              <option value="">-- Wybierz domek --</option>
-              {properties.map((property) => (
-                <option key={property._id} value={property._id}>
-                  {property.name}
-                </option>
-              ))}
-              <option value={ALL_PROPERTIES_ID}>Wszystkie</option>
-            </select>
-          </div>
-        </div>
 
-        {selectedPropertyId && (
           <div className={styles.settingRow}>
             <div className={styles.settingContent}>
-              <label className={styles.settingLabel}>Zakres blokady</label>
-              <p className={styles.settingDescription}>
-                Wybierz dzień lub zakres blokady w kalendarzu.
-              </p>
-            </div>
-            <div className={styles.settingControl}>
-              {isLoadingUnavailable ? (
-                <div className={styles.loadingHint}>
-                  Wczytywanie zajętych terminów...
-                </div>
-              ) : (
-                <CalendarPicker
-                  dates={calendarDates}
-                  onDateChange={setBookingDates}
-                  minBookingDays={0}
-                />
-              )}
-              <div className={styles.rangePreview}>
-                <strong>Wybrany zakres:</strong>{" "}
-                {bookingDates.start && bookingDates.end
-                  ? `${formatDisplayDate(bookingDates.start)} -> ${formatDisplayDate(bookingDates.end)}`
-                  : bookingDates.start
-                    ? `${formatDisplayDate(bookingDates.start)} (1 dzień)`
-                    : "brak"}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {selectedPropertyId && (
-          <div className={styles.settingRow}>
-            <div className={styles.settingContent}>
-              <label className={styles.settingLabel} htmlFor="adminNotes">
-                Notatka (opcjonalnie)
+              <label className={styles.settingLabel} htmlFor="propertySelect">
+                Domek
               </label>
               <p className={styles.settingDescription}>
-                Ta notatka nie będzie widoczna dla klientów, będzie widoczna
-                tylko w panelu admina.
+                Wybierz domek z listy lub opcję "Wszystkie".
               </p>
             </div>
             <div className={styles.settingControl}>
-              <textarea
-                id="adminNotes"
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                className={styles.notesInput}
-                placeholder="np. serwis techniczny"
-                disabled={isSubmitting}
-              />
+              <select
+                id="propertySelect"
+                value={selectedPropertyId}
+                onChange={(e) => setSelectedPropertyId(e.target.value)}
+                className={styles.selectInput}
+                disabled={isLoading || isSubmitting}
+              >
+                <option value="">-- Wybierz domek --</option>
+                {properties.map((property) => (
+                  <option key={property._id} value={property._id}>
+                    {property.name}
+                  </option>
+                ))}
+                <option value={ALL_PROPERTIES_ID}>Wszystkie</option>
+              </select>
             </div>
           </div>
-        )}
 
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant='secondary'
-            onClick={() => void handleCreateBlock()}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Zapisywanie..." : "Zablokuj termin"}
-          </Button>
-        </div>
-
-        {errorMessage && <div className={styles.errorMsg}>{errorMessage}</div>}
-      </form>
-
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Istniejące blokady</h2>
-          <span className={styles.cardBadge}>{allBlockedBookings.length}</span>
-        </div>
-
-        {allBlockedBookings.length === 0 ? (
-          <div className={styles.emptyState}>
-            Brak blokad dla wybranego filtra.
-          </div>
-        ) : (
-          <div className={styles.blockList}>
-            {allBlockedBookings.map((item) => (
-              <article key={item._id} className={styles.blockItem}>
-                <div className={styles.blockMeta}>
-                  <strong>{item.propertyName}</strong>
-                  <span>
-                    {dayjs(item.endDate).diff(dayjs(item.startDate), "day") === 1
-                      ? formatDisplayDate(item.startDate)
-                      : `${formatDisplayDate(item.startDate)} – ${formatDisplayDate(dayjs(item.endDate).subtract(1, "day").toISOString())}`}
-                  </span>
-                  {item.adminNotes && <small>{item.adminNotes}</small>}
+          {selectedPropertyId && (
+            <div className={styles.settingRow}>
+              <div className={styles.settingContent}>
+                <label className={styles.settingLabel}>Zakres blokady</label>
+                <p className={styles.settingDescription}>
+                  Wybierz dzień lub zakres blokady w kalendarzu.
+                </p>
+              </div>
+              <div className={styles.settingControl}>
+                {isLoadingUnavailable ? (
+                  <div className={styles.loadingHint}>
+                    Wczytywanie zajętych terminów...
+                  </div>
+                ) : (
+                  <CalendarPicker
+                    dates={calendarDates}
+                    onDateChange={setBookingDates}
+                    minBookingDays={0}
+                  />
+                )}
+                <div className={styles.rangePreview}>
+                  <strong>Wybrany zakres:</strong>{" "}
+                  {bookingDates.start && bookingDates.end
+                    ? `${formatDisplayDate(bookingDates.start)} -> ${formatDisplayDate(bookingDates.end)}`
+                    : bookingDates.start
+                      ? `${formatDisplayDate(bookingDates.start)} (1 dzień)`
+                      : "brak"}
                 </div>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => setDeleteTarget(item)}
-                  disabled={isDeletingId === item._id}
-                >
-                  {isDeletingId === item._id ? "Usuwanie..." : "Usuń blokadę"}
-                </Button>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
+              </div>
+            </div>
+          )}
 
-      <Modal
-        isOpen={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={
-          deleteTarget ? () => handleDeleteBlock(deleteTarget._id) : undefined
-        }
-        title="Potwierdź usunięcie"
-        confirmText="Tak, usuń"
-        loadingText="Usuwanie..."
-        cancelText="Anuluj"
-        confirmVariant="danger"
-        isLoading={Boolean(deleteTarget && isDeletingId === deleteTarget._id)}
-      >
-        <p>Czy na pewno chcesz usunąć tę blokadę?</p>
-      </Modal>
-    </div>
+          {selectedPropertyId && (
+            <div className={styles.settingRow}>
+              <div className={styles.settingContent}>
+                <label className={styles.settingLabel} htmlFor="adminNotes">
+                  Notatka (opcjonalnie)
+                </label>
+                <p className={styles.settingDescription}>
+                  Ta notatka nie będzie widoczna dla klientów, będzie widoczna
+                  tylko w panelu admina.
+                </p>
+              </div>
+              <div className={styles.settingControl}>
+                <textarea
+                  id="adminNotes"
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  className={styles.notesInput}
+                  placeholder="np. serwis techniczny"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className={styles.actionsRow}>
+            <Button
+              type="button"
+              variant='secondary'
+              onClick={() => void handleCreateBlock()}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Zapisywanie..." : "Zablokuj termin"}
+            </Button>
+          </div>
+
+          {errorMessage && <div className={styles.errorMsg}>{errorMessage}</div>}
+        </form>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2>Istniejące blokady</h2>
+            <span className={styles.cardBadge}>{allBlockedBookings.length}</span>
+          </div>
+
+          {allBlockedBookings.length === 0 ? (
+            <div className={styles.emptyState}>
+              Brak blokad dla wybranego filtra.
+            </div>
+          ) : (
+            <div className={styles.blockList}>
+              {allBlockedBookings.map((item) => (
+                <article key={item._id} className={styles.blockItem}>
+                  <div className={styles.blockMeta}>
+                    <strong>{item.propertyName}</strong>
+                    <span>
+                      {dayjs(item.endDate).diff(dayjs(item.startDate), "day") === 1
+                        ? formatDisplayDate(item.startDate)
+                        : `${formatDisplayDate(item.startDate)} – ${formatDisplayDate(dayjs(item.endDate).subtract(1, "day").toISOString())}`}
+                    </span>
+                    {item.adminNotes && <small>{item.adminNotes}</small>}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => setDeleteTarget(item)}
+                    disabled={isDeletingId === item._id}
+                  >
+                    {isDeletingId === item._id ? "Usuwanie..." : "Usuń blokadę"}
+                  </Button>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Modal
+          isOpen={Boolean(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={
+            deleteTarget ? () => handleDeleteBlock(deleteTarget._id) : undefined
+          }
+          title="Potwierdź usunięcie"
+          confirmText="Tak, usuń"
+          loadingText="Usuwanie..."
+          cancelText="Anuluj"
+          confirmVariant="danger"
+          isLoading={Boolean(deleteTarget && isDeletingId === deleteTarget._id)}
+        >
+          <p>Czy na pewno chcesz usunąć tę blokadę?</p>
+        </Modal>
+      </div>
+    </>
   );
 }

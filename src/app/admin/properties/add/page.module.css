@@ -8,11 +8,8 @@
   margin-bottom: 25px;
 }
 
-.headerTop {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 8px;
+.header p {
+  color: var(--text-secondary);
 }
 
 .backButton {
@@ -27,18 +24,6 @@
 
 .backButton:hover {
   color: #2563eb;
-}
-
-.header h1 {
-  font-size: 1.5rem;
-  color: #1e293b;
-  margin: 0;
-}
-
-.header p {
-  color: #64748b;
-  margin: 0;
-  font-size: 0.95rem;
 }
 
 .alert {
@@ -86,9 +71,6 @@
 }
 
 .sectionTitle {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #334155;
   margin: 0;
   padding-bottom: 8px;
   border-bottom: 2px solid #f1f5f9;
@@ -222,10 +204,6 @@
   .container {
     max-width: 800px;
     padding: 20px 30px;
-  }
-
-  .header h1 {
-    font-size: 1.8rem;
   }
 
   .formCard {

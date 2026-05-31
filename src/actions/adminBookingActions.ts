@@ -463,7 +463,7 @@ export async function getUnavailableDatesForBlocking(propertyId: string): Promis
 
   const bookings = didMutateBookings
     ? await Booking.find(query)
-        .select('startDate endDate')
+        .select('startDate endDate status')
         .lean()
     : bookingsForCleanup
 
@@ -476,7 +476,7 @@ export async function getUnavailableDatesForBlocking(propertyId: string): Promis
       unavailableDates.add(d.toISOString().split('T')[0])
     }
 
-    if (!allowCheckinOnDepartureDay) {
+    if (!allowCheckinOnDepartureDay && (booking as any).status !== 'blocked') {
       unavailableDates.add(end.toISOString().split('T')[0])
     }
   }

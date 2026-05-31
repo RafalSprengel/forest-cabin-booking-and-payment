@@ -2,7 +2,7 @@ import { getAdminBookingsList } from '@/actions/adminBookingActions';
 import Button from '@/app/_components/UI/Button/Button';
 import Link from 'next/link';
 import styles from './page.module.css';
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
+import adminStyles from "../../admin.module.css";
 import BookingSearch from './BookingSearch';
 
 function getPaymentBadge(paymentStatus: string, paidAmount: number, totalPrice: number) {
@@ -74,13 +74,13 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
     .sort((a: any, b: any) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime());
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerTop}>
-          <FloatingBackButton />
+    <div>
+      <header className={adminStyles.adminPageHeader}>
+        <div>
           <h1>Lista rezerwacji</h1>
+          <p>Przeglądaj, edytuj lub usuwaj istniejące rezerwacje.</p>
         </div>
-        <p>Przeglądaj, edytuj lub usuwaj istniejące rezerwacje.</p>
+
         <div className={styles.filtersWrap}>
           <div className={styles.filters} role="navigation" aria-label="Filtr statusu">
             <Link
@@ -222,7 +222,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
           )}
 
           {upcomingBookings.length > 0 && pastBookings.length > 0 && (
-            <div className={styles.pastDivider}>Przeszłe rezerwacje</div>
+            <h2 className={styles.pastDivider}>Przeszłe rezerwacje</h2>
           )}
 
           {pastBookings.length > 0 && (

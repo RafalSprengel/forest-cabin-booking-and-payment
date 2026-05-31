@@ -68,7 +68,7 @@ export default function Attractions() {
         <section id="attractions" className={styles.section}>
             <div className={styles.container}>
                 <SlideRight>
-                    <h2 className={styles.title}>Atrakcje w okolicy</h2>
+                    <h1 className={styles.title}>Atrakcje w okolicy</h1>
                 </SlideRight>
                 <SlideLeft>
                     <p className={styles.subtitle}>

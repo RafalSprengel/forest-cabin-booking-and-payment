@@ -18,7 +18,7 @@ export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteS
     <section id="contact" className={styles.section}>
       <div className={styles.mainContainer}>
         <SlideRight>
-          <h2 className={styles.title}>Kontakt</h2>
+          <h1 className={styles.title}>Kontakt</h1>
         </SlideRight>
         <div className={styles.flexWrapper}>
           <div className={styles.infoColumn}>

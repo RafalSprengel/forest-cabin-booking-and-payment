@@ -2,7 +2,7 @@ import { getBookingById } from '@/actions/adminBookingActions';
 import { notFound } from 'next/navigation';
 import EditBookingForm from './EditBookingForm';
 import styles from './page.module.css';
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
+import adminStyles from "../../../admin.module.css";
 import DeleteConfirmButton from './DeleteConfirmButton';
 
 export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,9 +19,8 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
   const propertyName = booking.propertyName || '-';
 
   return (
-    <div className={styles.container}>
-      <FloatingBackButton />
-      <header className={styles.header}>
+    <div>
+      <header className={adminStyles.adminPageHeader}>
         <h1>Szczegóły Rezerwacji</h1>
       </header>
       <div className={styles.grid}>

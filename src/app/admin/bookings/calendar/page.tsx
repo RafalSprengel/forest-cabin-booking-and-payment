@@ -3,12 +3,14 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pl'
 import isBetween from 'dayjs/plugin/isBetween'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getCalendarData, CalendarDay, BookingDetails } from '@/actions/getCalendarData'
 import { getAllProperties } from '@/actions/adminPropertyActions'
 import styles from './page.module.css'
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
+// FloatingBackButton provided by admin layout
 
 dayjs.extend(isBetween)
+dayjs.extend(customParseFormat)
 dayjs.locale('pl')
 
 const MONTH_NAMES = [
@@ -214,8 +216,7 @@ export default function Calendar() {
   }, [currentView])
 
   return (
-    <div className={styles.container}>
-      <FloatingBackButton />
+    <div>
       <div className={styles.headerControls}>
         <button onClick={() => setCurrentView(prev => prev.subtract(1, 'month'))} className={styles.navButton}>&#8249;</button>
         <select value={currentView.month()} onChange={e => setCurrentView(currentView.month(Number(e.target.value)))} className={styles.selectInput}>

@@ -1,9 +1,10 @@
 import { getBookingConfig } from '@/actions/bookingConfigActions'
 import { getAllProperties } from '@/actions/adminPropertyActions'
 import { getAllSeasons } from '@/actions/seasonActions'
-import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton'
+// FloatingBackButton provided by admin layout
 import PriceSettingsForm from './PriceSettingsForm'
 import styles from './PriceSettingsForm.module.css'
+import adminStyles from "../admin.module.css";
 
 export default async function PricesPage() {
   const [properties, bookingConfig, seasons] = await Promise.all([
@@ -18,11 +19,10 @@ export default async function PricesPage() {
   const serializedSeasons = JSON.parse(JSON.stringify(seasons))
 
   return (
-    <div className={styles.container}>
-      <FloatingBackButton />
-      <header className={styles.header}>
-        <h1 className={styles.title}>Zarządzanie cenami</h1>
-        <p className={styles.subtitle}>Konfiguruj stawki podstawowe, stawki w sezonach oraz ceny indywidualne.</p>
+    <div>
+      <header className={adminStyles.adminPageHeader}>
+        <h1>Zarządzanie cenami</h1>
+        <p>Konfiguruj stawki podstawowe, stawki w sezonach oraz ceny indywidualne.</p>
       </header>
 
       <div className={styles.priorityInfo}>

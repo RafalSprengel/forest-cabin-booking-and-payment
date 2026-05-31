@@ -3,34 +3,12 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-  padding: 10px 12px 24px 12px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   box-sizing: border-box;
 }
 
-.headerRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.pageTitle {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0 0 2px 0;
-  color: #1e293b;
-}
-
-.pageSubtitle {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 0;
-}
-
-/* components */
 .card {
   background: #fff;
   border-radius: 10px;
@@ -47,13 +25,6 @@
   gap: 12px;
   padding: 14px 14px 0 14px;
   flex-wrap: wrap;
-}
-
-.cardTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
 }
 
 .cardBadge {
@@ -228,7 +199,6 @@
 /* media queries */
 @media (min-width: 600px) {
   .blockPageContainer {
-    padding: 16px 24px 32px 24px;
     gap: 24px;
   }
 
@@ -291,9 +261,6 @@
 }
 
 @media (min-width: 900px) {
-  .blockPageContainer {
-    padding: 20px 0 40px 0;
-  }
 
   .settingContent {
     flex: 1 1 240px;

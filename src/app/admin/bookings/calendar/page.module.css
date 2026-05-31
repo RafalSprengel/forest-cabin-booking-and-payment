@@ -7,10 +7,6 @@
     --cal-color-text-light: #777;
 }
 
-.container {
-    padding: 1rem;
-}
-
 .headerControls {
     display: flex;
     justify-content: center;
@@ -213,6 +209,7 @@
 .tooltipHeader {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 8px;
     border-bottom: 1px solid #eee;
     padding-bottom: 4px;

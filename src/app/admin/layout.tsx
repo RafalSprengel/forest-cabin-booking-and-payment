@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import AppToaster from '@/app/_components/AppToaster/AppToaster';
+import FloatingBackButton from '@/app/_components/FloatingBackButton/FloatingBackButton';
 import styles from './admin.module.css';
 
 export default function AdminLayout({
@@ -60,6 +61,7 @@ export default function AdminLayout({
   return (
     <>
       <AppToaster />
+      <FloatingBackButton />
       <div className={styles.adminLayout}>
         <div
           className={`${styles.mobileOverlay} ${isMobileMenuOpen ? styles.visible : ''}`}

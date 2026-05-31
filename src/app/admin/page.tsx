@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styles from './page.module.css';
+import adminStyles from './admin.module.css';
 import { getAdminBookingsList } from '@/actions/adminBookingActions';
 
 export default async function AdminDashboard() {
@@ -14,8 +15,8 @@ export default async function AdminDashboard() {
     .slice(0, 5);
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
+    <div>
+      <header className={adminStyles.adminPageHeader}>
         <h1>Panel Administratora</h1>
         <p>Witaj w panelu zarządzania Wilcze Chatki.</p>
       </header>

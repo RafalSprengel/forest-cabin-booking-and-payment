@@ -925,7 +925,7 @@ export default function PriceSettingsForm({
 
       <form className={styles.card} onSubmit={(e) => e.preventDefault()}>
         <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Wybierz obiekt</h2>
+          <h2>Wybierz obiekt</h2>
         </div>
         <div className={styles.row}>
           <div className={styles.content}>
@@ -980,7 +980,7 @@ export default function PriceSettingsForm({
       {selectedPropertyId && !isPropertyDataLoading && (
         <form className={styles.card} onSubmit={(e) => e.preventDefault()}>
           <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Konfiguracja cen sezonów</h2>
+            <h2>Konfiguracja cen sezonów</h2>
             <div className={styles.control}>
               <select
                 value={selectedSeasonId}
@@ -1298,7 +1298,7 @@ export default function PriceSettingsForm({
       {selectedPropertyId && !isPropertyDataLoading && (
         <form className={styles.card} onSubmit={(e) => e.preventDefault()}>
           <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Ceny indywidualne</h2>
+            <h2>Ceny indywidualne</h2>
             <span className={styles.cardBadge}>Per obiekt / data</span>
           </div>
 

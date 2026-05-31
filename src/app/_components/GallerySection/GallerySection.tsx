@@ -20,7 +20,7 @@ export default function GallerySection() {
         <section id='gallery-section'>
             <div className={styles.title}>
                 <SlideRight>
-                    <h2>Galeria zdjęć</h2>
+                    <h1>Galeria zdjęć</h1>
                 </SlideRight>
             </div >
             <SlideLeft>

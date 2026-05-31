@@ -41,13 +41,13 @@ export default function AdminAccountSettings() {
 
   if (sessionPending || username === null || email === null) {
     return (
-      <section className="settings-card account-settings-card">
-        <div className="card-header">
-          <h2 className="card-title">Dane Administratora</h2>
+      <section className={`${settingsStyles.card} ${styles.accountSettings__card}`}>
+        <div className={settingsStyles.cardHeader}>
+          <h2>Dane Administratora</h2>
         </div>
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p className="loading-text">Loading...</p>
+        <div className={settingsStyles.loadingContainer}>
+          <div className={settingsStyles.spinner}></div>
+          <p className={settingsStyles.loadingText}>Loading...</p>
         </div>
       </section>
     )
@@ -181,9 +181,9 @@ export default function AdminAccountSettings() {
   }
 
   return (
-    <section className={`${settingsStyles.settingsCard} ${styles.accountSettings__card}`}>
+    <section className={`${settingsStyles.card} ${styles.accountSettings__card}`}>
       <div className={settingsStyles.cardHeader}>
-        <h2 className={settingsStyles.cardTitle}>Dane Administratora</h2>
+        <h2>Dane Administratora</h2>
         <span className={settingsStyles.cardBadge}>Profil</span>
         <div><p>Dane te nie są wyświetlane nigdzie na stronie, służą wyłącznie do logowania do panelu admina.</p></div>
       </div>

@@ -11,7 +11,7 @@ import { getSiteSettings } from "@/actions/siteSettingsActions";
 export default async function Home() {
     const siteSettings = await getSiteSettings();
     return (
-        <div className={styles.main}>
+        <div className={styles.landingPage}>
             <HeroSlider />
             <About />
             <Services />

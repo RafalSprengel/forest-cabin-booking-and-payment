@@ -1,18 +1,9 @@
-.container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 15px;
-}
-
 .header {
   margin-bottom: 25px;
 }
 
-.headerTop {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 8px;
+.header p {
+  color: var(--text-secondary);
 }
 
 .backButton {
@@ -27,18 +18,6 @@
 
 .backButton:hover {
   color: #2563eb;
-}
-
-.header h1 {
-  font-size: 1.5rem;
-  color: #1e293b;
-  margin: 0;
-}
-
-.header p {
-  color: #64748b;
-  margin: 0 0 15px 0;
-  font-size: 0.95rem;
 }
 
 .btnAdd {
@@ -170,7 +149,7 @@
   width: 100%;
 }
 
-.cardActionsRow > * {
+.cardActionsRow>* {
   flex: 1;
 }
 
@@ -239,10 +218,6 @@
   .container {
     max-width: 1000px;
     padding: 20px 30px;
-  }
-
-  .header h1 {
-    font-size: 1.8rem;
   }
 
   .propertiesGrid {
@@ -316,17 +291,17 @@
 }
 
 .confirmDialog h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 10px;
 }
 
 .confirmDialog p {
-    margin: 0 0 20px;
-    color: #475569;
-    font-size: 0.95rem;
-    line-height: 1.5;
+  margin: 0 0 20px;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .confirmActions {
@@ -337,31 +312,31 @@
 }
 
 .confirmActions button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-size: 0.9rem;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 0.9rem;
 }
 
 .btnCancel {
-    background: #e2e8f0;
-    color: #475569;
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .btnCancel:hover {
-    background: #cbd5e1;
+  background: #cbd5e1;
 }
 
 .btnDeleteConfirm {
-    background: #dc2626;
-    color: white;
+  background: #dc2626;
+  color: white;
 }
 
 .btnDeleteConfirm:hover {
-    background: #b91c1c;
+  background: #b91c1c;
 }
 
 .error {

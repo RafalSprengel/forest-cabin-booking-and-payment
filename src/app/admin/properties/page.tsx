@@ -4,9 +4,10 @@ import {
   togglePropertyActive,
 } from "@/actions/adminPropertyActions";
 import Button from "@/app/_components/UI/Button/Button";
-import FloatingBackButton from "@/app/_components/FloatingBackButton/FloatingBackButton";
+// FloatingBackButton provided by admin layout
 import DeletePropertyButton from "./DeletePropertyButton";
 import styles from "./page.module.css";
+import adminStyles from "../admin.module.css";
 
 export default async function PropertiesPage() {
   const properties = await getAllProperties();
@@ -20,9 +21,8 @@ export default async function PropertiesPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <FloatingBackButton />
-      <header className={styles.header}>
+    <div>
+      <header className={adminStyles.adminPageHeader}>
         <h1>Zarządzanie obiektami</h1>
         <p>Dodaj, edytuj lub dezaktywuj obiekty w systemie.</p>
         <Button href="/admin/properties/add" variant='secondary' className={styles.btnAdd}>
@@ -32,7 +32,7 @@ export default async function PropertiesPage() {
       {properties.length === 0 ? (
         <div className={styles.emptyState}>
           <p>Brak obiektów w systemie.</p>
-          <Button href="/admin/properties/add"  variant='secondary' className={styles.btnAdd}>
+          <Button href="/admin/properties/add" variant='secondary' className={styles.btnAdd}>
             Dodaj pierwszy obiekt
           </Button>
         </div>

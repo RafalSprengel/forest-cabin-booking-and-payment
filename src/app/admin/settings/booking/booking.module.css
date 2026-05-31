@@ -1,50 +1,25 @@
-﻿:global(:root) {
-    --color-primary: #2c3e50;
-    --color-secondary: #7f8c8d;
-    --color-accent: #3498db;
-    --color-success: #2ecc71;
-    --color-danger: #e74c3c;
-    --color-bg-light: #f8f9fa;
-    --color-border: #eee;
-    --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.adminSettingsContainer {
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    padding: 20px 15px;
-    color: #333;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.adminHeader {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--color-border);
-}
-
-.adminTitle {
-    margin: 0 0 10px;
-    color: var(--color-primary);
-    font-size: 1.75rem;
-    line-height: 1.2;
-}
-
-.adminSubtitle {
-    margin: 0;
-    color: var(--color-secondary);
-    font-size: 1rem;
-}
-
-.settingsCard {
+﻿.settingsCard {
     margin-bottom: 25px;
     overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: var(--shadow-card);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.04);
+}
+
+.card {
+    margin-bottom: 25px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.04);
 }
 
 .cardHeader {
@@ -56,13 +31,6 @@
     padding: 15px 20px;
     border-bottom: 1px solid var(--color-border);
     background-color: var(--color-bg-light);
-}
-
-.cardTitle {
-    margin: 0;
-    color: var(--color-primary);
-    font-size: 1.25rem;
-    font-weight: 700;
 }
 
 .cardHeaderSpaced {
@@ -508,9 +476,6 @@
         padding: 40px 20px;
     }
 
-    .adminTitle {
-        font-size: 2rem;
-    }
 
     .cardHeader {
         flex-direction: row;

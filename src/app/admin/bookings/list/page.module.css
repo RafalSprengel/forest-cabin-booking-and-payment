@@ -1,41 +1,13 @@
-.container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 15px;
-  font-size: 0.9rem;
-}
-
-.header {
-  margin-bottom: 25px;
-}
-
-.headerTop {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.header h1 {
-  font-size: 2rem;
-  color: #1e293b;
-  margin: 0;
-}
-
-.header p {
-  color: #64748b;
-  margin: 0;
-}
-
 .filtersWrap {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .filters {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -45,9 +17,9 @@
   border-radius: 8px;
   background: #ffffff;
   color: var(--filter-btn-color);
-  font-size: 0.85rem;
+  font-size: 0.80rem;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 6px 8px;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -308,9 +280,6 @@
   justify-content: center;
   margin: 30px 0;
   color: #94a3b8;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .pastDivider::before,
@@ -345,10 +314,6 @@
     padding: 20px 30px;
   }
 
-  .header h1 {
-    font-size: 2rem;
-  }
-
   .detailsGrid {
     flex-direction: column;
   }
@@ -362,10 +327,20 @@
     align-self: flex-end;
     margin-top: 0;
   }
-}
 
-@media (min-width: 1024px) {
-  .container {
-    max-width: 900px;
+  .filterBtn {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 12px;
   }
-}
+
+  .filters {
+    justify-content: flex-start;
+
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 900px;
+    }
+  }

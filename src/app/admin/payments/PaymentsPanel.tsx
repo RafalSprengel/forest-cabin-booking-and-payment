@@ -42,18 +42,18 @@ function getActiveFilterClass(
   styles: Record<string, string>,
 ): string {
   if (status === "confirmed") {
-    return styles["payments-panel__filter-btn--active-confirmed"];
+    return styles.paymentsPanelFilterBtnActiveConfirmed;
   }
 
   if (status === "failed") {
-    return styles["payments-panel__filter-btn--active-failed"];
+    return styles.paymentsPanelFilterBtnActiveFailed;
   }
 
   if (status === "all") {
-    return styles["payments-panel__filter-btn--active-all"];
+    return styles.paymentsPanelFilterBtnActiveAll;
   }
 
-  return styles["payments-panel__filter-btn--active-pending"];
+  return styles.paymentsPanelFilterBtnActivePending;
 }
 
 export default function PaymentsPanel({
@@ -155,15 +155,15 @@ export default function PaymentsPanel({
   };
 
   return (
-    <section className={styles["payments-panel"]}>
-      <h2 className={styles["payments-panel__title"]}>
+    <section className={styles.paymentsPanel}>
+      <h2>
         {mode === "online" ? "Płatności online" : "Gotówka / Przelew"}
       </h2>
 
       {mode === "online" ? (
-        <div className={styles["payments-panel__filters-wrap"]}>
+        <div className={styles.paymentsPanelFiltersWrap}>
           <div
-            className={styles["payments-panel__filters"]}
+            className={styles.paymentsPanelFilters}
             role="radiogroup"
             aria-label="Filtr statusu"
           >
@@ -171,7 +171,7 @@ export default function PaymentsPanel({
               type="button"
               role="radio"
               aria-checked={statusFilter === "confirmed"}
-              className={`${styles["payments-panel__filter-btn"]} ${statusFilter === "confirmed" ? getActiveFilterClass("confirmed", styles) : ""}`}
+              className={`${styles.paymentsPanelFilterBtn} ${statusFilter === "confirmed" ? getActiveFilterClass("confirmed", styles) : ""}`}
               onClick={() => setStatusFilter("confirmed")}
             >
               Potwierdzone
@@ -180,25 +180,25 @@ export default function PaymentsPanel({
               type="button"
               role="radio"
               aria-checked={statusFilter === "failed"}
-              className={`${styles["payments-panel__filter-btn"]} ${statusFilter === "failed" ? getActiveFilterClass("failed", styles) : ""}`}
+              className={`${styles.paymentsPanelFilterBtn} ${statusFilter === "failed" ? getActiveFilterClass("failed", styles) : ""}`}
               onClick={() => setStatusFilter("failed")}
             >
-              Odrzucone (failed)
+              Odrzucone
             </button>
             <button
               type="button"
               role="radio"
               aria-checked={statusFilter === "pending"}
-              className={`${styles["payments-panel__filter-btn"]} ${statusFilter === "pending" ? getActiveFilterClass("pending", styles) : ""}`}
+              className={`${styles.paymentsPanelFilterBtn} ${statusFilter === "pending" ? getActiveFilterClass("pending", styles) : ""}`}
               onClick={() => setStatusFilter("pending")}
             >
-              Oczekujące (pending)
+              Oczekujące
             </button>
             <button
               type="button"
               role="radio"
               aria-checked={statusFilter === "all"}
-              className={`${styles["payments-panel__filter-btn"]} ${statusFilter === "all" ? getActiveFilterClass("all", styles) : ""}`}
+              className={`${styles.paymentsPanelFilterBtn} ${statusFilter === "all" ? getActiveFilterClass("all", styles) : ""}`}
               onClick={() => setStatusFilter("all")}
             >
               Wszystkie
@@ -207,8 +207,8 @@ export default function PaymentsPanel({
         </div>
       ) : null}
 
-      <div className={styles["payments-panel__search-wrap"]}>
-        <label htmlFor="orderSearch" className={styles["payments-panel__search-label"]}>
+      <div className={styles.paymentsPanelSearchWrap}>
+        <label htmlFor="orderSearch" className={styles.paymentsPanelSearchLabel}>
           Szukaj zamówienia
         </label>
         <input
@@ -217,12 +217,12 @@ export default function PaymentsPanel({
           value={orderSearch}
           onChange={(event) => setOrderSearch(event.target.value)}
           placeholder="Numer zamówienia lub dane klienta"
-          className={styles["payments-panel__search-input"]}
+          className={styles.paymentsPanelSearchInput}
         />
       </div>
 
       <div
-        className={styles["payments-panel__table-wrap"]}
+        className={styles.paymentsPanelTableWrap}
         ref={tableWrapRef}
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
@@ -230,7 +230,7 @@ export default function PaymentsPanel({
         onMouseMove={handleMouseMove}
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
-        <table className={styles["payments-panel__table"]}>
+        <table className={styles.paymentsPanelTable}>
           <thead>
             <tr>
               {mode === "online" ? <th>Zamówienie nr</th> : null}
@@ -245,9 +245,9 @@ export default function PaymentsPanel({
           <tbody>
             {filteredRows.length === 0 ? (
               <tr>
-                <td
+                  <td
                   colSpan={mode === "online" ? 7 : 4}
-                  className={styles["payments-panel__empty-row"]}
+                  className={styles.paymentsPanelEmptyRow}
                 >
                   Brak płatności dla wybranego filtra.
                 </td>
@@ -278,14 +278,14 @@ export default function PaymentsPanel({
                             href={`https://dashboard.stripe.com/checkout/sessions/${row.stripeSessionId}`}
                             target="_blank"
                             rel="noreferrer"
-                            className={styles["payments-panel__session-link"]}
+                            className={styles.paymentsPanelSessionLink}
                           >
                             {row.stripeSessionId}
                           </a>
                         ) : (
                           <span
                             className={
-                              styles["payments-panel__missing-session"]
+                              styles.paymentsPanelMissingSession
                             }
                           >
                             Brak ID sesji
@@ -305,11 +305,11 @@ export default function PaymentsPanel({
                             {isPending && syncingId === row.id ? (
                               <span
                                 className={
-                                  styles["payments-panel__sync-loading"]
+                                  styles.paymentsPanelSyncLoading
                                 }
                               >
                                 <span
-                                  className={styles["payments-panel__spinner"]}
+                                  className={styles.paymentsPanelSpinner}
                                   aria-hidden="true"
                                 ></span>
                                 Loading...
@@ -319,7 +319,7 @@ export default function PaymentsPanel({
                             )}
                           </Button>
                         ) : (
-                          <span className={styles["payments-panel__no-action"]}>
+                          <span className={styles.paymentsPanelNoAction}>
                             -
                           </span>
                         )}
