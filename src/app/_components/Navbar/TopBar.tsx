@@ -7,8 +7,8 @@ export default async function TopBar() {
     const siteSettings = await getSiteSettings();
 
     return (
-        <div className={styles.container}>
-            <div className={styles.inner}>
+        <div className={styles.topbar}>
+            <div className={styles.container}>
                 <div className={styles.contactInfo}>
                     <a href={`tel:${siteSettings.phoneHref}`}>{siteSettings.phoneDisplay}</a>
                     <a href={`mailto:${siteSettings.email}`}>{siteSettings.email}</a>

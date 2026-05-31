@@ -254,7 +254,7 @@
 
 @media (min-width: 1024px) {
   .container {
-    max-width: 1200px;
+    max-width: var(--container-max-width);
   }
 }
 

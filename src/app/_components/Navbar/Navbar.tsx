@@ -40,8 +40,8 @@ export default function Navbar({isSmaller, isTransparent}: {isSmaller: boolean; 
     const isNavbarTransparent = isTransparent && !isMenuOpen;
 
     return (
-        <nav className={`${styles.container} ${isSmaller ? styles.smallerNavbar : ''} ${isNavbarTransparent ? styles.transparentNavbar : ''}`}>
-            <div className={styles.inner}>
+        <nav className={`${styles.navbar} ${isSmaller ? styles.smallerNavbar : ''} ${isNavbarTransparent ? styles.transparentNavbar : ''}`}>
+            <div className={styles.container}>
                 <Link className={styles.logoWrapper} href="/">
                     <div className={styles.logoImageWrapper}>
                         <Image

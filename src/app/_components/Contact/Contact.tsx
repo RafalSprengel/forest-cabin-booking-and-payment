@@ -16,7 +16,7 @@ export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteS
 
   return (
     <section id="contact" className={styles.section}>
-      <div className={styles.mainContainer}>
+      <div className={styles.container}>
         <SlideRight>
           <h1 className={styles.title}>Kontakt</h1>
         </SlideRight>

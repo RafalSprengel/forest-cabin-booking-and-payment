@@ -1,11 +1,11 @@
-.container {
+.footer {
   background-color: var(--primary-color);
   color: var(--text-light);
   padding: 40px 0 20px;
 }
 
-.inner {
-  max-width: 1200px;
+.container {
+  max-width: var(--container-max-width);
   margin: 0 auto;
   padding: 0 20px;
   display: flex;

@@ -198,7 +198,7 @@ export default function BlockBookingsPage() {
           domków.
         </p>
       </div>
-      <div className={styles.blockPageContainer}>
+      <div className={styles.container}>
         <form
           className={styles.card}
           onSubmit={(e) => {

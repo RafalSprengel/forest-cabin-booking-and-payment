@@ -9,8 +9,8 @@ export default async function Footer() {
   const siteSettings = await getSiteSettings();
 
   return (
-    <footer className={styles.container}>
-      <div className={styles.inner}>
+    <footer className={styles.footer}>
+      <div className={styles.container}>
         <div className={styles.info}>
           <Image
             src="/assets/logo-round.png"

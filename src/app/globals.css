@@ -21,6 +21,7 @@
     --filter-btn-color: #334155;
     --filter-btn-border: #cbd5e1;
     --transition: 0.3s ease-in-out;
+    --container-max-width: 1200px;
     /* Admin/settings module variables merged here for global use */
     --color-primary: #2c3e50;
     --color-secondary: #7f8c8d;

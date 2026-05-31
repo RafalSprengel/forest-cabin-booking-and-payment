@@ -189,7 +189,7 @@
 }
 
 @media (min-width: 768px) {
-  .layout {
+  .container {
     max-width: 1100px;
     padding: 20px 30px;
   }

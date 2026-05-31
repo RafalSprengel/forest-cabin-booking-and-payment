@@ -81,8 +81,12 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  left: 20px;
-  right: 20px;
+  left: 0;
+  right: 0;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
   color: #fff;
   z-index: 10;
   display: flex;
@@ -218,7 +222,9 @@
   position: absolute;
   bottom: 20px;
   left: 0;
-  width: 100%;
+  right: 0;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
   z-index: 100;
   padding: 0 20px;
   box-sizing: border-box;
@@ -358,8 +364,9 @@
     bottom: unset;
     top: 50%;
     transform: translateY(-50%);
-    left: 8%;
-    max-width: 600px;
+    left: 0;
+    right: 0;
+    max-width: var(--container-max-width);
   }
 
   .slideTitle {
@@ -372,7 +379,6 @@
 
   .sliderControls {
     bottom: 50px;
-    padding: 0 8%;
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;

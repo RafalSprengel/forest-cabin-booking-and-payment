@@ -5,7 +5,7 @@ import styles from "./About.module.css";
 export default function About() {
   return (
     <section id="about-us" className={styles.section}>
-      <div className={styles.wrapper}>
+      <div className={styles.container}>
         <SlideRight>
           <h1 className={styles.title}>
             Serdecznie witamy w Wilczych Chatkach!
