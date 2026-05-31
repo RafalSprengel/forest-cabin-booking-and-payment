@@ -7,7 +7,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getCalendarData, CalendarDay, BookingDetails } from '@/actions/getCalendarData'
 import { getAllProperties } from '@/actions/adminPropertyActions'
 import styles from './page.module.css'
-// FloatingBackButton provided by admin layout
+import adminStyles from '../../admin.module.css'
 
 dayjs.extend(isBetween)
 dayjs.extend(customParseFormat)
@@ -133,9 +133,9 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
 
   return (
     <div className={styles.tooltip}>
-        <div className={styles.tooltipHeader}>
+      <div className={styles.tooltipHeader}>
         <h4 className={styles.guestNameText}>{`${details.firstName || ''} ${details.lastName || ''}`.trim()}</h4>
-          <span className={`${styles.badge} ${details.status === 'pending' ? styles.badgePending : ''}`}>{statusBadgeText}</span>
+        <span className={`${styles.badge} ${details.status === 'pending' ? styles.badgePending : ''}`}>{statusBadgeText}</span>
       </div>
       <div className={styles.tooltipRow}>
         <span className={styles.label}>🧾 Zamówienie nr:</span>
@@ -217,6 +217,10 @@ export default function Calendar() {
 
   return (
     <div>
+      <header className={adminStyles.adminPageHeader}>
+        <h1>Kalendarz</h1>
+      </header>
+
       <div className={styles.headerControls}>
         <button onClick={() => setCurrentView(prev => prev.subtract(1, 'month'))} className={styles.navButton}>&#8249;</button>
         <select value={currentView.month()} onChange={e => setCurrentView(currentView.month(Number(e.target.value)))} className={styles.selectInput}>
