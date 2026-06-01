@@ -78,19 +78,7 @@ export default function EditPropertyForm({
                 placeholder="np. Chatka A (Wilcza)"
               />
             </FormField>
-            {/* <div className={styles.inputGroup}> DO NOT REMOVE, IT"S GOING TO BE USE LATER
-              <label htmlFor="slug">Slug (URL)</label>
-              <input
-                id="slug"
-                name="slug"
-                type="text"
-                defaultValue={property.slug || ""}
-                placeholder="chatka-a"
-                pattern="[a-z0-9\-]+"
-                title="Tylko małe litery, cyfry i myślniki"
-              />
-              <small className={styles.hint}>Opcjonalne, np. chatka-a.</small>
-            </div> */}
+            
           </div>
           <FormField id="description" label="Opis">
             <textarea

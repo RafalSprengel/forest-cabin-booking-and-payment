@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IProperty extends Document {
   name: string;
-  slug?: string;
   description?: string;
   maxAdults: number;
   maxChildren: number;
@@ -14,7 +13,6 @@ export interface IProperty extends Document {
 const PropertySchema = new Schema<IProperty>(
   {
     name: { type: String, required: true, trim: true },
-    slug: { type: String, trim: true, index: true },
     description: { type: String, trim: true },
     maxAdults: { type: Number, required: true, default: 6 },
     maxChildren: { type: Number, required: true, default: 6},

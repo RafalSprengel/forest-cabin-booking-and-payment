@@ -97,7 +97,7 @@ export default function SiteSettingsForm() {
       <div className={settingsStyles.cardHeader}>
         <h2>Dane Firmy / Obiektu</h2>
         <span className={settingsStyles.cardBadge}>Globalne</span>
-        <div><p>Dane te są wyświetlane na stronie jako informacja dla odwiedzających</p></div>
+        <div><p>Dane te są wyświetlane na stronie jako informacja dla odwiedzających.</p></div>
       </div>
 
       <div className={styles.siteSettings__editHeader}>

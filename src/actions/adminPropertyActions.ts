@@ -11,7 +11,6 @@ import { DEFAULT_FALLBACK_PRICES } from '@/utils/priceDefaults'
 export interface PropertyType {
   _id: string;
   name: string;
-  slug: string;
   description?: string;
   images: string[];
   maxAdults: number;
@@ -61,7 +60,6 @@ export async function createProperty(formData: FormData) {
   
   try {
     const name = formData.get('name') as string;
-    const slug = formData.get('slug') as string;
     const description = formData.get('description') as string;
     const imagesString = formData.get('images') as string;
     const images = imagesString ? imagesString.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -71,7 +69,6 @@ export async function createProperty(formData: FormData) {
 
     const property = await Property.create({
       name,
-      slug: slug || undefined,
       description,
       maxAdults,
       maxChildren,
@@ -105,7 +102,6 @@ export async function updateProperty(id: string, formData: FormData) {
   
   try {
     const name = formData.get('name') as string;
-    const slug = formData.get('slug') as string;
     const description = formData.get('description') as string;
     const imagesString = formData.get('images') as string;
     const images = imagesString ? imagesString.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -116,7 +112,6 @@ export async function updateProperty(id: string, formData: FormData) {
 
     await Property.findByIdAndUpdate(id, {
       name,
-      slug: slug || undefined,
       description,
       maxAdults,
       maxChildren,

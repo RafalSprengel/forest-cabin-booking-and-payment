@@ -1,7 +1,6 @@
 export interface Property {
   _id: string;
   name: string;
-  slug: string;
   description?: string;
   images: string[];
   maxAdults: number;

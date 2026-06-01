@@ -66,12 +66,7 @@ export default async function PropertiesPage() {
                   <span className={styles.label}>Max. dostawek:</span>
                   <span className={styles.value}>{prop.maxExtraBeds}</span>
                 </div>
-                {prop.slug && (
-                  <div className={styles.detailRow}>
-                    <span className={styles.label}>Slug:</span>
-                    <code className={styles.code}>{prop.slug}</code>
-                  </div>
-                )}
+                
               </div>
               <div className={styles.cardActions}>
                 <form action={handleToggleActive}>

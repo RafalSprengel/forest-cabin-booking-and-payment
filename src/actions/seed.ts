@@ -125,7 +125,6 @@ export async function seedProperties() {
       {
         _id: new Types.ObjectId('69d78477b191d7bb540f83e1'),
         name: 'Chatka A',
-        slug: 'chatka-a',
         description: 'Przytulny domek z widokiem na las.',
         maxAdults: 6,
         maxChildren: 6,
@@ -138,7 +137,6 @@ export async function seedProperties() {
       {
         _id: new Types.ObjectId('69d78477b191d7bb540f83e2'),
         name: 'Chatka B',
-        slug: 'chatka-b',
         description: 'Przytulny domek z widokiem na las.',
         maxAdults: 6,
         maxChildren: 6,
