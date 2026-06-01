@@ -18,7 +18,7 @@ import CalendarPicker, {
 import Modal from "@/app/_components/Modal/Modal";
 import { formatDisplayDate } from "@/utils/formatDate";
 import styles from "./page.module.css";
-import adminStyles from "../../admin.module.css";
+import AdminShell from "../../_components/AdminShell/AdminShell";
 
 interface PropertyOption {
   _id: string;
@@ -190,14 +190,7 @@ export default function BlockBookingsPage() {
   };
 
   return (
-    <>
-      <div className={adminStyles.adminPageHeader}>
-        <h1 >Blokuj terminy</h1>
-        <p>
-          Twórz blokady administracyjne dla jednego domku lub wszystkich
-          domków.
-        </p>
-      </div>
+    <AdminShell title="Blokuj terminy" description="Twórz blokady administracyjne dla jednego domku lub wszystkich domków.">
       <div className={styles.container}>
         <form
           className={styles.card}
@@ -362,6 +355,6 @@ export default function BlockBookingsPage() {
           <p>Czy na pewno chcesz usunąć tę blokadę?</p>
         </Modal>
       </div>
-    </>
+    </AdminShell>
   );
 }

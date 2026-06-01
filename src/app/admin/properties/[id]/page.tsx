@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
-import adminStyles from "../../admin.module.css";
+import AdminShell from '../../_components/AdminShell/AdminShell';
 import { getPropertyById } from '@/actions/adminPropertyActions';
 // FloatingBackButton provided by admin layout
 import EditPropertyForm from './EditPropertyForm';
@@ -15,16 +15,16 @@ export default async function PropertyEditPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <Link href="/admin/properties" className={styles.backButton}>
-          ← Powrót do listy domków
-        </Link>
-        <h1>Edytuj domek: {property.name}</h1>
-        <p>Wprowadź zmiany w danych obiektu.</p>
-      </header>
+    <AdminShell
+      title={`Edytuj domek: ${property.name}`}
+      description="Wprowadź zmiany w danych obiektu."
+    >
+
+      <div className={styles.controls}>
+        <Link href="/admin/properties" className={styles.backButton}>← Powrót do listy domków</Link>
+      </div>
 
       <EditPropertyForm property={property} propertyId={id} />
-    </div>
+    </AdminShell>
   );
 }

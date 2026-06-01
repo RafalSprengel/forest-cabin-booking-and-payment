@@ -2,7 +2,7 @@ import { getBookingById } from '@/actions/adminBookingActions';
 import { notFound } from 'next/navigation';
 import EditBookingForm from './EditBookingForm';
 import styles from './page.module.css';
-import adminStyles from "../../../admin.module.css";
+import AdminShell from '../../../_components/AdminShell/AdminShell';
 import DeleteConfirmButton from './DeleteConfirmButton';
 
 export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,10 +19,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
   const propertyName = booking.propertyName || '-';
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Szczegóły Rezerwacji</h1>
-      </header>
+    <AdminShell title="Szczegóły rezerwacji">
       <div className={styles.grid}>
         <div className={styles.mainCard}>
           <EditBookingForm initialData={booking} />
@@ -50,6 +47,6 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
           </div>
         </div>
       </div>
-    </div>
+    </AdminShell>
   );
 }

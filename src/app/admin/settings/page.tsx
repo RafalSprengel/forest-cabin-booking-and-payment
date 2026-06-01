@@ -2,23 +2,16 @@ import { getSystemConfig } from '@/actions/adminConfigActions';
 import ToggleSwitch from './ToggleSwitchClient';
 import AdminAccountSettings from './AdminAccountSettings';
 import SiteSettingsForm from './SiteSettingsForm';
+import AdminShell from '../_components/AdminShell/AdminShell';
+import AdminCard from '../_components/AdminCard/AdminCard';
 import styles from './settings.module.css';
-import adminStyles from "../admin.module.css";
 
 export default async function SettingsPage() {
   const config = await getSystemConfig();
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1 >Ustawienia systemu</h1>
-        <p>Zarządzaj globalną polityką wynajmu obiektu.</p>
-      </header>
+    <AdminShell title="Ustawienia systemu" description="Zarządzaj globalną polityką wynajmu obiektu.">
 
-      <section className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2>Polityka wynajmu</h2>
-          <span className={styles.cardBadge}>Globalne</span>
-        </div>
+      <AdminCard title="Polityka wynajmu" badge="Globalne">
         <div className={styles.settingRow}>
           <div className={styles.settingContent}>
             <label className={styles.settingLabel} htmlFor="auto-block-toggle">Automatyczna blokada drugiego domku</label>
@@ -31,10 +24,10 @@ export default async function SettingsPage() {
             />
           </div>
         </div>
-      </section>
+      </AdminCard>
 
       <SiteSettingsForm />
       <AdminAccountSettings />
-    </div>
+    </AdminShell>
   );
 }

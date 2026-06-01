@@ -4,10 +4,10 @@ import {
   togglePropertyActive,
 } from "@/actions/adminPropertyActions";
 import Button from "@/app/_components/UI/Button/Button";
-// FloatingBackButton provided by admin layout
+import AdminShell from '../_components/AdminShell/AdminShell';
+import StatusBadge from '../_components/StatusBadge/StatusBadge';
 import DeletePropertyButton from "./DeletePropertyButton";
 import styles from "./page.module.css";
-import adminStyles from "../admin.module.css";
 
 export default async function PropertiesPage() {
   const properties = await getAllProperties();
@@ -21,14 +21,17 @@ export default async function PropertiesPage() {
   }
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Zarządzanie obiektami</h1>
-        <p>Dodaj, edytuj lub dezaktywuj obiekty w systemie.</p>
+    <AdminShell
+      title="Zarządzanie obiektami"
+      description="Dodaj, edytuj lub dezaktywuj obiekty w systemie."
+    >
+
+      <div className={styles.controls}> 
         <Button href="/admin/properties/add" variant='secondary' className={styles.btnAdd}>
           ➕ Dodaj nowy obiekt
         </Button>
-      </header>
+      </div>
+
       {properties.length === 0 ? (
         <div className={styles.emptyState}>
           <p>Brak obiektów w systemie.</p>
@@ -42,11 +45,10 @@ export default async function PropertiesPage() {
             <article key={prop._id} className={styles.propertyCard}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.propertyName}>{prop.name}</h3>
-                <span
-                  className={`${styles.badge} ${prop.isActive ? styles.badgeActive : styles.badgeInactive}`}
-                >
-                  {prop.isActive ? "Aktywny" : "Nieaktywny"}
-                </span>
+                <StatusBadge
+                  text={prop.isActive ? "Aktywny" : "Nieaktywny"}
+                  variant={prop.isActive ? "active" : "inactive"}
+                />
               </div>
               {prop.description && (
                 <p className={styles.description}>{prop.description}</p>
@@ -97,6 +99,6 @@ export default async function PropertiesPage() {
           ))}
         </div>
       )}
-    </div>
+    </AdminShell>
   );
 }

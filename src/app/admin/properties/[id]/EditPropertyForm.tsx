@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteProperty, updateProperty } from "@/actions/adminPropertyActions";
 import Button from "@/app/_components/UI/Button/Button";
+import FormField from "@/app/admin/_components/FormField/FormField";
 import styles from "./page.module.css";
 
 export default function EditPropertyForm({
@@ -67,8 +68,7 @@ export default function EditPropertyForm({
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Podstawowe informacje</h2>
           <div className={styles.grid}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="name">Nazwa domku *</label>
+            <FormField id="name" label="Nazwa domku *">
               <input
                 id="name"
                 name="name"
@@ -77,7 +77,7 @@ export default function EditPropertyForm({
                 defaultValue={property.name}
                 placeholder="np. Chatka A (Wilcza)"
               />
-            </div>
+            </FormField>
             {/* <div className={styles.inputGroup}> DO NOT REMOVE, IT"S GOING TO BE USE LATER
               <label htmlFor="slug">Slug (URL)</label>
               <input
@@ -92,8 +92,7 @@ export default function EditPropertyForm({
               <small className={styles.hint}>Opcjonalne, np. chatka-a.</small>
             </div> */}
           </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="description">Opis</label>
+          <FormField id="description" label="Opis">
             <textarea
               id="description"
               name="description"
@@ -101,14 +100,13 @@ export default function EditPropertyForm({
               defaultValue={property.description || ""}
               placeholder="Krótki opis domku dla gości..."
             />
-          </div>
+          </FormField>
         </div>
 
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Pojemność</h2>
           <div className={styles.grid}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxAdults">Max. dorosłych *</label>
+            <FormField id="maxAdults" label="Max. dorosłych *" hint="Maksymalna liczba dorosłych gości.">
               <input
                 id="maxAdults"
                 name="maxAdults"
@@ -118,12 +116,8 @@ export default function EditPropertyForm({
                 required
                 defaultValue={property.maxAdults}
               />
-              <small className={styles.hint}>
-                Maksymalna liczba dorosłych gości.
-              </small>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxChildren">Max. dzieci *</label>
+            </FormField>
+            <FormField id="maxChildren" label="Max. dzieci *" hint="Maksymalna liczba dzieci.">
               <input
                 id="maxChildren"
                 name="maxChildren"
@@ -133,10 +127,8 @@ export default function EditPropertyForm({
                 required
                 defaultValue={property.maxChildren}
               />
-              <small className={styles.hint}>Maksymalna liczba dzieci.</small>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxExtraBeds">Maksymalna liczba dostawek *</label>
+            </FormField>
+            <FormField id="maxExtraBeds" label="Maksymalna liczba dostawek *" hint="Ile dodatkowych łóżek można dostawić.">
               <input
                 id="maxExtraBeds"
                 name="maxExtraBeds"
@@ -146,10 +138,7 @@ export default function EditPropertyForm({
                 required
                 defaultValue={property.maxExtraBeds}
               />
-              <small className={styles.hint}>
-                Ile dodatkowych łóżek można dostawić.
-              </small>
-            </div>
+            </FormField>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProperty } from '@/actions/adminPropertyActions';
 import Button from '@/app/_components/UI/Button/Button';
+import FormField from '@/app/admin/_components/FormField/FormField';
 import styles from './page.module.css';
 // FloatingBackButton provided by admin layout
 
@@ -39,27 +40,24 @@ export default function AddPropertyForm() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Podstawowe informacje</h2>
           <div className={styles.grid}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="name">Nazwa domku *</label>
+            <FormField id="name" label="Nazwa domku *">
               <input id="name" name="name" type="text" required placeholder="np. Chatka A (Wilcza)" />
-            </div>
+            </FormField>
             {/* <div className={styles.inputGroup}> DO NOT REMOVE, IT"S GOING TO BE USE LATER
               <label htmlFor="slug">Slug (URL)</label>
               <input id="slug" name="slug" type="text" placeholder="chatka-a" pattern="[a-z0-9\-]+" title="Tylko małe litery, cyfry i myślniki" />
               <small className={styles.hint}>Opcjonalne, np. chatka-a.</small>
             </div> */}
           </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="description">Opis</label>
+          <FormField id="description" label="Opis">
             <textarea id="description" name="description" rows={4} placeholder="Krótki opis domku dla gości..." />
-          </div>
+          </FormField>
         </div>
 
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Pojemność</h2>
           <div className={styles.grid}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxAdults">Max. dorosłych *</label>
+            <FormField id="maxAdults" label="Max. dorosłych *" hint="Maksymalna liczba dorosłych gości.">
               <input
                 id="maxAdults"
                 name="maxAdults"
@@ -69,10 +67,8 @@ export default function AddPropertyForm() {
                 defaultValue={4}
                 required
               />
-              <small className={styles.hint}>Maksymalna liczba dorosłych gości.</small>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxChildren">Max. dzieci (bezpłatnych) *</label>
+            </FormField>
+            <FormField id="maxChildren" label="Max. dzieci (bezpłatnych) *" hint="Maksymalna liczba dzieci.">
               <input
                 id="maxChildren"
                 name="maxChildren"
@@ -82,10 +78,8 @@ export default function AddPropertyForm() {
                 defaultValue={6}
                 required
               />
-              <small className={styles.hint}>Maksymalna liczba dzieci.</small>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="maxExtraBeds">Maksymalna liczba dostawek *</label>
+            </FormField>
+            <FormField id="maxExtraBeds" label="Maksymalna liczba dostawek *" hint="Liczba dodatkowych łóżek, które można dostawić.">
               <input
                 id="maxExtraBeds"
                 name="maxExtraBeds"
@@ -95,8 +89,7 @@ export default function AddPropertyForm() {
                 defaultValue={2}
                 required
               />
-              <small className={styles.hint}>Liczba dodatkowych łóżek, które można dostawić.</small>
-            </div>
+            </FormField>
           </div>
         </div>
 

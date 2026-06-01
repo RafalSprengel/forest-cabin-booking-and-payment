@@ -56,18 +56,7 @@
   font-size: 0.65rem;
 }
 
-.adminPageHeader {
-  margin-bottom: 20px;
-}
 
-.adminPageHeader h1 {
-  margin-bottom: 10px;
-}
-
-.adminPageHeader p {
-  color: var(--text-secondary);
-  font-size: clamp(0.5rem, 0.95rem + 0.25vw, 1.1rem);
-}
 
 .mobileOverlay {
   position: fixed;

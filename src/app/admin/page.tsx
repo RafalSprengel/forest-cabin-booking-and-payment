@@ -1,6 +1,6 @@
 import Link from 'next/link';
+import AdminShell from './_components/AdminShell/AdminShell';
 import styles from './page.module.css';
-import adminStyles from './admin.module.css';
 import { getAdminBookingsList } from '@/actions/adminBookingActions';
 
 export default async function AdminDashboard() {
@@ -15,11 +15,7 @@ export default async function AdminDashboard() {
     .slice(0, 5);
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Panel Administratora</h1>
-        <p>Witaj w panelu zarządzania Wilcze Chatki.</p>
-      </header>
+    <AdminShell title="Panel Administratora" description="Witaj w panelu zarządzania Wilcze Chatki.">
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
@@ -87,6 +83,6 @@ export default async function AdminDashboard() {
           </Link>
         </div>
       </section>
-    </div>
+    </AdminShell>
   );
 }

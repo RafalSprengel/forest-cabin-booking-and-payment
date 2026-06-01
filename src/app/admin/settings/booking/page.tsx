@@ -1,17 +1,12 @@
 import { getBookingConfig } from '@/actions/bookingConfigActions';
+import AdminShell from '../../_components/AdminShell/AdminShell';
 import BookingSettingsForm from './BookingSettingsForm';
-import styles from './booking.module.css';
-import adminStyles from "../../admin.module.css";
 
 export default async function BookingSettingsPage() {
   const config = await getBookingConfig();
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Ustawienia rezerwacji</h1>
-        <p>Zarządzaj globalnymi zasadami rezerwacji.</p>
-      </header>
+    <AdminShell title="Ustawienia rezerwacji" description="Zarządzaj globalnymi zasadami rezerwacji.">
       <BookingSettingsForm initialConfig={config} />
-    </div>
+    </AdminShell>
   );
 }

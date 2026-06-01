@@ -168,3 +168,11 @@ Clears core collections and rebuilds data from scratch.
 - When you change models, verify related server actions and API endpoints.
 - For payment flow changes, always test Stripe webhook handling locally.
 - For email changes, test both admin notifications and customer autoresponder emails.
+
+## 🏗️ Admin panel migration note
+
+- The admin header was consolidated into a single wrapper component `AdminShell` located at `src/app/admin/_components/AdminShell/AdminShell.tsx`.
+- The previous `AdminPageHeader` component has been removed and related styles were deleted from `src/app/admin/admin.module.css`.
+Use `AdminShell` with `title` and `description` props to provide page-level header for admin pages. Place page controls (buttons, filters, search) in page content above the main section.
+
+If you need help reverting or keeping a lightweight adapter for legacy pages, tell me and I will add it.

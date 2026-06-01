@@ -1,0 +1,47 @@
+:root {
+  --admin-shell-max-width: 980px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--admin-shell-max-width);
+  margin: 0 auto;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.headerInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header h1 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+
+
+.content {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 28px;
+  }
+}

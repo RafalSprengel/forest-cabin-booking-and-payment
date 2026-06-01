@@ -7,7 +7,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getCalendarData, CalendarDay, BookingDetails } from '@/actions/getCalendarData'
 import { getAllProperties } from '@/actions/adminPropertyActions'
 import styles from './page.module.css'
-import adminStyles from '../../admin.module.css'
+import AdminShell from '../../_components/AdminShell/AdminShell'
 
 dayjs.extend(isBetween)
 dayjs.extend(customParseFormat)
@@ -216,10 +216,7 @@ export default function Calendar() {
   }, [currentView])
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Kalendarz</h1>
-      </header>
+    <AdminShell title="Kalendarz">
 
       <div className={styles.headerControls}>
         <button onClick={() => setCurrentView(prev => prev.subtract(1, 'month'))} className={styles.navButton}>&#8249;</button>
@@ -304,6 +301,6 @@ export default function Calendar() {
           </tbody>
         </table>
       </div>
-    </div>
+    </AdminShell>
   )
 }

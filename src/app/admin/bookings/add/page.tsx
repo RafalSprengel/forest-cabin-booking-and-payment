@@ -25,7 +25,7 @@ import QuantityPicker from "@/app/_components/QuantityPicker/QuantityPicker";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { formatDisplayDate } from "@/utils/formatDate";
 import styles from "./page.module.css";
-import adminStyles from "../../admin.module.css";
+import AdminShell from "../../_components/AdminShell/AdminShell";
 
 interface BookingDates {
   start: string | null;
@@ -405,11 +405,7 @@ export default function AddBookingPage() {
     (selectedPropertyMaxAdults == null || selectedPropertyMaxExtraBeds == null);
 
   return (
-    <div>
-      <header className={adminStyles.adminPageHeader}>
-        <h1>Dodaj nową rezerwację</h1>
-        <p className={styles.headerDescription}>Ręczne wprowadzenie rezerwacji (np. telefonicznej).</p>
-      </header>
+    <AdminShell title="Dodaj nową rezerwację" description="Ręczne wprowadzenie rezerwacji (np. telefonicznej).">
 
       {missingLimits && (
         <div className={styles.warningBox}>
@@ -814,6 +810,6 @@ export default function AddBookingPage() {
       >
         <p>{feedbackModal.message}</p>
       </Modal>
-    </div>
+    </AdminShell>
   );
 }
