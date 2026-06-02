@@ -1,4 +1,6 @@
 // FloatingBackButton provided by admin layout
+export const dynamic = 'force-dynamic'
+
 import { getAdminPaymentsData } from '@/actions/adminPaymentActions'
 import AdminShell from '../../_components/AdminShell/AdminShell'
 import PaymentsPanel from '../PaymentsPanel'

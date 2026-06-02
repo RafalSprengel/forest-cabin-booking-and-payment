@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAdminBookingsList } from '@/actions/adminBookingActions';
 import Button from '@/app/_components/UI/Button/Button';
 import Link from 'next/link';
@@ -207,7 +209,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
 
                     <div className={styles.cardFooter}>
                       <span className={`${styles.badge} ${styles[`badge${statusKey}`]}`}>{statusLabel}</span>
-                      <span className={styles.addedDate}>dodano: {new Date(booking.createdAt).toLocaleDateString('pl-PL')}</span>
+                      <span className={styles.addedDate}>dodano: {new Date(booking.createdAt).toLocaleDateString('pl-PL')} {new Date(booking.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</span>
                       <Button variant='secondary' href={`/admin/bookings/list/${booking._id}`} className={styles.editBtn}>Edytuj</Button>
                     </div>
                     {booking.source === 'admin' && (
@@ -296,7 +298,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
 
                     <div className={styles.cardFooter}>
                       <span className={`${styles.badge} ${styles[`badge${statusKey}`]} ${styles.badgePast}`}>{statusLabel}</span>
-                      <span className={styles.addedDate}>dodano: {new Date(booking.createdAt).toLocaleDateString('pl-PL')}</span>
+                      <span className={styles.addedDate}>dodano: {new Date(booking.createdAt).toLocaleDateString('pl-PL')} {new Date(booking.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</span>
                       <DeletePastBookingButton bookingId={booking._id} />
                     </div>
                   </article>
