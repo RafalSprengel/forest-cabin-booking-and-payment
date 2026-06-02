@@ -53,8 +53,10 @@ export async function updateSiteSettings(
       { upsert: true, new: true, runValidators: true }
     );
 
-    // 4. Optymalizacja RevalidatePath
+    // 4. Optymalizacja RevalidatePath — odśwież główny layout i panel admina
     revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
+    revalidatePath('/admin/settings');
 
     return {
       success: true,

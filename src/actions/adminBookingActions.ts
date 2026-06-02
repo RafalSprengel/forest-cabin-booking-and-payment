@@ -297,8 +297,11 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
       source: 'admin',
     })
     await newBooking.save()
-    revalidatePath('/admin/bookings')
-    revalidatePath('/booking')
+    revalidatePath('/', 'layout')
+    revalidatePath('/admin', 'layout')
+    revalidatePath('/admin/bookings/list')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/block')
     return { message: 'Rezerwacja została pomyślnie utworzona!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -391,9 +394,11 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
     if (!updatedBooking) {
       return { message: 'Nie znaleziono rezerwacji do zaktualizowania.', success: false }
     }
-    revalidatePath('/admin/bookings')
-    revalidatePath('/booking')
-    revalidatePath(`/admin/bookings/list/${bookingId}`)
+    revalidatePath('/', 'layout')
+    revalidatePath('/admin', 'layout')
+    revalidatePath('/admin/bookings/list')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/block')
     return { message: 'Rezerwacja została pomyślnie zaktualizowana!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -407,7 +412,11 @@ export async function deleteBookingAction(bookingId: string) {
     if (!result) {
       return { message: 'Nie znaleziono rezerwacji.', success: false }
     }
-    revalidatePath('/admin/bookings')
+    revalidatePath('/', 'layout')
+    revalidatePath('/admin', 'layout')
+    revalidatePath('/admin/bookings/list')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/block')
     return { message: 'Rezerwacja została pomyślnie usunięta!', success: true }
   } catch (error: any) {
     return { message: error.message || 'Wystąpił nieoczekiwany błąd serwera.', success: false }
@@ -606,10 +615,11 @@ export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
 
     await Booking.insertMany(docs)
 
-    revalidatePath('/admin/bookings/block')
-    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/', 'layout')
+    revalidatePath('/admin', 'layout')
     revalidatePath('/admin/bookings/list')
-    revalidatePath('/booking')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/block')
 
     return {
       success: true,
@@ -639,10 +649,11 @@ export async function deleteBlockedBookingByAdmin(bookingId: string) {
       return { success: false, message: 'Nie znaleziono blokady do usunięcia.' }
     }
 
-    revalidatePath('/admin/bookings/block')
-    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/', 'layout')
+    revalidatePath('/admin', 'layout')
     revalidatePath('/admin/bookings/list')
-    revalidatePath('/booking')
+    revalidatePath('/admin/bookings/calendar')
+    revalidatePath('/admin/bookings/block')
 
     return { success: true, message: 'Blokada została usunięta.' }
   } catch (error: any) {

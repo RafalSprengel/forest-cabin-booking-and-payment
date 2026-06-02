@@ -62,8 +62,7 @@ export async function getSystemConfig() {
 
 export async function updateSystemConfigSetting(
   settingKey: keyof ISystemConfig,
-  value: boolean,
-  pathsToRevalidate: string[] = ['/admin/settings', '/booking']
+  value: boolean
 ): Promise<{ success: boolean; currentValue?: boolean; message: string }> {
   try {
     await dbConnect();
@@ -73,8 +72,7 @@ export async function updateSystemConfigSetting(
       { upsert: true, new: true, runValidators: true }
     );
 
-    // Revalidate specified paths
-    pathsToRevalidate.forEach(path => revalidatePath(path));
+    revalidatePath('/', 'layout');
 
     return {
       success: true,

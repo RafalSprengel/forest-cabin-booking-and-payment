@@ -1,5 +1,5 @@
 'use server'
-
+import { revalidatePath } from 'next/cache';
 import dbConnect from '@/db/connection';
 import Booking from '@/db/models/Booking';
 import Property from '@/db/models/Property';
@@ -187,6 +187,7 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
 
     const savedBookings = await Booking.insertMany(bookings);
 
+    revalidatePath('/', 'layout');
     return {
       success: true,
       message: 'Rezerwacja utworzona pomyślnie',

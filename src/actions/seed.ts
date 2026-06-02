@@ -15,6 +15,7 @@ import mongoose from 'mongoose';
 import { getSiteSettings } from '@/actions/siteSettingsActions';
 import { getAuth } from '@/lib/auth';
 import { siteSettingsDefaults } from '@/lib/siteSettingsDefaults';
+import { revalidatePath } from 'next/cache';
 
 function toPlainObject(doc: any) {
   return JSON.parse(JSON.stringify(doc));
@@ -106,6 +107,8 @@ export async function seedSeasons() {
 
     await Season.deleteMany({});
     const created = await Season.insertMany(seasons);
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: `Utworzono ${created.length} sezonów`,
@@ -150,6 +153,8 @@ export async function seedProperties() {
 
     await Property.deleteMany({});
     const created = await Property.insertMany(properties);
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: `Utworzono ${created.length} domków`,
@@ -249,6 +254,8 @@ export async function seedPropertyPrices() {
     await PropertyPrices.deleteMany({});
     const created = await PropertyPrices.insertMany(pricesToInsert);
 
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: `Utworzono ${created.length} rekordów cen w PropertyPrices`,
@@ -283,6 +290,8 @@ export async function seedPriceConfigDefaults() {
 
     await PriceConfig.deleteMany({});
     const created = await PriceConfig.create(defaultPriceConfig);
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: 'Domyślna konfiguracja cen została utworzona',
@@ -303,6 +312,8 @@ export async function seedSystemConfig() {
       autoBlockOtherCabins: false,
       lastOrderNumber: 50,
     });
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: 'Konfiguracja systemowa została utworzona',
@@ -326,6 +337,8 @@ export async function seedSiteSettings() {
       facebookUrl: 'https://facebook.com/profile.php?id=61584455637648',
       bankAccountNumber: '20 1020 5226 0000 6702 0486 0336',
     });
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: 'Ustawienia strony zostały utworzone',
@@ -352,6 +365,8 @@ export async function seedBookingConfig() {
       createdAt: new Date('2026-04-09T10:50:32.119Z'),
       updatedAt: new Date('2026-05-16T19:07:42.466Z'),
     });
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: 'Konfiguracja rezerwacji została utworzona',
@@ -444,6 +459,8 @@ export async function seedBookings() {
 
     await Booking.deleteMany({});
     const created = await Booking.insertMany(bookings);
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin', 'layout');
     return {
       success: true,
       message: `Utworzono ${created.length} rezerwacji`,

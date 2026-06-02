@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { getAuth } from "@/lib/auth";
 import dbConnect from "@/db/connection";
 import mongoose from "mongoose";
+import { revalidatePath } from "next/cache";
 
 export async function changeAdminEmail(newEmail: string): Promise<{ success: boolean; error?: string }> {
     const trimmed = newEmail.trim().toLowerCase();
@@ -37,6 +38,7 @@ export async function changeAdminEmail(newEmail: string): Promise<{ success: boo
             { $set: { email: trimmed, updatedAt: new Date() } }
         );
 
+        revalidatePath('/admin/settings');
         return { success: true };
     } catch (error) {
         console.error("[changeAdminEmail] błąd:", error);

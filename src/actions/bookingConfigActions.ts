@@ -68,7 +68,7 @@ export async function updateAllowCheckinOnDepartureDay(allow: boolean) {
       { allowCheckinOnDepartureDay: allow },
       { upsert: true }
     );
-    revalidatePath('/admin/settings/booking');
+    revalidatePath('/', 'layout');
     return { success: true, message: 'Zaktualizowano ustawienie' };
   } catch (error) {
     console.error(error);
@@ -102,7 +102,7 @@ export async function updateBookingConfig(_prevState: Record<string, unknown>, f
       },
       { upsert: true, new: true }
     );
-    revalidatePath('/admin/settings/booking');
+    revalidatePath('/', 'layout');
     return { success: true, message: 'Zapisano ustawienia rezerwacji.' };
   } catch (error) {
     console.error(error);
