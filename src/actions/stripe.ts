@@ -167,7 +167,6 @@ export async function createCheckoutSession(bookingData: BookingData) {
     children: order.children,
     extraBedsCount: order.extraBeds,
     totalPrice: order.price,
-    depositAmount: order.price,
     paidAmount: 0,
     orderId,
     paymentStatus: "unpaid" as const,

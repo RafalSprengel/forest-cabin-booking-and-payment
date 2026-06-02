@@ -96,13 +96,16 @@ export async function POST(request: Request) {
           _id: { $in: objectIds },
           source: "online",
         },
-        {
-          $set: {
-            status: "confirmed",
-            paymentStatus: "paid",
-            stripeSessionId: session.id,
+        [
+          {
+            $set: {
+              status: "confirmed",
+              paymentStatus: "paid",
+              paidAmount: "$totalPrice",
+              stripeSessionId: session.id,
+            },
           },
-        }
+        ]
       );
       console.log("[WEBHOOK] Wynik updateMany (confirmed):", updateResult);
 

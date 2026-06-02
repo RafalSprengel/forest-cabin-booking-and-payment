@@ -99,14 +99,16 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
       <div className={styles.tooltip}>
         <div className={styles.tooltipHeader}>
           <h4 className={styles.guestNameText}>Zabl. przez admina</h4>
-          <span className={`${styles.badge} ${styles.badgeBlocked}`}>ZABLOKOWANA</span>
+          <span className={`${styles.badge} ${styles.badgeBlocked}`}>ZABLOKOWANY</span>
         </div>
         <div className={styles.tooltipRow}>
           <span className={styles.label}>🗓️ Termin:</span>
           <span className={styles.valueText}>{(() => {
             const s = dayjs(details.startDate, 'DD.MM.YYYY')
-            const e = dayjs(details.endDate, 'DD.MM.YYYY')
+            let e = dayjs(details.endDate, 'DD.MM.YYYY')
             if (!s.isValid()) return details.startDate
+            // For admin blocks the stored endDate is exclusive (checkout next day) — display inclusive end as end - 1 day
+            if (details.status === 'blocked') e = e.subtract(1, 'day')
             if (details.durationDays === 1) return s.format('D MMMM YYYY')
             if (s.isSame(e, 'month') && s.isSame(e, 'year')) return `${s.format('D')}-${e.format('D')} ${e.format('MMMM YYYY')}`
             return `${s.format('D MMMM YYYY')} - ${e.format('D MMMM YYYY')}`
@@ -128,7 +130,7 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
     : isDeposit
       ? `Zaliczka (${details.paidAmount.toFixed(2)} PLN)`
       : 'Nieopłacone'
-  const statusBadgeText = details.status === 'confirmed' ? 'POTWIERDZONA' : details.status === 'pending' ? 'Klient jest w trakcie rezerwacji...' : 'ZABLOKOWANA'
+  const statusBadgeText = details.status === 'confirmed' ? 'POTWIERDZONY' : details.status === 'pending' ? 'Klient jest w trakcie rezerwacji...' : 'ZABLOKOWANY'
   const extraBedsText = details.extraBeds && details.extraBeds > 0 ? `${details.extraBeds} dostawka` : '0'
 
   return (
@@ -145,8 +147,9 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
         <span className={styles.label}>🗓️ Termin:</span>
         <span className={styles.valueText}>{(() => {
           const s = dayjs(details.startDate, 'DD.MM.YYYY')
-          const e = dayjs(details.endDate, 'DD.MM.YYYY')
+          let e = dayjs(details.endDate, 'DD.MM.YYYY')
           if (!s.isValid() || !e.isValid()) return `${details.startDate} - ${details.endDate}`
+          if (details.status === 'blocked') e = e.subtract(1, 'day')
           if (s.isSame(e, 'month') && s.isSame(e, 'year')) return `${s.format('D')}-${e.format('D')} ${e.format('MMMM YYYY')}`
           return `${s.format('D MMMM YYYY')} - ${e.format('D MMMM YYYY')}`
         })()}</span>

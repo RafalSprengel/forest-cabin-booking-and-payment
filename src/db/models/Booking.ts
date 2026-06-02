@@ -24,7 +24,6 @@ export interface IBooking extends Document {
   children: number;
   extraBedsCount: number;
   totalPrice: number;
-  depositAmount: number;
   paidAmount: number;
   stripeSessionId?: string;
   stripeSessionStatus?: StripeSessionStatus;
@@ -106,11 +105,6 @@ const BookingSchema = new Schema({
     min: 0
   },
   totalPrice: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  depositAmount: {
     type: Number,
     required: true,
     min: 0

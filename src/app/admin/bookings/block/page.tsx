@@ -19,6 +19,7 @@ import Modal from "@/app/_components/Modal/Modal";
 import { formatDisplayDate } from "@/utils/formatDate";
 import styles from "./page.module.css";
 import AdminShell from "../../_components/AdminShell/AdminShell";
+import { isDateInPast } from "@/utils/dateHelpers";
 
 interface PropertyOption {
   _id: string;
@@ -60,6 +61,7 @@ export default function BlockBookingsPage() {
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BlockedItem | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPast, setShowPast] = useState(false);
 
   const loadBlockedBookings = useCallback(async () => {
     try {
@@ -305,19 +307,37 @@ export default function BlockBookingsPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h2>Istniejące blokady</h2>
-            <span className={styles.cardBadge}>{allBlockedBookings.length}</span>
+            <span className={styles.cardBadge}>
+              {showPast
+                ? allBlockedBookings.length
+                : allBlockedBookings.filter((b) => !isDateInPast(b.endDate)).length}
+            </span>
           </div>
 
-          {allBlockedBookings.length === 0 ? (
+          {(showPast
+            ? allBlockedBookings
+            : allBlockedBookings.filter((b) => !isDateInPast(b.endDate))
+          ).length === 0 ? (
             <div className={styles.emptyState}>
-              Brak blokad dla wybranego filtra.
+              Brak aktywnych blokad.
             </div>
           ) : (
             <div className={styles.blockList}>
-              {allBlockedBookings.map((item) => (
-                <article key={item._id} className={styles.blockItem}>
+              {(showPast
+                ? allBlockedBookings
+                : allBlockedBookings.filter((b) => !isDateInPast(b.endDate))
+              ).map((item) => (
+                <article
+                  key={item._id}
+                  className={`${styles.blockItem}${isDateInPast(item.endDate) ? ` ${styles.blockItemPast}` : ""}`}
+                >
                   <div className={styles.blockMeta}>
-                    <strong>{item.propertyName}</strong>
+                    <div className={styles.blockMetaHeader}>
+                      <strong>{item.propertyName}</strong>
+                      {isDateInPast(item.endDate) && (
+                        <span className={styles.pastBadge}>przeszłe</span>
+                      )}
+                    </div>
                     <span>
                       {dayjs(item.endDate).diff(dayjs(item.startDate), "day") === 1
                         ? formatDisplayDate(item.startDate)
@@ -330,6 +350,7 @@ export default function BlockBookingsPage() {
                     variant="danger"
                     onClick={() => setDeleteTarget(item)}
                     disabled={isDeletingId === item._id}
+                    style={{ backgroundColor : isDateInPast(item.endDate) ? "#d66a6a" : undefined, borderColor: isDateInPast(item.endDate) ? "#ef7d7d" : undefined }}
                   >
                     {isDeletingId === item._id ? "Usuwanie..." : "Usuń blokadę"}
                   </Button>
@@ -337,6 +358,13 @@ export default function BlockBookingsPage() {
               ))}
             </div>
           )}
+          <button
+            type="button"
+            className={styles.togglePastLink}
+            onClick={() => setShowPast((prev) => !prev)}
+          >
+            {showPast ? "Pokaż aktualne" : "Pokaż również przeszłe"}
+          </button>
         </div>
 
         <Modal

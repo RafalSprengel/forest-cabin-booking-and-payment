@@ -4,6 +4,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import AdminShell from '../../_components/AdminShell/AdminShell';
 import BookingSearch from './BookingSearch';
+import DeletePastBookingButton from './DeletePastBookingButton';
 
 function getPaymentBadge(paymentStatus: string, paidAmount: number, totalPrice: number) {
   const isFullyPaidByAmount = totalPrice > 0 && paidAmount >= totalPrice;
@@ -178,7 +179,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
                       </div>
                       <div className={styles.detailRow}>
                         <span className={styles.label}>Rodzaj płatności:</span>
-                        <span className={styles.value}>{booking.paymentMethod === 'online' ? 'Online' : 'gotówka / przelew'}</span>
+                        <span className={styles.value}>{booking.paymentMethod === 'online' ? 'Online' : 'Gotówka / Przelew'}</span>
                       </div>
                       {isFullyPaid ? (
                         <div className={styles.detailRow}>
@@ -195,7 +196,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
                             </div>
                           </div>
                           <div className={styles.detailRow}>
-                            <span className={styles.label}>Płatność:</span>
+                            <span className={styles.label}>Status płatności:</span>
                             <span className={`${styles.value} ${paymentBadge.class}`}>
                               {paymentBadge.text}
                             </span>
@@ -271,7 +272,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
                       </div>
                       {isFullyPaid ? (
                         <div className={styles.detailRow}>
-                          <span className={styles.label}>Płatność:</span>
+                          <span className={styles.label}>Status płatności:</span>
                           <span className={`${styles.value} ${styles.paymentPaid}`}>Opłacono</span>
                         </div>
                       ) : (
@@ -284,7 +285,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
                             </div>
                           </div>
                           <div className={styles.detailRow}>
-                            <span className={styles.label}>Płatność:</span>
+                            <span className={styles.label}>Status płatności:</span>
                             <span className={`${styles.value} ${paymentBadge.class}`}>
                               {paymentBadge.text}
                             </span>
@@ -296,7 +297,7 @@ export default async function BookingsListPage({ searchParams }: BookingsListPag
                     <div className={styles.cardFooter}>
                       <span className={`${styles.badge} ${styles[`badge${statusKey}`]} ${styles.badgePast}`}>{statusLabel}</span>
                       <span className={styles.addedDate}>dodano: {new Date(booking.createdAt).toLocaleDateString('pl-PL')}</span>
-                      <span className={styles.editBtnDisabled}>Edytuj</span>
+                      <DeletePastBookingButton bookingId={booking._id} />
                     </div>
                   </article>
                 );

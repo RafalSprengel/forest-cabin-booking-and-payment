@@ -140,7 +140,6 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
           children: allocation.children,
           extraBedsCount: allocation.extraBeds,
           totalPrice: recalculatedPrice,
-          depositAmount: recalculatedPrice,
           paidAmount: 0,
           paymentStatus: calculatePaymentStatus(recalculatedPrice, 0),
         });
@@ -181,7 +180,6 @@ export async function createBookingFromDraft(draftData: BookingDraftData) {
         children,
         extraBedsCount: extraBeds,
         totalPrice: recalculatedPrice,
-        depositAmount: recalculatedPrice,
         paidAmount: 0,
         paymentStatus: calculatePaymentStatus(recalculatedPrice, 0),
       });

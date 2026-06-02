@@ -180,7 +180,7 @@ export default function AllPropertiesCard({
               {/* <div className={styles.cardDetails}>
                 <span>Max. dorosłych: {option.maxAdults}</span>
                 <span className={styles.separator}> • </span>
-                <span>Max. dzieci: {option.maxChildren}</span>
+                <span>Max. dzieci (bezpłatnie): {option.maxChildren}</span>
                 <span className={styles.separator}> • </span>
                 <span>Max. dostawek: {option.maxExtraBeds}</span>
               </div> */}

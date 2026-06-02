@@ -105,7 +105,7 @@ export default function EditPropertyForm({
                 defaultValue={property.maxAdults}
               />
             </FormField>
-            <FormField id="maxChildren" label="Max. dzieci *" hint="Maksymalna liczba dzieci.">
+            <FormField id="maxChildren" label="Max. dzieci (bezpłatnie) *" hint="Maksymalna liczba dzieci.">
               <input
                 id="maxChildren"
                 name="maxChildren"

@@ -64,7 +64,7 @@ export default function AddPropertyForm() {
                 required
               />
             </FormField>
-            <FormField id="maxChildren" label="Max. dzieci (bezpłatnych) *" hint="Maksymalna liczba dzieci.">
+            <FormField id="maxChildren" label="Max. dzieci (bezpłatnie) *" hint="Maksymalna liczba dzieci.">
               <input
                 id="maxChildren"
                 name="maxChildren"

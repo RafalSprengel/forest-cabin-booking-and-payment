@@ -207,19 +207,19 @@ export default function CalendarPicker({
   return (
     <div className="calendar">
       <div className="navigation">
-        <button className="navigation__arrow" aria-label="Previous year" onClick={() => setViewDate(viewDate.subtract(1, 'year'))}>
+        <button type="button" className="navigation__arrow" aria-label="Previous year" onClick={() => setViewDate(viewDate.subtract(1, 'year'))}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.59 18 19 16.59 14.42 12 19 7.41 17.59 6l-6 6z"/><path d="M11.59 18 13 16.59 8.42 12 13 7.41 11.59 6l-6 6z"/></svg>
         </button>
-        <button className="navigation__arrow" aria-label="Previous month" onClick={() => setViewDate(viewDate.subtract(1, 'month'))}>
+        <button type="button" className="navigation__arrow" aria-label="Previous month" onClick={() => setViewDate(viewDate.subtract(1, 'month'))}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
         </button>
-        <button className="navigation__current-month" onClick={() => setViewDate(dayjs())}>
+        <button type="button" className="navigation__current-month" onClick={() => setViewDate(dayjs())}>
           {viewDate.format('MMMM YYYY')}
         </button>
-        <button className="navigation__arrow" aria-label="Next month" onClick={() => setViewDate(viewDate.add(1, 'month'))}>
+        <button type="button" className="navigation__arrow" aria-label="Next month" onClick={() => setViewDate(viewDate.add(1, 'month'))}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
         </button>
-        <button className="navigation__arrow" aria-label="Next year" onClick={() => setViewDate(viewDate.add(1, 'year'))}>
+        <button type="button" className="navigation__arrow" aria-label="Next year" onClick={() => setViewDate(viewDate.add(1, 'year'))}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.41 18 5 16.59 9.58 12 5 7.41 6.41 6l6 6z"/><path d="M12.41 18 11 16.59 15.58 12 11 7.41 12.41 6l6 6z"/></svg>
         </button>
       </div>

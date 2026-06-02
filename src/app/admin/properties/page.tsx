@@ -59,7 +59,7 @@ export default async function PropertiesPage() {
                   <span className={styles.value}>{prop.maxAdults}</span>
                 </div>
                 <div className={styles.detailRow}>
-                  <span className={styles.label}>Max. dzieci:</span>
+                  <span className={styles.label}>Max. dzieci (bezpłatnie):</span>
                   <span className={styles.value}>{prop.maxChildren}</span>
                 </div>
                 <div className={styles.detailRow}>
