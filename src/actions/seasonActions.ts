@@ -89,7 +89,6 @@ export async function updateSeasonDates(
 
     const start = new Date(startDate);
     const end = new Date(endDate);
-    // Ustaw godzinę na 12:00 dla obu dat
     start.setHours(12, 0, 0, 0);
     end.setHours(12, 0, 0, 0);
 
@@ -102,7 +101,6 @@ export async function updateSeasonDates(
     const endMonth = end.getMonth();
     const endDay = end.getDate();
 
-    // Canonical yearly range: year is ignored in pricing logic.
     const normalizedStartDate = new Date(2000, startMonth, startDay, 12, 0, 0, 0);
     const isCrossYear = (endMonth + 1) * 100 + endDay < (startMonth + 1) * 100 + startDay;
     const normalizedEndDate = new Date(isCrossYear ? 2001 : 2000, endMonth, endDay, 12, 0, 0, 0);
@@ -139,6 +137,7 @@ export async function updateSeasonDates(
     });
     revalidatePath('/admin/settings/booking');
     revalidatePath('/admin/prices');
+    revalidatePath('/', 'layout');
     return { success: true, message: 'Zaktualizowano daty sezonu' };
   } catch (error) {
     console.error('Błąd aktualizacji sezonu:', error);

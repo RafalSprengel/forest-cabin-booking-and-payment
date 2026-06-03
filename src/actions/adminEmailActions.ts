@@ -39,6 +39,7 @@ export async function changeAdminEmail(newEmail: string): Promise<{ success: boo
         );
 
         revalidatePath('/admin/settings');
+        revalidatePath('/', 'layout');
         return { success: true };
     } catch (error) {
         console.error("[changeAdminEmail] błąd:", error);

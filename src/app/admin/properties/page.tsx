@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import {
   getAllProperties,
   togglePropertyActive,
@@ -17,7 +16,6 @@ export default async function PropertiesPage() {
     const id = formData.get("id") as string;
     const isActive = formData.get("isActive") === "true";
     await togglePropertyActive(id, !isActive);
-    revalidatePath("/admin/properties");
   }
 
   return (
