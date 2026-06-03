@@ -105,7 +105,8 @@ export async function POST(request: Request) {
               stripeSessionId: session.id,
             },
           },
-        ]
+        ],
+        { updatePipeline: true }
       );
       console.log("[WEBHOOK] Wynik updateMany (confirmed):", updateResult);
 
