@@ -30,6 +30,7 @@ export interface BookingData {
   adults: number;
   children: number;
   clientData: ClientData;
+  invoice: boolean;
   invoiceData: InvoiceData;
   orders: BookingOrderItem[];
   reservationId?: string;

@@ -17,7 +17,7 @@ import { resolveOccupiedPropertyIdsFromBookings } from "@/utils/lazyAvailability
 export async function createCheckoutSession(bookingData: BookingData) {
   if (!bookingData) throw new Error("Brak danych rezerwacji.");
 
-  const { startDate, endDate, adults, children, clientData, orders } = bookingData;
+  const { startDate, endDate, adults, children, clientData, invoice, invoiceData, orders } = bookingData;
 
   if (
     !startDate ||
@@ -173,6 +173,8 @@ export async function createCheckoutSession(bookingData: BookingData) {
     status: "pending" as const,
     paymentMethod: "online" as const,
     source: "online" as const,
+    invoice: invoice === true,
+    invoiceData: invoice === true ? invoiceData : undefined,
   }));
 
   const insertedBookings = await Booking.insertMany(bookingDocs);

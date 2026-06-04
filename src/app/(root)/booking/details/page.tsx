@@ -189,6 +189,7 @@ export default function BookingDetailsPage() {
         email: formData.email,
         phone: formData.phone,
       },
+      invoice: formData.invoice,
       invoiceData: nextInvoiceData,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
@@ -220,6 +221,7 @@ export default function BookingDetailsPage() {
         email: formData.email,
         phone: formData.phone,
       },
+      invoice: formData.invoice,
       invoiceData: nextInvoiceData,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
