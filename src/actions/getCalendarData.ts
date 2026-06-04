@@ -65,7 +65,7 @@ export async function getCalendarData(daysInMonth: number, startDateStr: string)
   const startDate = dayjs.utc(startDateStr).startOf('day');
   const endDate = startDate.add(daysInMonth, 'day').endOf('day');
 
-  const properties = await Property.find({ isActive: true }).lean();
+  const properties = await Property.find({}).lean();
   const bookingsForCleanup = await Booking.find({
     $or: [
       { status: 'blocked' },
