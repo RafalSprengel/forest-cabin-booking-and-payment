@@ -17,12 +17,29 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
       : '-';
 
   const propertyName = booking.propertyName || '-';
-
+console.log(booking);
   return (
     <AdminShell title="Szczegóły rezerwacji">
       <div className={styles.grid}>
         <div className={styles.mainCard}>
           <EditBookingForm initialData={booking} />
+        </div>
+
+        <div className={styles.sideCard}>
+          <h3 className={styles.cardTitle}>Faktura VAT</h3>
+          {booking.invoice ? (
+            <div className={styles.invoiceData}>
+              <div className={styles.infoRow}><span className={styles.label}>Nazwa firmy:</span><span>{booking.invoiceData?.companyName || '-'}</span></div>
+              <div className={styles.infoRow}><span className={styles.label}>NIP:</span><span>{booking.invoiceData?.nip || '-'}</span></div>
+              <div className={styles.infoRow}><span className={styles.label}>Ulica:</span><span>{booking.invoiceData?.street || '-'}</span></div>
+              <div className={styles.infoRow}><span className={styles.label}>Miasto:</span><span>{booking.invoiceData?.city || '-'}</span></div>
+              <div className={styles.infoRow}><span className={styles.label}>Kod pocztowy:</span><span>{booking.invoiceData?.postalCode || '-'}</span></div>
+            </div>
+          ) : (
+            <div className={styles.invoiceData}>
+              <div className={styles.infoRow}><span className={styles.label}>Brak danych faktury</span></div>
+            </div>
+          )}
         </div>
         <div className={styles.sideCard}>
           <div className={styles.infoBlock}>

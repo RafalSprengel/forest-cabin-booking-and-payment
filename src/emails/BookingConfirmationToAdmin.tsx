@@ -150,7 +150,7 @@ export default function BookingConfirmationToAdmin({
               <Text style={sectionTextStyle}><strong>Dorosłych:</strong> {adults}</Text>
             )}
             {(typeof children !== 'undefined') && (
-              <Text style={sectionTextStyle}><strong>Dzieci:</strong> {children}</Text>
+              <Text style={sectionTextStyle}><strong>Dzieci (bezpłatnie):</strong> {children}</Text>
             )}
             {(typeof extraBeds !== 'undefined') && (
               <Text style={sectionTextStyle}><strong>Dostawek:</strong> {extraBeds}</Text>
@@ -164,15 +164,15 @@ export default function BookingConfirmationToAdmin({
             <Hr style={hrStyle} />
             <Text style={sumStyle}>Kwota: {totalPrice} PLN</Text>
             <Hr style={hrStyle} />
-            <Text style={sectionTextStyle}><strong>Faktura:</strong> {invoiceRequested ? 'Tak' : 'Nie'}</Text>
+            <Text style={sectionTextStyle}><strong>Faktura VAT:</strong> {invoiceRequested ? 'Tak' : 'Nie'}</Text>
             {invoiceRequested && (
               <Section style={{ padding: '10px', backgroundColor: '#fff' }}>
                 {companyName && <Text style={sectionTextStyle}><strong>Nazwa firmy:</strong> {companyName}</Text>}
                 {nip && <Text style={sectionTextStyle}><strong>NIP:</strong> {nip}</Text>}
                 {street && <Text style={sectionTextStyle}><strong>Ulica:</strong> {street}</Text>}
-                {postalCode && city && (
-                  <Text style={sectionTextStyle}><strong>Kod pocztowy / Miasto:</strong> {postalCode} {city}</Text>
-                )}
+                {postalCode && <Text style={sectionTextStyle}><strong>Kod pocztowy:</strong> {postalCode}</Text>}
+                {city && <Text style={sectionTextStyle}><strong>Miasto:</strong> {city}</Text>}
+               
               </Section>
             )}
           </Section>
