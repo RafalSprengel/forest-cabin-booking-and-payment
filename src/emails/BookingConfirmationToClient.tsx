@@ -137,7 +137,7 @@ export const BookingConfirmation = ({
             Witaj <strong>{customerName}</strong>,
           </Text>
           <Text style={textStyle}>
-            Twoja płatność za pobyt na Kaszubach została pomyślnie przetworzona.
+            twoja płatność za pobyt w Wilczych Chatkach została pomyślnie przetworzona.
           </Text>
 
           <Section style={sectionStyle}>
