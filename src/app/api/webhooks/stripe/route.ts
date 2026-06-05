@@ -118,37 +118,52 @@ export async function POST(request: Request) {
         );
       }
 
-      const booking = await Booking.findOne({ _id: objectIds[0] });
-      console.log("[WEBHOOK] Booking do maila (confirmed):", booking);
+      const bookings = await Booking.find({ _id: { $in: objectIds } });
+      console.log("[WEBHOOK] Bookings do maila (confirmed):", bookings);
 
-      if (booking) {
+      if (bookings && bookings.length > 0) {
         try {
           const siteSettings = await getSiteSettings();
-          const customerName = `${booking.firstName || ''} ${booking.lastName || ''}`.trim();
-          console.log("[WEBHOOK] Wysyłam maila potwierdzającego rezerwację do:", booking.guestEmail, booking.orderId);
+          const primary = bookings[0];
+          const customerName = `${primary.firstName || ''} ${primary.lastName || ''}`.trim();
+
+          // Sum totals across bookings
+          const totalPrice = bookings.reduce((s, b) => s + (b.totalPrice || 0), 0);
+          const totalAdults = bookings.reduce((s, b) => s + (b.adults || 0), 0);
+          const totalChildren = bookings.reduce((s, b) => s + (b.children || 0), 0);
+          const totalExtraBeds = bookings.reduce((s, b) => s + (b.extraBedsCount || 0), 0);
+
+          // earliest check-in and latest check-out
+          const checkIn = new Date(Math.min(...bookings.map((b) => new Date(b.startDate).getTime()))).toISOString().split('T')[0];
+          const checkOut = new Date(Math.max(...bookings.map((b) => new Date(b.endDate).getTime()))).toISOString().split('T')[0];
+
+          const orderNumber = bookings.map((b) => b.orderId).filter(Boolean).join(', ') || primary.orderId || '';
+
+          console.log("[WEBHOOK] Wysyłam maila potwierdzającego rezerwację do:", primary.guestEmail, orderNumber);
           await sendBookingEmail({
-            to: booking.guestEmail,
+            to: primary.guestEmail,
             subject: "Potwierdzenie rezerwacji w Wilcze Chatki",
             react: BookingConfirmationToClient({
               customerName,
-              orderNumber: booking.orderId ?? '',
-              checkIn: booking.startDate.toISOString().split('T')[0],
-              checkOut: booking.endDate.toISOString().split('T')[0],
-              totalPrice: booking.totalPrice,
+              orderNumber,
+              checkIn,
+              checkOut,
+              totalPrice,
               siteSettings,
-              guestPhone: booking.guestPhone,
-              guestEmail: booking.guestEmail,
-              guestAddress: booking.guestAddress,
-              adults: booking.adults,
-              children: booking.children,
-              extraBeds: booking.extraBedsCount,
-              orderDate: booking.createdAt?.toISOString().split('T')[0],
-              invoiceRequested: Boolean(booking.invoice),
-              companyName: booking.invoiceData?.companyName,
-              nip: booking.invoiceData?.nip,
-              street: booking.invoiceData?.street,
-              city: booking.invoiceData?.city,
-              postalCode: booking.invoiceData?.postalCode,
+              guestPhone: primary.guestPhone,
+              guestEmail: primary.guestEmail,
+              guestAddress: primary.guestAddress,
+              adults: totalAdults,
+              children: totalChildren,
+              extraBeds: totalExtraBeds,
+              orderDate: primary.createdAt?.toISOString().split('T')[0],
+              invoiceRequested: Boolean(primary.invoice),
+              companyName: primary.invoiceData?.companyName,
+              nip: primary.invoiceData?.nip,
+              street: primary.invoiceData?.street,
+              city: primary.invoiceData?.city,
+              postalCode: primary.invoiceData?.postalCode,
+              cabinsCount: bookings.length,
             }),
           });
           console.log("[WEBHOOK] Mail do klienta wysłany");
@@ -157,27 +172,28 @@ export async function POST(request: Request) {
           if (siteSettings.email) {
             await sendBookingEmail({
               to: siteSettings.email,
-              subject: `Nowa rezerwacja: ${customerName} (${booking.orderId})`,
+              subject: `Nowa rezerwacja: ${customerName} (${orderNumber})`,
               react: BookingConfirmationToAdmin({
                 customerName,
-                orderNumber: booking.orderId ?? '',
-                checkIn: booking.startDate.toISOString().split('T')[0],
-                checkOut: booking.endDate.toISOString().split('T')[0],
-                totalPrice: booking.totalPrice,
+                orderNumber,
+                checkIn,
+                checkOut,
+                totalPrice,
                   siteSettings,
-                  guestPhone: booking.guestPhone,
-                  guestEmail: booking.guestEmail,
-                  guestAddress: booking.guestAddress,
-                  adults: booking.adults,
-                  children: booking.children,
-                  extraBeds: booking.extraBedsCount,
-                  orderDate: booking.createdAt?.toISOString().split('T')[0],
-                  invoiceRequested: Boolean(booking.invoice),
-                  companyName: booking.invoiceData?.companyName,
-                  nip: booking.invoiceData?.nip,
-                  street: booking.invoiceData?.street,
-                  city: booking.invoiceData?.city,
-                  postalCode: booking.invoiceData?.postalCode,
+                  guestPhone: primary.guestPhone,
+                  guestEmail: primary.guestEmail,
+                  guestAddress: primary.guestAddress,
+                  adults: totalAdults,
+                  children: totalChildren,
+                  extraBeds: totalExtraBeds,
+                  orderDate: primary.createdAt?.toISOString().split('T')[0],
+                  invoiceRequested: Boolean(primary.invoice),
+                  companyName: primary.invoiceData?.companyName,
+                  nip: primary.invoiceData?.nip,
+                  street: primary.invoiceData?.street,
+                  city: primary.invoiceData?.city,
+                  postalCode: primary.invoiceData?.postalCode,
+                  cabinsCount: bookings.length,
               }),
             });
             console.log("[WEBHOOK] Mail do admina wysłany");

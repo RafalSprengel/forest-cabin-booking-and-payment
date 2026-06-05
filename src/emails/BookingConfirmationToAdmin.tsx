@@ -31,6 +31,7 @@ interface BookingConfirmationToAdminProps {
   street?: string;
   city?: string;
   postalCode?: string;
+  cabinsCount?: number;
 }
 
 export default function BookingConfirmationToAdmin({
@@ -53,6 +54,7 @@ export default function BookingConfirmationToAdmin({
   street,
   city,
   postalCode,
+  cabinsCount,
 }: BookingConfirmationToAdminProps) {
   const mainStyle = {
     backgroundColor: '#f6f9fc',
@@ -146,6 +148,9 @@ export default function BookingConfirmationToAdmin({
             {guestAddress && (
               <Text style={sectionTextStyle}><strong>Adres gościa:</strong> {guestAddress}</Text>
             )}
+            {(typeof cabinsCount !== 'undefined' && cabinsCount > 1) && (
+              <Text style={sectionTextStyle}><strong>Ilość domków:</strong> {cabinsCount}</Text>
+            )}
             {(typeof adults !== 'undefined') && (
               <Text style={sectionTextStyle}><strong>Dorosłych:</strong> {adults}</Text>
             )}
@@ -161,20 +166,19 @@ export default function BookingConfirmationToAdmin({
             <Text style={sectionTextStyle}><strong>Nr zamówienia:</strong> {orderNumber}</Text>
             <Text style={sectionTextStyle}><strong>Zameldowanie:</strong> {checkIn}</Text>
             <Text style={sectionTextStyle}><strong>Wymeldowanie:</strong> {checkOut}</Text>
-            <Hr style={hrStyle} />
-            <Text style={sumStyle}>Kwota: {totalPrice} PLN</Text>
-            <Hr style={hrStyle} />
-            <Text style={sectionTextStyle}><strong>Faktura VAT:</strong> {invoiceRequested ? 'Tak' : 'Nie'}</Text>
-            {invoiceRequested && (
+            {invoiceRequested && (<>
+              <Text style={sectionTextStyle}><strong>Faktura VAT</strong></Text>
               <Section style={{ padding: '10px', backgroundColor: '#fff' }}>
                 {companyName && <Text style={sectionTextStyle}><strong>Nazwa firmy:</strong> {companyName}</Text>}
                 {nip && <Text style={sectionTextStyle}><strong>NIP:</strong> {nip}</Text>}
                 {street && <Text style={sectionTextStyle}><strong>Ulica:</strong> {street}</Text>}
                 {postalCode && <Text style={sectionTextStyle}><strong>Kod pocztowy:</strong> {postalCode}</Text>}
                 {city && <Text style={sectionTextStyle}><strong>Miasto:</strong> {city}</Text>}
-               
               </Section>
-            )}
+            </>)}
+            <Hr style={hrStyle} />
+            <Text style={sumStyle}>Kwota: {totalPrice} PLN</Text>
+            <Hr style={hrStyle} />
           </Section>
 
           <Text style={footerTextStyle}>
