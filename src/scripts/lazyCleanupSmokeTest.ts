@@ -17,6 +17,7 @@ async function main() {
       createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
       source: 'admin',
       adminNotes: '',
+      stripeSessionId: '',
     },
     {
       _id: 'b2',
@@ -25,6 +26,7 @@ async function main() {
       createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
       source: 'online',
       adminNotes: '',
+      stripeSessionId: '',
     },
     {
       _id: 'b3',
@@ -33,6 +35,7 @@ async function main() {
       createdAt: new Date(now - 2 * 60 * 1000).toISOString(),
       source: 'online',
       adminNotes: '',
+      stripeSessionId: '',
     },
     {
       _id: 'b4',
@@ -41,6 +44,7 @@ async function main() {
       createdAt: new Date(now - 2 * 60 * 1000).toISOString(),
       source: 'online',
       adminNotes: '',
+      stripeSessionId: '',
     },
   ];
 

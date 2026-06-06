@@ -84,7 +84,7 @@ export const EmailVerification = ({ url }: EmailVerificationProps) => {
           </Text>
 
           <Section style={{ textAlign: 'center' }}>
-            <Button pX={24} pY={12} style={buttonStyle} href={url}>
+            <Button style={buttonStyle} href={url}>
               Potwierdź nowy adres e-mail
             </Button>
           </Section>

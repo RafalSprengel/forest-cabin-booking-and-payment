@@ -188,6 +188,14 @@
   font-weight: 700;
 }
 
+.paymentsPanelClickableRow {
+  cursor: pointer;
+}
+
+.paymentsPanelClickableRow:hover td {
+  background: #f8fafc;
+}
+
 @media (min-width: 768px) {
   .container {
     max-width: 1100px;

@@ -755,7 +755,7 @@ export async function createBlockedBookingByAdmin(data: BlockCreateInput) {
       paidAmount: 0,
       paymentStatus: 'unpaid',
       status: 'blocked',
-      paymentMethod: 'transfer',
+      paymentMethod: '',
       adminNotes: data.adminNotes?.trim() || 'Blokada terminu',
       source: 'admin',
     }))

@@ -96,7 +96,7 @@ export const PasswordReset = ({
           </Text>
 
           <Section style={{ textAlign: 'center' }}>
-            <Button pX={24} pY={12} style={buttonStyle} href={url}>
+            <Button style={buttonStyle} href={url}>
               Ustaw nowe hasło
             </Button>
           </Section>

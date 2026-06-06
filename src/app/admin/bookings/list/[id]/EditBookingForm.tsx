@@ -253,7 +253,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label>Data Przyjazdu</label>
+          <label>Data przyjazdu</label>
           <input
             name="startDate"
             type="date"
@@ -265,7 +265,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label>Data Wyjazdu</label>
+          <label>Data wyjazdu</label>
           <input
             name="endDate"
             type="date"
@@ -277,7 +277,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label>Cena Całkowita (PLN)</label>
+          <label>Cena całkowita (PLN)</label>
           <input
             name="totalPrice"
             type="number"

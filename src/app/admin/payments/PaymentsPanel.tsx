@@ -29,9 +29,13 @@ function formatStatus(status: string): string {
   return "Oczekujące (pending)";
 }
 
-function formatMethod(method: "online" | "cash" | "transfer"): string {
+function formatMethod(method: "" | "online" | "cash" | "transfer"): string {
   if (method === "cash" || method === "transfer") {
     return "Gotówka / Przelew";
+  }
+
+  if (method === "") {
+    return "Brak";
   }
 
   return "Online";
@@ -258,7 +262,23 @@ export default function PaymentsPanel({
                 const canSync = mode === "online" && row.status === "pending";
 
                 return (
-                  <tr key={row.id}>
+                  <tr
+                    key={row.id}
+                    onClick={(e: React.MouseEvent<HTMLTableRowElement>) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('a,button,[role="button"]')) return;
+                      router.push(`/admin/bookings/list/${row.id}`);
+                    }}
+                    tabIndex={0}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        const target = e.target as HTMLElement;
+                        if (target.closest('a,button,[role="button"]')) return;
+                        router.push(`/admin/bookings/list/${row.id}`);
+                      }
+                    }}
+                    className={styles.paymentsPanelClickableRow}
+                  >
                     {mode === "online" ? (
                       <td>{row.orderId ? row.orderId : "Brak numeru"}</td>
                     ) : null}

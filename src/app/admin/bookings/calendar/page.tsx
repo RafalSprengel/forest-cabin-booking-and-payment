@@ -175,7 +175,7 @@ const BookingTooltip = ({ details }: { details: BookingDetails }) => {
         <span className={`${styles.valueText} ${paymentClass}`}>{paymentLabel}</span>
       </div>
       <div className={styles.tooltipRow}>
-        <span className={styles.label}>💰 Cena:</span>
+        <span className={styles.label}>💰 Cena całkowita:</span>
         <span className={`${styles.valueText} ${styles.priceValue}`}>{details.totalPrice.toFixed(2)} PLN</span>
       </div>
       <div className={styles.tooltipSection}>

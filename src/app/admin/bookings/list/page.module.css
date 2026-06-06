@@ -72,6 +72,19 @@
   margin: 0 auto;
 }
 
+.bookingHeaderButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
 .bookingHeader {
   display: flex;
   justify-content: space-between;
@@ -81,11 +94,56 @@
   border-bottom: 1px dashed #e2e8f0;
 }
 
+.accordionIcon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  transition: background-color 180ms ease;
+}
+
+.accordionIcon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  transition: transform 180ms ease;
+}
+
+.iconExpanded {
+  transform: rotate(180deg);
+}
+
+/* Accordion panel: animate using max-height and opacity for smooth expand/collapse */
+.bookingPanel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 300ms ease, opacity 200ms ease;
+}
+
+.bookingPanelOpen {
+  max-height: 1200px; /* sufficiently large to fit content */
+  opacity: 1;
+}
+
+.bookingPanelClosed {
+  max-height: 0;
+  opacity: 0;
+}
+
+
 .dateLabel {
   color: #64748b;
   font-weight: 600;
 }
 
+.adminBubble{
+margin-top: 10px;
+font-size: 1rem;;
+}
 .dateValue {
   color: #1e293b;
   font-weight: 700;
@@ -118,7 +176,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 12px 0;
+  padding: 6px 0;
+  margin: 10px 0;
   border-top: 1px dashed #e2e8f0;
   border-bottom: 1px dashed #e2e8f0;
 }

@@ -5,7 +5,7 @@ export async function generateOrderId(): Promise<string> {
   await dbConnect();
 
   const updated = await SystemConfig.collection.findOneAndUpdate(
-    { _id: 'main' },
+    ({ _id: 'main' } as any),
     {
       $inc: { lastOrderNumber: 1 },
       $setOnInsert: {
