@@ -92,7 +92,7 @@ export async function getAdminPaymentsData(): Promise<AdminPaymentsData> {
       paymentMethod: { $in: ['cash', 'transfer'] },
       status: { $in: ['pending', 'confirmed', 'failed'] },
     })
-      .select('createdAt firstName lastName totalPrice paymentMethod status')
+      .select('orderId createdAt firstName lastName totalPrice paymentMethod status')
       .sort({ createdAt: -1 })
       .lean(),
   ])

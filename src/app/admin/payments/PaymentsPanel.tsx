@@ -114,8 +114,8 @@ export default function PaymentsPanel({
     const rowsByMode =
       mode === "online"
         ? rows.filter((row) =>
-            statusFilter === "all" ? true : row.status === statusFilter,
-          )
+          statusFilter === "all" ? true : row.status === statusFilter,
+        )
         : rows;
 
     const normalizedQuery = debouncedSearch.trim().toLowerCase();
@@ -237,7 +237,7 @@ export default function PaymentsPanel({
         <table className={styles.paymentsPanelTable}>
           <thead>
             <tr>
-              {mode === "online" ? <th>Zamówienie nr</th> : null}
+              <th>Numer zamówienia</th>
               <th>Data płatności</th>
               <th>Klient</th>
               <th>Kwota</th>
@@ -249,8 +249,8 @@ export default function PaymentsPanel({
           <tbody>
             {filteredRows.length === 0 ? (
               <tr>
-                  <td
-                  colSpan={mode === "online" ? 7 : 4}
+                <td
+                  colSpan={mode === "online" ? 7 : 5}
                   className={styles.paymentsPanelEmptyRow}
                 >
                   Brak płatności dla wybranego filtra.
@@ -279,9 +279,7 @@ export default function PaymentsPanel({
                     }}
                     className={styles.paymentsPanelClickableRow}
                   >
-                    {mode === "online" ? (
-                      <td>{row.orderId ? row.orderId : "Brak numeru"}</td>
-                    ) : null}
+                    <td>{row.orderId ? row.orderId : "Brak numeru"}</td>
                     <td>{createdAt.toLocaleString("pl-PL")}</td>
                     <td>{`${row.firstName || ''} ${row.lastName || ''}`.trim()}</td>
                     <td>{row.totalPrice.toFixed(2)} zł</td>
