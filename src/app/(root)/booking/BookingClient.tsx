@@ -341,8 +341,7 @@ export default function BookingClient({
     ? searchResults.overlappingSeasons
     : [];
   const hasSeasonOverlap = overlappingSeasons.length > 0;
-  console.log("searchResults pokazuje:");
-  console.log(searchResults);
+  // debug logs removed: avoid logging potentially large searchResults object
   return (
     <div className={styles.container}>
       {hasDraft && (

@@ -67,9 +67,7 @@ async function main() {
     throw new Error('Expected didMutateBookings=false for fresh pending bookings.');
   }
 
-  console.log('lazyCleanupSmokeTest: OK');
-  console.log(`occupied: ${actual.join(', ')}`);
-  console.log(`didMutateBookings: ${didMutateBookings}`);
+  // smoke test succeeded
 }
 
 main().catch((error) => {

@@ -24,6 +24,7 @@ interface BookingEmailProps {
   guestPhone?: string;
   guestEmail?: string;
   guestAddress?: string;
+  propertyName?: string;
   adults?: number;
   children?: number;
   extraBeds?: number;
@@ -48,6 +49,7 @@ export const BookingConfirmation = ({
   guestPhone,
   guestEmail,
   guestAddress,
+  propertyName,
   adults,
   children,
   extraBeds,
@@ -148,6 +150,7 @@ export const BookingConfirmation = ({
             {guestPhone && <Text style={sectionTextStyle}><strong>Telefon:</strong> {guestPhone}</Text>}
             {guestEmail && <Text style={sectionTextStyle}><strong>E-mail:</strong> {guestEmail}</Text>}
             {guestAddress && <Text style={sectionTextStyle}><strong>Adres:</strong> {guestAddress}</Text>}
+            {propertyName && <Text style={sectionTextStyle}><strong>Obiekt:</strong> {propertyName}</Text>}
             {(typeof cabinsCount !== 'undefined' && cabinsCount > 1) && <Text style={sectionTextStyle}><strong>Ilość domków:</strong> {cabinsCount}</Text>}
             {(typeof adults !== 'undefined') && <Text style={sectionTextStyle}><strong>Dorosłych:</strong> {adults}</Text>}
             {(typeof children !== 'undefined') && <Text style={sectionTextStyle}><strong>Dzieci (bezpłatnie):</strong> {children}</Text>}

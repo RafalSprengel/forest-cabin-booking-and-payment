@@ -45,7 +45,7 @@ export default function DeleteConfirmButton({
         onClick={openConfirm}
         disabled={isDeleting}
       >
-        {isDeleting ? "⏳ Usuwanie..." : "🗑️ Usuń Rezerwację"}
+        {isDeleting ? "⏳ Usuwanie..." : "🗑️ Usuń rezerwację"}
       </Button>
       <Modal
         isOpen={showConfirm}

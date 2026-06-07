@@ -19,6 +19,7 @@ interface FormData {
   status: string;
   startDate: string;
   endDate: string;
+  internalNotes: string;
 }
 
 export default function EditBookingForm({ initialData }: { initialData: any }) {
@@ -45,6 +46,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
     status: initialData.status ?? "pending",
     startDate: formatDate(initialData.startDate),
     endDate: formatDate(initialData.endDate),
+    internalNotes: (initialData.adminNotes as string) ?? (initialData.internalNotes as string) ?? '',
   };
 
   const orderId =
@@ -58,7 +60,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     if (
@@ -126,7 +128,16 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
     formData.append("status", form.status);
     formData.append("startDate", form.startDate);
     formData.append("endDate", form.endDate);
-    formData.append("internalNotes", initialData.internalNotes ?? "");
+    formData.append("internalNotes", form.internalNotes ?? "");
+    // Preserve invoice data if present so saving other fields doesn't clear it
+    formData.append("invoice", initialData.invoice ? "true" : "false");
+    if (initialData.invoiceData) {
+      formData.append("invoiceCompany", initialData.invoiceData.companyName || "");
+      formData.append("invoiceNip", initialData.invoiceData.nip || "");
+      formData.append("invoiceStreet", initialData.invoiceData.street || "");
+      formData.append("invoicePostalCode", initialData.invoiceData.postalCode || "");
+      formData.append("invoiceCity", initialData.invoiceData.city || "");
+    }
 
     const result = await updateBookingAction(null, formData);
 
@@ -134,6 +145,7 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
       toast.success("Zapisano zmiany pomyślnie!");
       setOriginalData({ ...form });
       setIsSaved(true);
+      setIsEditing(false);
       router.refresh();
     } else {
       toast.error(result.message || "Wystąpił błąd.");
@@ -316,6 +328,17 @@ export default function EditBookingForm({ initialData }: { initialData: any }) {
             <option value="cancelled">Anulowana</option>
             <option value="failed" disabled>Odrzucona (failed)</option>
           </select>
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Uwagi wewnętrzne</label>
+          <textarea
+            name="internalNotes"
+            rows={3}
+            value={form.internalNotes}
+            onChange={handleChange}
+            disabled={!isEditing}
+            className={!isEditing ? styles.readOnly : ""}
+          />
         </div>
       </div>
 

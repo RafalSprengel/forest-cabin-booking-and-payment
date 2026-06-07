@@ -20,6 +20,7 @@ interface Booking {
   adults?: number;
   children?: number;
   extraBedsCount?: number;
+  adminNotes?: string;
   totalPrice?: number;
   invoice?: boolean;
   paymentMethod?: string;
@@ -105,6 +106,10 @@ export default function BookingAccordionList({ bookings, isPast }: BookingAccord
                 <div className={styles.detailRow}>
                   <span className={styles.label}>Dostawki:</span>
                   <span className={styles.value}>{booking.extraBedsCount}</span>
+                </div>
+                <div className={styles.detailRow}>
+                  <span className={styles.label}>Uwagi wewnętrzne:</span>
+                  <span className={styles.value}>{booking.adminNotes ? booking.adminNotes : '-'}</span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.label}>Cena:</span>

@@ -4,6 +4,12 @@ import type Stripe from "stripe";
 import dbConnect from "@/db/connection";
 import Booking from "@/db/models/Booking";
 import BookingConfirmationToClient from "@/emails/BookingConfirmationToClient";
+import { Types } from "mongoose";
+import { NextResponse } from "next/server";
+import type Stripe from "stripe";
+import dbConnect from "@/db/connection";
+import Booking from "@/db/models/Booking";
+import BookingConfirmationToClient from "@/emails/BookingConfirmationToClient";
 import BookingConfirmationToAdmin from "@/emails/BookingConfirmationToAdmin";
 import BookingFailure from "@/emails/BookingFailure";
 import { sendBookingEmail } from "@/lib/sendEmail";
@@ -39,30 +45,25 @@ async function getBookingObjectIdsFromSession(session: Stripe.Checkout.Session) 
 
 
 export async function POST(request: Request) {
-  console.log("[WEBHOOK] Otrzymano webhook Stripe");
+  // webhook received
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    console.log("[WEBHOOK] Brak nagłówka stripe-signature");
     return NextResponse.json({ error: "Brak naglowka stripe-signature." }, { status: 400 });
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.log("[WEBHOOK] Brak STRIPE_WEBHOOK_SECRET");
     return NextResponse.json({ error: "Brak STRIPE_WEBHOOK_SECRET." }, { status: 500 });
   }
 
   const payload = await request.text();
-  console.log("[WEBHOOK] Payload:", payload.slice(0, 200));
-  console.log("[WEBHOOK] Signature:", signature);
 
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-    console.log("[WEBHOOK] Event type:", event.type);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nieznany blad weryfikacji webhooka.";
     console.error("[WEBHOOK] Błąd weryfikacji webhooka:", message);
@@ -76,19 +77,17 @@ export async function POST(request: Request) {
   ] as const;
 
   if (!handledEvents.includes(event.type as (typeof handledEvents)[number])) {
-    console.log("[WEBHOOK] Nieobsługiwany typ eventu:", event.type);
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
-  console.log("[WEBHOOK] Session id:", session.id);
+  // session id available in `session.id` if needed for debugging
 
   try {
     await dbConnect();
-    console.log("[WEBHOOK] Połączono z bazą danych");
+    // connected to DB
 
     const objectIds = await getBookingObjectIdsFromSession(session);
-    console.log("[WEBHOOK] Booking objectIds:", objectIds);
 
     if (event.type === "checkout.session.completed") {
       const updateResult = await Booking.updateMany(
@@ -108,18 +107,16 @@ export async function POST(request: Request) {
         ],
         { updatePipeline: true }
       );
-      console.log("[WEBHOOK] Wynik updateMany (confirmed):", updateResult);
+      // updateResult contains details of the update operation
 
       if (updateResult.matchedCount !== objectIds.length) {
-        console.log("[WEBHOOK] Nie znaleziono wszystkich rezerwacji do potwierdzenia platnosci");
         return NextResponse.json(
           { error: "Nie znaleziono wszystkich rezerwacji do potwierdzenia platnosci." },
           { status: 404 }
         );
       }
 
-      const bookings = await Booking.find({ _id: { $in: objectIds } });
-      console.log("[WEBHOOK] Bookings do maila (confirmed):", bookings);
+      const bookings = await Booking.find({ _id: { $in: objectIds } }).populate('propertyId', 'name');
 
       if (bookings && bookings.length > 0) {
         try {
@@ -139,7 +136,10 @@ export async function POST(request: Request) {
 
           const orderNumber = primary.orderId || '';
 
-          console.log("[WEBHOOK] Wysyłam maila potwierdzającego rezerwację do:", primary.guestEmail, orderNumber);
+          // collect property names (may be multiple bookings / cabins)
+          const propertyNames = bookings.map((b: any) => (b.propertyId && b.propertyId.name) || '').filter(Boolean);
+          const propertyName = propertyNames.join(', ');
+
           await sendBookingEmail({
             to: primary.guestEmail,
             subject: "Potwierdzenie rezerwacji w Wilcze Chatki",
@@ -154,6 +154,7 @@ export async function POST(request: Request) {
               guestPhone: primary.guestPhone,
               guestEmail: primary.guestEmail,
               guestAddress: primary.guestAddress,
+              propertyName,
               adults: totalAdults,
               children: totalChildren,
               extraBeds: totalExtraBeds,
@@ -167,10 +168,8 @@ export async function POST(request: Request) {
               cabinsCount: bookings.length,
             }),
           });
-          console.log("[WEBHOOK] Mail do klienta wysłany");
 
           const adminNotifEmail = siteSettings.bookingNotificationsEmail || siteSettings.email;
-          console.log("[WEBHOOK] Wysyłam maila o nowej rezerwacji do admina:", adminNotifEmail);
           if (adminNotifEmail) {
             await sendBookingEmail({
               to: adminNotifEmail,
@@ -186,6 +185,7 @@ export async function POST(request: Request) {
                 guestPhone: primary.guestPhone,
                 guestEmail: primary.guestEmail,
                 guestAddress: primary.guestAddress,
+                propertyName,
                 adults: totalAdults,
                 children: totalChildren,
                 extraBeds: totalExtraBeds,
@@ -200,7 +200,6 @@ export async function POST(request: Request) {
                 adminNotes: primary.adminNotes,
               }),
             });
-            console.log("[WEBHOOK] Mail do admina wysłany");
           } else {
             console.warn("[WEBHOOK] Brak adresu email admina – mail do admina nie został wysłany.");
           }
@@ -225,10 +224,9 @@ export async function POST(request: Request) {
         },
       }
     );
-    console.log("[WEBHOOK] Wynik updateMany (failed):", cancelResult);
+    // cancelResult contains details of the update operation
 
     if (cancelResult.matchedCount !== objectIds.length) {
-      console.log("[WEBHOOK] Nie znaleziono wszystkich rezerwacji do oznaczenia jako nieudane po nieudanej platnosci");
       return NextResponse.json(
         { error: "Nie znaleziono wszystkich rezerwacji do oznaczenia jako nieudane po nieudanej platnosci." },
         { status: 404 }
@@ -236,11 +234,9 @@ export async function POST(request: Request) {
     }
 
     const failedBooking = await Booking.findOne({ _id: objectIds[0] });
-    console.log("[WEBHOOK] Booking do maila (failed):", failedBooking);
 
     if (failedBooking) {
       try {
-        console.log("[WEBHOOK] Wysyłam maila o nieudanej płatności do:", failedBooking.guestEmail, failedBooking.orderId);
         const siteSettings = await getSiteSettings();
         await sendBookingEmail({
           to: failedBooking.guestEmail,
@@ -253,7 +249,6 @@ export async function POST(request: Request) {
             siteSettings,
           }),
         });
-        console.log("[WEBHOOK] Mail o nieudanej płatności wysłany");
       } catch (mailError) {
         console.error("Błąd wysyłki maila o nieudanej płatności:", mailError);
       }

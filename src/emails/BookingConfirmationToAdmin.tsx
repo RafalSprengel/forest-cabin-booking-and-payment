@@ -23,6 +23,7 @@ interface BookingConfirmationToAdminProps {
   guestEmail?: string;
   guestAddress?: string;
   adults?: number;
+  propertyName?: string;
   children?: number;
   extraBeds?: number;
   orderDate?: string;
@@ -47,6 +48,7 @@ export default function BookingConfirmationToAdmin({
   guestPhone,
   guestEmail,
   guestAddress,
+  propertyName,
   adults,
   children,
   extraBeds,
@@ -152,6 +154,9 @@ export default function BookingConfirmationToAdmin({
             {guestAddress && (
               <Text style={sectionTextStyle}><strong>Adres gościa:</strong> {guestAddress}</Text>
             )}
+            {propertyName && (
+              <Text style={sectionTextStyle}><strong>Obiekt:</strong> {propertyName}</Text>
+            )}
             {(typeof cabinsCount !== 'undefined' && cabinsCount > 1) && (
               <Text style={sectionTextStyle}><strong>Ilość domków:</strong> {cabinsCount}</Text>
             )}
@@ -172,10 +177,11 @@ export default function BookingConfirmationToAdmin({
             <Text style={sectionTextStyle}><strong>Zameldowanie:</strong> {checkIn}</Text>
             <Text style={sectionTextStyle}><strong>Wymeldowanie:</strong> {checkOut}</Text>
             {adminNotes && (
-                <Text style={sectionTextStyle}><strong>Uwagi wewnętrzne:</strong> {adminNotes}</Text>
+              <Text style={sectionTextStyle}><strong>Uwagi wewnętrzne:</strong> {adminNotes}</Text>
             )}
+
+            <Text style={sectionTextStyle}><strong>Faktura VAT:</strong>{!invoiceRequested && ' Nie'}</Text>
             {invoiceRequested && (<>
-              <Text style={sectionTextStyle}><strong>Faktura VAT:</strong></Text>
               <Section style={{ padding: '10px', backgroundColor: '#fff' }}>
                 {companyName && <Text style={sectionTextStyle}><strong>Nazwa firmy:</strong> {companyName}</Text>}
                 {nip && <Text style={sectionTextStyle}><strong>NIP:</strong> {nip}</Text>}
@@ -184,7 +190,7 @@ export default function BookingConfirmationToAdmin({
                 {city && <Text style={sectionTextStyle}><strong>Miasto:</strong> {city}</Text>}
               </Section>
             </>)}
-             
+
             <Hr style={hrStyle} />
             {typeof paidAmount === 'number' && paidAmount !== totalPrice ? (
               <>

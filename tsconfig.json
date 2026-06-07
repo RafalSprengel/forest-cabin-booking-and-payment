@@ -6,7 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -32,7 +32,7 @@
       "@actions/*": [
         "./src/actions/*"
       ],
-      "@hooks/*":[
+      "@hooks/*": [
         "./src/hooks/*"
       ]
     }
@@ -42,9 +42,13 @@
     "**/*.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "**/*.mts"
+    "**/*.mts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/**/*.js",
+    "src/**/*.js.map"
   ]
 }

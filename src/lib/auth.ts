@@ -55,15 +55,13 @@ function createAuth(db: Db) {
         ],
 
         emailVerification: {
-            sendVerificationEmail: async ({ user, url }) => {
-                console.log('[auth] sendVerificationEmail called, to:', user.email, 'url:', url);
+                sendVerificationEmail: async ({ user, url }) => {
                 try {
                     await sendEmail({
                         to: user.email,
                         subject: "Potwierdź nowy adres e-mail - Wilcze Chatki",
                         react: EmailVerification({ url })
                     });
-                    console.log('[auth] sendVerificationEmail: email sent OK');
                 } catch (err) {
                     console.error('[auth] sendVerificationEmail: błąd wysyłki:', err);
                 }

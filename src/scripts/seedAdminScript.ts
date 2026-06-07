@@ -47,7 +47,6 @@ async function main() {
     $or: [{ email: { $in: emails } }, { username: { $in: usernames } }],
   });
   await db.collection('account').deleteMany({});
-  console.log(`Usunięto ${deleted.deletedCount} starych rekordów.`);
 
   for (const admin of admins) {
     await auth.api.signUpEmail({
@@ -66,11 +65,10 @@ async function main() {
       }
     );
 
-    console.log(`✓ Utworzono admina: ${admin.username} (${admin.email})`);
+    // admin created
   }
 
   await mongoose.disconnect();
-  console.log('Gotowe.');
 }
 
 main().catch((err) => {

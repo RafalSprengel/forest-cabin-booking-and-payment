@@ -220,13 +220,15 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
     const adults = Number(rawData.adults)
     const children = Number(rawData.children)
     const extraBedsCount = Number(rawData.extraBedsCount)
-    const invoiceData = rawData.invoice === 'true' ? {
-      companyName: rawData.invoiceCompany,
-      nip: rawData.invoiceNip,
-      street: rawData.invoiceStreet,
-      city: rawData.invoiceCity,
-      postalCode: rawData.invoicePostalCode,
-    } : undefined
+    const invoiceData = rawData.invoice === 'true'
+      ? {
+          companyName: rawData.invoiceCompany,
+          nip: rawData.invoiceNip,
+          street: rawData.invoiceStreet,
+          city: rawData.invoiceCity,
+          postalCode: rawData.invoicePostalCode,
+        }
+      : undefined
     const totalPrice = Number(rawData.totalPrice)
     const paidAmount = Number(rawData.paidAmount)
     const paymentStatus = calculatePaymentStatus(totalPrice, paidAmount)
@@ -307,7 +309,7 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
       const customerName = `${newBooking.firstName || ''} ${newBooking.lastName || ''}`.trim()
 
       // Only send confirmation emails if enabled in site settings
-      if (siteSettings.sendBookingConfirmationEmails !== false) {
+        if (siteSettings.sendBookingConfirmationEmails !== false) {
         await sendBookingEmail({
           to: newBooking.guestEmail,
           subject: 'Potwierdzenie rezerwacji w Wilcze Chatki',
@@ -322,6 +324,7 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
             guestPhone: newBooking.guestPhone,
             guestEmail: newBooking.guestEmail,
             guestAddress: newBooking.guestAddress,
+              propertyName: property?.name || '',
             adults: newBooking.adults,
             children: newBooking.children,
             extraBeds: newBooking.extraBedsCount,
@@ -338,7 +341,7 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
 
         const adminEmail = siteSettings.bookingNotificationsEmail || siteSettings.email
 
-        if (adminEmail) {
+          if (adminEmail) {
           await sendBookingEmail({
             to: adminEmail,
             subject: `Nowa rezerwacja: ${customerName} (${newBooking.orderId})`,
@@ -353,6 +356,7 @@ export async function createBookingByAdmin(prevState: any, formData: FormData) {
               guestPhone: newBooking.guestPhone,
               guestEmail: newBooking.guestEmail,
               guestAddress: newBooking.guestAddress,
+                propertyName: property?.name || '',
               adults: newBooking.adults,
               children: newBooking.children,
               extraBeds: newBooking.extraBedsCount,
@@ -387,6 +391,11 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
   await dbConnect()
   const rawData = Object.fromEntries(formData.entries())
   const bookingId = rawData.bookingId as string
+
+  if (!Types.ObjectId.isValid(bookingId)) {
+    return { message: 'Nieprawidłowe ID rezerwacji.', success: false }
+  }
+
   const validationErrors = validateBookingData(rawData)
   if (validationErrors.length > 0) {
     return { message: validationErrors.join(', '), success: false }
@@ -395,13 +404,19 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
     const adults = Number(rawData.adults)
     const children = Number(rawData.children)
     const extraBedsCount = Number(rawData.extraBedsCount)
-    const invoiceData = rawData.invoice === 'true' ? {
-      companyName: rawData.invoiceCompany,
-      nip: rawData.invoiceNip,
-      street: rawData.invoiceStreet,
-      city: rawData.invoiceCity,
-      postalCode: rawData.invoicePostalCode,
-    } : undefined
+    const prevBooking = await Booking.findById(bookingId).lean()
+    if (!prevBooking) {
+      return { message: 'Nie znaleziono rezerwacji do zaktualizowania.', success: false }
+    }
+    const invoiceData = rawData.invoice === 'true'
+      ? {
+          companyName: rawData.invoiceCompany || prevBooking?.invoiceData?.companyName,
+          nip: rawData.invoiceNip || prevBooking?.invoiceData?.nip,
+          street: rawData.invoiceStreet || prevBooking?.invoiceData?.street,
+          city: rawData.invoiceCity || prevBooking?.invoiceData?.city,
+          postalCode: rawData.invoicePostalCode || prevBooking?.invoiceData?.postalCode,
+        }
+      : prevBooking?.invoiceData
     const totalPrice = Number(rawData.totalPrice)
     const paidAmount = Number(rawData.paidAmount)
     const paymentStatus = calculatePaymentStatus(totalPrice, paidAmount)
@@ -415,6 +430,26 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       return { message: 'Nieprawidłowy identyfikator obiektu.', success: false }
     }
 
+    const property = await Property.findOne({ _id: propertyId, isActive: true })
+      .select('maxAdults maxChildren maxExtraBeds name')
+      .lean()
+
+    if (!property) {
+      return { message: 'Wybrany obiekt nie istnieje lub jest nieaktywny.', success: false }
+    }
+
+    if (adults > property.maxAdults) {
+      return { message: `Liczba dorosłych (${adults}) przekracza pojemność obiektu "${property.name}" (max ${property.maxAdults}).`, success: false }
+    }
+
+    if (children > property.maxChildren) {
+      return { message: `Liczba dzieci (${children}) przekracza pojemność obiektu "${property.name}" (max ${property.maxChildren}).`, success: false }
+    }
+
+    if (extraBedsCount > property.maxExtraBeds) {
+      return { message: `Liczba dostawek (${extraBedsCount}) przekracza pojemność obiektu "${property.name}" (max ${property.maxExtraBeds}).`, success: false }
+    }
+
    // Prevent manual setting of statuses that are managed automatically
     const forbiddenStatuses = ['blocked', 'pending', 'failed']
     if (forbiddenStatuses.includes(status)) {
@@ -424,7 +459,7 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       }
     }
 
-    if (status === 'confirmed' || status === 'blocked') {
+    if (status === 'confirmed') {
       const overlapFilter = buildBookingOverlapFilter(startDate, endDate, allowCheckinOnDepartureDay)
 
       const overlappingBookings = await Booking.find({
@@ -465,17 +500,42 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
       invoiceData,
       adminNotes: rawData.internalNotes,
     }
+    // previous booking was loaded earlier to allow merging invoice data
+
+    // Determine whether any meaningful fields (other than adminNotes) changed by
+    // comparing the incoming form values with the DB record before update.
+    const sendClientEmail =
+      String(prevBooking.propertyId) !== propertyId ||
+      new Date(prevBooking.startDate).toISOString() !== startDate.toISOString() ||
+      new Date(prevBooking.endDate).toISOString() !== endDate.toISOString() ||
+      (prevBooking.firstName || '') !== (rawData.firstName || '') ||
+      (prevBooking.lastName || '') !== (rawData.lastName || '') ||
+      prevBooking.guestEmail !== rawData.guestEmail ||
+      prevBooking.guestPhone !== rawData.guestPhone ||
+      prevBooking.adults !== adults ||
+      prevBooking.children !== children ||
+      prevBooking.extraBedsCount !== extraBedsCount ||
+      Number(prevBooking.totalPrice) !== totalPrice ||
+      Number(prevBooking.paidAmount) !== paidAmount ||
+      prevBooking.paymentStatus !== paymentStatus ||
+      prevBooking.status !== status ||
+      Boolean(prevBooking.invoice) !== (rawData.invoice === 'true') ||
+      JSON.stringify(prevBooking.invoiceData || {}) !== JSON.stringify(invoiceData || {})
+
     const updatedBooking = await Booking.findByIdAndUpdate(bookingId, bookingData, { new: true })
     if (!updatedBooking) {
       return { message: 'Nie znaleziono rezerwacji do zaktualizowania.', success: false }
     }
+
     // Send notification emails after update (non-blocking)
     try {
       const siteSettings = await getSiteSettings()
       const customerName = `${updatedBooking.firstName || ''} ${updatedBooking.lastName || ''}`.trim()
-
       if (siteSettings.sendBookingConfirmationEmails !== false) {
-        if (updatedBooking.guestEmail) {
+
+        if (sendClientEmail && updatedBooking.guestEmail) {
+          const propertyDoc = await Property.findById(updatedBooking.propertyId).select('name').lean();
+          const propertyName = propertyDoc?.name || '';
           await sendBookingEmail({
             to: updatedBooking.guestEmail,
             subject: 'Aktualizacja rezerwacji w Wilcze Chatki',
@@ -490,6 +550,7 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
               guestPhone: updatedBooking.guestPhone,
               guestEmail: updatedBooking.guestEmail,
               guestAddress: updatedBooking.guestAddress,
+              propertyName,
               adults: updatedBooking.adults,
               children: updatedBooking.children,
               extraBeds: updatedBooking.extraBedsCount,
@@ -503,11 +564,19 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
               cabinsCount: 1,
             }),
           })
+        } else {
+          // Suppress client email when only adminNotes changed
         }
 
         const adminEmail = siteSettings.bookingNotificationsEmail || siteSettings.email
 
-        if (adminEmail) {
+        if (!sendClientEmail) {
+          // only adminNotes changed; no client/admin emails sent
+        }
+
+        if (adminEmail && sendClientEmail) {
+          const propertyDoc = await Property.findById(updatedBooking.propertyId).select('name').lean();
+          const propertyName = propertyDoc?.name || '';
           await sendBookingEmail({
             to: adminEmail,
             subject: `Zaktualizowana rezerwacja: ${customerName} (${updatedBooking.orderId})`,
@@ -522,6 +591,7 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
               guestPhone: updatedBooking.guestPhone,
               guestEmail: updatedBooking.guestEmail,
               guestAddress: updatedBooking.guestAddress,
+              propertyName,
               adults: updatedBooking.adults,
               children: updatedBooking.children,
               extraBeds: updatedBooking.extraBedsCount,
@@ -554,6 +624,11 @@ export async function updateBookingAction(prevState: any, formData: FormData) {
 
 export async function deleteBookingAction(bookingId: string) {
   await dbConnect()
+
+  if (!Types.ObjectId.isValid(bookingId)) {
+    return { message: 'Nieprawidłowe ID rezerwacji.', success: false }
+  }
+
   try {
     const result = await Booking.findByIdAndDelete(bookingId)
     if (!result) {

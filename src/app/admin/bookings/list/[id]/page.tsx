@@ -17,7 +17,6 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
       : '-';
 
   const propertyName = booking.propertyName || '-';
-console.log(booking);
   return (
     <AdminShell title="Szczegóły rezerwacji">
       <div className={styles.grid}>
