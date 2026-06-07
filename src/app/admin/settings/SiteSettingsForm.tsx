@@ -46,7 +46,7 @@ export default function SiteSettingsForm() {
     const newErrors: Record<string, string> = {}
 
     if (settings.phone.trim() && !/^\+\d{7,15}$/.test(settings.phone.trim())) {
-      newErrors.phone = 'Numer w formacie +48512315515 (bez spacji).'
+      newErrors.phone = 'Numer w formacie +48512345678 (bez spacji).'
     }
 
     if (settings.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email.trim())) {
@@ -118,7 +118,7 @@ export default function SiteSettingsForm() {
             {/* phoneDisplay removed from form - only phone is editable */}
 
             <div className={styles.siteSettings__inputGroup}>
-              <label htmlFor="site-phone-href">Numer telefonu do połączeń</label>
+              <label htmlFor="site-phone-href">Numer telefonu:</label>
               <input
                 id="site-phone"
                 type="text"
