@@ -44,8 +44,7 @@ export const BookingConfirmation = ({
   checkOut,
   totalPrice,
   paidAmount,
-  siteSettings
-  ,
+  siteSettings,
   guestPhone,
   guestEmail,
   guestAddress,

@@ -137,7 +137,7 @@ export async function POST(request: Request) {
           const checkIn = new Date(Math.min(...bookings.map((b) => new Date(b.startDate).getTime()))).toISOString().split('T')[0];
           const checkOut = new Date(Math.max(...bookings.map((b) => new Date(b.endDate).getTime()))).toISOString().split('T')[0];
 
-          const orderNumber = bookings.map((b) => b.orderId).filter(Boolean).join(', ') || primary.orderId || '';
+          const orderNumber = primary.orderId || '';
 
           console.log("[WEBHOOK] Wysyłam maila potwierdzającego rezerwację do:", primary.guestEmail, orderNumber);
           await sendBookingEmail({
