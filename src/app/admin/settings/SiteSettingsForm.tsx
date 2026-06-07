@@ -9,15 +9,13 @@ import AdminSection from '@/app/_components/UI/AdminSection/AdminSection'
 export default function SiteSettingsForm() {
   const [isEditing, setIsEditing] = useState(false)
   const [settings, setSettings] = useState({
-    phoneDisplay: '',
-    phoneHref: '',
+    phone: '',
     email: '',
     facebookUrl: '',
     bankAccountNumber: ''
   })
   const [initialSettings, setInitialSettings] = useState({
-    phoneDisplay: '',
-    phoneHref: '',
+    phone: '',
     email: '',
     facebookUrl: '',
     bankAccountNumber: ''
@@ -30,8 +28,7 @@ export default function SiteSettingsForm() {
     async function loadSettings() {
       const data = await getSiteSettings()
       const formattedData = {
-        phoneDisplay: data?.phoneDisplay ?? '',
-        phoneHref: data?.phoneHref ?? '',
+        phone: data?.phone ?? '',
         email: data?.email ?? '',
         facebookUrl: data?.facebookUrl ?? '',
         bankAccountNumber: data?.bankAccountNumber ?? ''
@@ -48,8 +45,8 @@ export default function SiteSettingsForm() {
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
-    if (settings.phoneHref.trim() && !/^\+\d{7,15}$/.test(settings.phoneHref.trim())) {
-      newErrors.phoneHref = 'Format: +XXXXXXXXXXX (cyfry po +, bez spacji i myślników).'
+    if (settings.phone.trim() && !/^\+\d{7,15}$/.test(settings.phone.trim())) {
+      newErrors.phone = 'Numer w formacie +48512315515 (bez spacji).'
     }
 
     if (settings.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email.trim())) {
@@ -66,9 +63,11 @@ export default function SiteSettingsForm() {
     setIsSaving(true)
 
     try {
-      const result = await updateSiteSettings(settings)
+      const payload = { ...settings }
+      const result = await updateSiteSettings(payload)
       if (result.success) {
         toast.success(result.message)
+        // keep state shape (settings uses `phone`)
         setInitialSettings(settings)
         setIsEditing(false)
       } else {
@@ -116,31 +115,24 @@ export default function SiteSettingsForm() {
           </div>
         ) : (
           <>
-            <div className={styles.siteSettings__inputGroup}>
-              <label htmlFor="site-phone-display">Telefon:</label>
-              <input
-                id="site-phone-display"
-                type="text"
-                className={styles.siteSettings__input}
-                value={settings.phoneDisplay}
-                onChange={(e) => setSettings({ ...settings, phoneDisplay: e.target.value })}
-                disabled={!isEditing}
-                placeholder="+48 000 000 000"
-              />
-            </div>
+            {/* phoneDisplay removed from form - only phone is editable */}
 
             <div className={styles.siteSettings__inputGroup}>
-              <label htmlFor="site-phone-href">Telefon w formacie: +XXXXXXXXXXX, bez spacji i myślników, np. +48123456789:</label>
+              <label htmlFor="site-phone-href">Numer telefonu do połączeń</label>
               <input
-                id="site-phone-href"
+                id="site-phone"
                 type="text"
-                className={`${styles.siteSettings__input}${errors.phoneHref ? ` ${styles['siteSettings__input--error']}` : ''}`}
-                value={settings.phoneHref}
-                onChange={(e) => { setSettings({ ...settings, phoneHref: e.target.value }); if (errors.phoneHref) setErrors({ ...errors, phoneHref: '' }) }}
+                className={`${styles.siteSettings__input}${errors.phone ? ` ${styles['siteSettings__input--error']}` : ''}`}
+                value={settings.phone}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\s/g, '')
+                  setSettings({ ...settings, phone: v })
+                  if (errors.phone) setErrors({ ...errors, phone: '' })
+                }}
                 disabled={!isEditing}
-                placeholder="+48000000000"
+                placeholder="+48512315515"
               />
-              {errors.phoneHref && <span className={styles.siteSettings__fieldError}>{errors.phoneHref}</span>}
+              {errors.phone && <span className={styles.siteSettings__fieldError}>{errors.phone}</span>}
             </div>
 
             <div className={styles.siteSettings__inputGroup}>

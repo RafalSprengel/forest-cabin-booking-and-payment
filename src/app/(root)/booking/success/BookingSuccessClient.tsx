@@ -20,9 +20,8 @@ type CheckoutStatusResponse = {
 
 interface BookingSuccessClientProps {
   siteSettings: {
-    phoneDisplay: string;
-    phoneHref: string;
-  };
+    phone: string;
+  }
 }
 
 export default function BookingSuccessClient({
@@ -193,10 +192,10 @@ export default function BookingSuccessClient({
               <p className={styles.infoText}>
                 W razie pytań:{" "}
                 <a
-                  href={`tel:${siteSettings.phoneHref}`}
+                  href={`tel:${siteSettings.phone}`}
                   className={styles.phoneLink}
                 >
-                  {siteSettings.phoneDisplay}
+                  {siteSettings.phone}
                 </a>
               </p>
             </div>
@@ -209,16 +208,7 @@ export default function BookingSuccessClient({
               <span className={styles.errorIcon}>!</span>
             </div>
             <h1 className={styles.title}>Wystąpił problem z płatnością.</h1>
-            <p className={styles.message}>
-              Prosimy o kontakt z obsługą pod numerem{" "}
-              <a
-                href={`tel:${siteSettings.phoneHref}`}
-                className={styles.phoneLink}
-              >
-                {siteSettings.phoneDisplay}
-              </a>
-              .
-            </p>
+              <p className={styles.message}>Prosimy o kontakt z obsługą pod numerem <a href={`tel:${siteSettings.phone}`} className={styles.phoneLink}>{siteSettings.phone}</a>.</p>
           </>
         )}
 

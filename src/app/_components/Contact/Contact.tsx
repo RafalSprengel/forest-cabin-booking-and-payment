@@ -42,7 +42,7 @@ export default function Contact({ siteSettings }: { siteSettings: Partial<ISiteS
 
               <div className={styles.contactItem}>
                 <FontAwesomeIcon icon={faPhone} className={styles.detailIcon} />
-                <span><a href={`tel:${siteSettings.phoneHref}`} className={styles.contactLink}>{siteSettings.phoneDisplay}</a></span>
+                <span><a href={`tel:${siteSettings.phone}`} className={styles.contactLink}>{siteSettings.phone}</a></span>
               </div>
               
               {/* <p className={styles.contactItem}>

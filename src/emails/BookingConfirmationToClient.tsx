@@ -181,7 +181,7 @@ export const BookingConfirmation = ({
           </Section>
 
           <Text style={textStyle}>
-            W razie pytań prosimy o kontakt na {siteSettings.email} lub telefonicznie pod numerem {siteSettings.phoneDisplay}.
+            W razie pytań prosimy o kontakt na {siteSettings.email} lub telefonicznie pod numerem {siteSettings.phone}.
           </Text>
           <Hr style={hrStyle} />
           <Hr style={footerHrStyle} />

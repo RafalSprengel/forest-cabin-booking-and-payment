@@ -26,7 +26,7 @@ export const ContactAdminNotification = ({
   siteSettings,
 }: ContactAdminNotificationProps) => {
   const contactEmail = siteSettings?.email || siteSettingsDefaults.email;
-  const contactPhone = siteSettings?.phoneDisplay || siteSettingsDefaults.phoneDisplay;
+  const contactPhone = siteSettings?.phone || siteSettingsDefaults.phone;
 
   const mainStyle = {
     backgroundColor: "#f6f9fc",

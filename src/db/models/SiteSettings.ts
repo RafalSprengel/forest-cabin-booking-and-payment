@@ -2,8 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISiteSettingsDoc extends Omit<Document, '_id'> {
   _id: string;
-  phoneDisplay: string;
-  phoneHref: string;
+  phone: string;
   email: string;
   facebookUrl: string;
   bankAccountNumber: string;
@@ -19,12 +18,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       type: String,
       default: 'main'
     },
-    phoneDisplay: {
-      type: String,
-      required: true,
-      default: '+48 000 000 000'
-    },
-    phoneHref: {
+    phone: {
       type: String,
       required: true,
       default: '+48000000000'

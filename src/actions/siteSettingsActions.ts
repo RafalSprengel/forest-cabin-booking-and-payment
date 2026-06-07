@@ -14,8 +14,7 @@ export async function getSiteSettings(): Promise<Partial<ISiteSettings>> {
     }
 
     return {
-      phoneDisplay: settings.phoneDisplay,
-      phoneHref: settings.phoneHref,
+      phone: settings.phone,
       email: settings.email,
       facebookUrl: settings.facebookUrl,
       bankAccountNumber: settings.bankAccountNumber,
@@ -34,8 +33,7 @@ export async function updateSiteSettings(
   try {
     // 2. Filtrowanie pól (whitelist)
     const allowedFields: (keyof ISiteSettings)[] = [
-      'phoneDisplay',
-      'phoneHref',
+      'phone',
       'email',
       'facebookUrl',
       'bankAccountNumber',
@@ -50,12 +48,14 @@ export async function updateSiteSettings(
       }
     }
 
+
     await dbConnect();
-    await SiteSettings.findByIdAndUpdate(
+    const updated = await SiteSettings.findByIdAndUpdate(
       'main',
       { $set: filteredValues },
       { upsert: true, new: true, runValidators: true }
     );
+    // debug logs removed
 
     // 4. Optymalizacja RevalidatePath — odśwież główny layout i panel admina
     revalidatePath('/', 'layout');

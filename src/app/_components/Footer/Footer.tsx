@@ -25,7 +25,7 @@ export default async function Footer() {
           <div className={styles.contact}>
             <p>
               <FontAwesomeIcon icon={faPhone} color={'#c9b363'} />
-              <a href={`tel:${siteSettings.phoneHref}`} className={styles.footerContactLink}>{siteSettings.phoneDisplay}</a>
+              <a href={`tel:${siteSettings.phone}`} className={styles.footerContactLink}>{siteSettings.phone}</a>
             </p>
             {/* <p>
               <FontAwesomeIcon icon={faEnvelope} /> kontakt@wilczechatki.pl

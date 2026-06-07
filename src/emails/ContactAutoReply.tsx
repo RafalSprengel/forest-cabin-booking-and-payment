@@ -106,8 +106,8 @@ export const ContactAutoReply = ({
           <Text style={textStyle}>
             Jeśli sprawa jest pilna, możesz skontaktować się z nami również
             telefonicznie:{" "}
-            <Link href={`tel:${siteSettings.phoneHref}`}>
-              {siteSettings.phoneDisplay}
+            <Link href={`tel:${siteSettings.phone}`}>
+              {siteSettings.phone}
             </Link>
             .
           </Text>

@@ -10,7 +10,7 @@ export default async function TopBar() {
         <div className={styles.topbar}>
             <div className={styles.container}>
                 <div className={styles.contactInfo}>
-                    <a href={`tel:${siteSettings.phoneHref}`}>{siteSettings.phoneDisplay}</a>
+                    <a href={`tel:${siteSettings.phone}`}>{siteSettings.phone}</a>
                     <a href={`mailto:${siteSettings.email}`}>{siteSettings.email}</a>
                 </div>
                 <div className={styles.socialIcons}>

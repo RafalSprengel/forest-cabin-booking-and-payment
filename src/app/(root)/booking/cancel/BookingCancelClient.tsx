@@ -7,8 +7,7 @@ import styles from "./page.module.css";
 
 interface BookingCancelClientProps {
   siteSettings: {
-    phoneDisplay: string;
-    phoneHref: string;
+    phone: string;
   };
 }
 
@@ -45,12 +44,7 @@ export default function BookingCancelClient({
         <div className={styles.infoBox}>
           <p className={styles.infoText}>
             📞 W razie pytań:{" "}
-            <a
-              href={`tel:${siteSettings.phoneHref}`}
-              className={styles.phoneLink}
-            >
-              {siteSettings.phoneDisplay}
-            </a>
+            <a href={`tel:${siteSettings.phone}`} className={styles.phoneLink}>{siteSettings.phone}</a>
           </p>
         </div>
 

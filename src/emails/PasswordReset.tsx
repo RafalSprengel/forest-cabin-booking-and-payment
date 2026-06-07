@@ -107,7 +107,7 @@ export const PasswordReset = ({
 
           <Hr style={footerHrStyle} />
           <Text style={footerTextStyle}>
-            W razie pytań prosimy o kontakt na {siteSettings.email} lub telefonicznie pod numerem {siteSettings.phoneDisplay}.
+            W razie pytań prosimy o kontakt na {siteSettings.email} lub telefonicznie pod numerem {siteSettings.phone}.
           </Text>
           <Link href="https://rafalsprengel.com" style={footerLinkStyle}>
             rafalsprengel.com

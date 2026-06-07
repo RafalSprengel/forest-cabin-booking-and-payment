@@ -7,8 +7,7 @@ import styles from "./page.module.css";
 
 interface BookingFailClientProps {
   siteSettings: {
-    phoneDisplay: string;
-    phoneHref: string;
+    phone: string;
   };
 }
 
@@ -49,12 +48,12 @@ export default function BookingFailClient({
           </p>
           <p className={styles.infoText}>
             📞 W razie problemów:{" "}
-            <a
-              href={`tel:${siteSettings.phoneHref}`}
-              className={styles.phoneLink}
-            >
-              {siteSettings.phoneDisplay}
-            </a>
+                <a
+                  href={`tel:${siteSettings.phone}`}
+                  className={styles.phoneLink}
+                >
+                  {siteSettings.phone}
+                </a>
           </p>
         </div>
 
