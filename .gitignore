@@ -47,3 +47,4 @@ repomix-output.xml
 # Ignore compiled JS and source maps generated from TS/TSX in src/
 /src/**/*.js
 /src/**/*.js.map
+.index

@@ -74,9 +74,6 @@ export default function BookingDetailsPage() {
     postalCode: '',
   };
 
-  const [networkModalOpen, setNetworkModalOpen] = useState(false);
-  const [networkModalMessage, setNetworkModalMessage] = useState('');
-  const [retryType, setRetryType] = useState<'initial' | 'submit' | null>(null);
   const initialParsedRef = useRef<BookingData | null>(null);
 
   const validateInitialBooking = async (parsed: BookingData) => {
@@ -90,9 +87,7 @@ export default function BookingDetailsPage() {
       }
     } catch (err) {
       console.error('Błąd sprawdzania dostępności:', err);
-      setNetworkModalMessage('Nie udało się sprawdzić dostępności. Spróbuj ponownie.');
-      setRetryType('initial');
-      setNetworkModalOpen(true);
+      toast.error('Wystąpił problem z połączeniem sieciowym. Nie udało się zweryfikować dostępności terminu.');
     } finally {
       setIsValidating(false);
     }
@@ -100,7 +95,6 @@ export default function BookingDetailsPage() {
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
-    let z=5;
     if (savedData) {
       try {
         const parsed: BookingData = JSON.parse(savedData);
@@ -252,31 +246,6 @@ export default function BookingDetailsPage() {
     router.push('/booking/summary');
   };
 
-  const handleRetry = async () => {
-    if (retryType === 'initial') {
-      const parsed = initialParsedRef.current;
-      if (parsed) {
-        await validateInitialBooking(parsed);
-      }
-    }
-
-    if (retryType === 'submit') {
-      try {
-        const { available, occupiedNames } = await checkBookingAvailability(bookingSummary!);
-        if (!available) {
-          setUnavailableModal({ isOpen: true, title: 'Termin niedostępny', occupiedNames });
-        } else {
-          await proceedToSummary();
-        }
-      } catch (retryErr) {
-        console.error('Retry failed:', retryErr);
-      }
-    }
-
-    setRetryType(null);
-    setNetworkModalOpen(false);
-  };
-
   const handleTermAndConditionsClick = () => {
     const nextInvoiceData = formData.invoice
       ? formData.invoiceData
@@ -300,7 +269,6 @@ export default function BookingDetailsPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-   
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -317,9 +285,7 @@ export default function BookingDetailsPage() {
         }
       } catch (err) {
         console.error('Błąd walidacji dostępności przed submit:', err);
-        setNetworkModalMessage('Nie udało się sprawdzić dostępności. Spróbuj ponownie.');
-        setRetryType('submit');
-        setNetworkModalOpen(true);
+        toast.error('Wystąpił problem z połączeniem internetowym. Dane formularza są bezpieczne. Spróbuj kliknąć przycisk jeszcze raz.');
         setIsSubmitting(false);
         return;
       }
@@ -329,7 +295,6 @@ export default function BookingDetailsPage() {
   };
 
   if (!bookingSummary) {
-      
     return (
       <div className={styles.container}>
         <FloatingBackButton />
@@ -359,18 +324,6 @@ export default function BookingDetailsPage() {
   return (
     <div className={styles.container}>
       <FloatingBackButton />
-
-      <Modal
-        isOpen={networkModalOpen}
-        onClose={() => setNetworkModalOpen(false)}
-        title="Błąd sieci"
-        confirmText="Spróbuj ponownie"
-        cancelText="Anuluj"
-        confirmVariant="warning"
-        onConfirm={handleRetry}
-      >
-        <p>{networkModalMessage}</p>
-      </Modal>
 
       <Modal
         isOpen={unavailableModal.isOpen}

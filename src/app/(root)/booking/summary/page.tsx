@@ -18,57 +18,54 @@ export default function BookingSummaryPage() {
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
+  
   const [unavailableModal, setUnavailableModal] = useState<{
     isOpen: boolean
     title: string
     occupiedNames: string[]
   }>({ isOpen: false, title: '', occupiedNames: [] });
-  const [networkModal, setNetworkModal] = useState<{
-    isOpen: boolean
-    title: string
-    message?: string
-    onRetry?: () => Promise<void>
-  }>({ isOpen: false, title: '' });
 
-  const checkBookingAvailability = async (parsed: BookingData) => {
+  const verifyAvailability = async (data: BookingData): Promise<boolean> => {
+    const ids = data.orders.map(o => o.propertyId);
+    const result = await isRangeAvailable(data.startDate, data.endDate, ids);
+    
+    if (!result.available) {
+      const occupied = result.occupiedPropertyIds || [];
+      const occupiedNames = data.orders
+        .filter((o) => occupied.includes(o.propertyId))
+        .map((o) => o.displayName);
+      
+      setUnavailableModal({ 
+        isOpen: true, 
+        title: 'Termin w procesie rezerwacji, prosimy sprawdzic za 15 minut.', 
+        occupiedNames 
+      });
+      
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleInitValidation = async (parsedData: BookingData, isMounted: boolean) => {
     try {
-      const ids = parsed.orders.map(o => o.propertyId);
-      const result = await isRangeAvailable(parsed.startDate, parsed.endDate, ids);
-      if (!result.available) {
-        localStorage.removeItem(STORAGE_KEY);
-        router.push("/booking");
-        return;
+      const isAvailable = await verifyAvailability(parsedData);
+      if (!isMounted) return;
+      
+      if (isAvailable) {
+        setBookingData(parsedData);
       }
-      setBookingData(parsed);
       setIsValidating(false);
     } catch (err) {
-      console.error('Błąd sprawdzania dostępności:', err);
-      setNetworkModal({
-        isOpen: true, title: 'Błąd sieci', message: 'Nie udało się sprawdzić dostępności. Spróbuj ponownie.', onRetry: async () => {
-          try {
-            const ids = parsed.orders.map(o => o.propertyId);
-            const r = await isRangeAvailable(parsed.startDate, parsed.endDate, ids);
-            if (!r.available) {
-              localStorage.removeItem(STORAGE_KEY);
-              router.push("/booking");
-              return;
-            }
-            setBookingData(parsed);
-          } catch (retryErr) {
-            console.error('Retry failed:', retryErr);
-          } finally {
-            setNetworkModal({ isOpen: false, title: '' });
-            setIsValidating(false);
-          }
-        }
-      });
-      // stop validating spinner when network error occurs
-      setIsValidating(false);
-    }
+      console.error('Błąd sprawdzania dostępności przy wejściu:', err);
+      if (!isMounted) return;
 
-  }
+      toast.error('Wystąpił problem z połączeniem sieciowym. Nie udało się zweryfikować dostępności terminu.');
+    }
+  };
 
   useEffect(() => {
+    let isMounted = true;
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
       router.push("/booking");
@@ -77,8 +74,8 @@ export default function BookingSummaryPage() {
 
     try {
       const parsed: BookingData = JSON.parse(saved);
-      const hasOrders =
-        Array.isArray(parsed.orders) && parsed.orders.length > 0;
+      const hasOrders = Array.isArray(parsed.orders) && parsed.orders.length > 0;
+      
       if (
         !parsed.clientData?.firstName ||
         !hasOrders ||
@@ -91,61 +88,29 @@ export default function BookingSummaryPage() {
         return;
       }
 
-      checkBookingAvailability(parsed) // sprawdzenie dostępności przy wejściu na podsumowanie
+      handleInitValidation(parsed, isMounted);
+
     } catch {
       router.push("/booking");
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   const handleStripePayment = async () => {
     if (!bookingData) return;
-    // finalne sprawdzenie dostępności przed utworzeniem sesji Stripe
+
+    setIsProcessing(true);
+
     try {
-      setIsProcessing(true);
-      const ids = bookingData.orders.map(o => o.propertyId);
-      const result = await isRangeAvailable(bookingData.startDate, bookingData.endDate, ids);
-      if (!result.available) {
-        const occupied = result.occupiedPropertyIds || [];
-        const occupiedNames = bookingData.orders
-          .filter((o) => occupied.includes(o.propertyId))
-          .map((o) => o.displayName);
-        localStorage.removeItem(STORAGE_KEY);
-        setUnavailableModal({ isOpen: true, title: 'Termin niedostępny', occupiedNames });
+      const isAvailable = await verifyAvailability(bookingData);
+      if (!isAvailable) {
         setIsProcessing(false);
         return;
       }
-    } catch (err) {
-      console.error('Błąd sprawdzania dostępności przed płatnością:', err);
-      setNetworkModal({
-        isOpen: true, title: 'Błąd sieci', message: 'Nie udało się sprawdzić dostępności. Spróbuj ponownie.', onRetry: async () => {
-          try {
-            const ids = bookingData.orders.map(o => o.propertyId);
-            const r = await isRangeAvailable(bookingData.startDate, bookingData.endDate, ids);
-            if (!r.available) {
-              const occupied = r.occupiedPropertyIds || [];
-              const occupiedNames = bookingData.orders
-                .filter((o) => occupied.includes(o.propertyId))
-                .map((o) => o.displayName);
-              setUnavailableModal({ isOpen: true, title: 'Termin niedostępny', occupiedNames: [...occupiedNames] });
-              setNetworkModal({ isOpen: false, title: '' });
-              return;
-            }
-            // if available after retry, continue to create checkout
-            const result = await createCheckoutSession(bookingData);
-            if (result?.url) {
-              window.location.href = result.url;
-            }
-          } catch (retryErr) {
-            console.error('Retry payment flow failed:', retryErr);
-          } finally {
-            setNetworkModal({ isOpen: false, title: '' });
-          }
-        }
-      });
-      return;
-    }
 
-    try {
       localStorage.removeItem(STORAGE_KEY);
       const result = await createCheckoutSession(bookingData);
       if (result?.url) {
@@ -154,12 +119,10 @@ export default function BookingSummaryPage() {
         throw new Error("Nie można uzyskać URL sesji płatności");
       }
     } catch (error) {
-      console.error("Błąd podczas inicjowania płatności:", error);
+      console.error("Błąd podczas weryfikacji lub płatności:", error);
       setIsProcessing(false);
-      alert(
-        "Wystąpił błąd podczas inicjowania płatności. Spróbuj ponownie: " +
-        error,
-      );
+      
+      toast.error("Problem z połączeniem internetowym. Nie udało się przetworzyć płatności. Spróbuj ponownie.");
     }
   };
 
@@ -183,6 +146,7 @@ export default function BookingSummaryPage() {
     orders.length === 1
       ? orders[0].displayName
       : `${orders.length} obiekty: ${orders.map((item) => item.displayName).join(", ")}`;
+  
   const hasInvoiceData = Boolean(
     invoiceData.companyName ||
     invoiceData.nip ||
@@ -201,9 +165,11 @@ export default function BookingSummaryPage() {
       <FloatingBackButton />
       <Modal
         isOpen={unavailableModal.isOpen}
-        onClose={() => { setUnavailableModal({ ...unavailableModal, isOpen: false }); router.refresh(); }}
+        onClose={() => { 
+          setUnavailableModal({ ...unavailableModal, isOpen: false }); 
+        }}
         title={unavailableModal.title}
-        confirmText="Wróć do wyboru"
+        confirmText="Wróć wyszukiwarki rezerwacji"
         cancelText="Odśwież wyniki"
         confirmVariant="warning"
         onConfirm={() => {
@@ -217,17 +183,6 @@ export default function BookingSummaryPage() {
             ? `Niedostępne obiekty: ${unavailableModal.occupiedNames.join(', ')}`
             : 'Wybrany termin jest już niedostępny.'}
         </p>
-      </Modal>
-      <Modal
-        isOpen={networkModal.isOpen}
-        onClose={() => setNetworkModal({ ...networkModal, isOpen: false })}
-        title={networkModal.title}
-        confirmText="Spróbuj ponownie"
-        cancelText="Anuluj"
-        confirmVariant="warning"
-        onConfirm={async () => { if (networkModal.onRetry) await networkModal.onRetry(); setNetworkModal({ ...networkModal, isOpen: false }); }}
-      >
-        <p>{networkModal.message}</p>
       </Modal>
 
       <header className={styles.header}>

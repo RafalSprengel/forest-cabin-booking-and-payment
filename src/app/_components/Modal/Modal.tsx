@@ -25,7 +25,7 @@ export default function Modal({
   title,
   children,
   confirmText = 'Potwierdź',
-  cancelText = 'Anuluj',
+  cancelText,
   loadingText = 'Chwileczkę...',
   confirmVariant = 'danger',
   isLoading = false,
@@ -82,14 +82,16 @@ export default function Modal({
           {children}
         </div>
         <div className={styles.footer}>
-          <button
-            type="button"
-            className={styles.btnCancel}
-            onClick={onClose}
-            disabled={isLoading}
-          >
-            {cancelText}
-          </button>
+          {cancelText && (
+            <button
+              type="button"
+              className={styles.btnCancel}
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              {cancelText}
+            </button>
+          )}
           {onConfirm && (
             <button
               type="button"
